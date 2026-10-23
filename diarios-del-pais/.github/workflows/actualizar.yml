@@ -1,0 +1,62 @@
+name: Actualizar monitor de medios
+
+on:
+  schedule:
+    - cron: "7 * * * *"      # cada hora, minuto 7 (puede demorar unos minutos)
+  workflow_dispatch: {}       # boton "Run workflow" para correrlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Codigo
+        uses: actions/checkout@v4
+
+      - name: Datos (rama data)
+        run: |
+          git fetch origin data:data 2>/dev/null || true
+          mkdir -p datos
+          if git show-ref --verify --quiet refs/heads/data; then
+            git --work-tree=datos checkout data -- . 2>/dev/null || true
+          fi
+          ls -la datos || true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Correr pipeline
+        env:
+          DATA_DIR: ${{ github.workspace }}/datos
+          OUT_DIR: ${{ github.workspace }}/salida
+        run: python build.py
+
+      - name: Guardar tablero como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: tablero
+          path: salida/rosario.html
+          retention-days: 7
+
+      - name: Publicar datos en la rama data (un solo commit)
+        run: |
+          cd datos
+          rm -rf .git
+          git init -q
+          git checkout -q -b data
+          git config user.name "monitor-bot"
+          git config user.email "monitor-bot@users.noreply.github.com"
+          git add historico.db historico.csv
+          git commit -q -m "datos $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" data

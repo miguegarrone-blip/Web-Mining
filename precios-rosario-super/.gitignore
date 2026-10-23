@@ -1,0 +1,10 @@
+# Datos generados por el programa (se crean al correr)
+precios.db
+backups/
+logs/
+web/data/
+canasta.json
+canasta_resultado.json
+Mi canasta Rosario.html
+panel.log
+__pycache__/

@@ -1,0 +1,17 @@
+RADAR DE VUELOS — guía rápida
+
+USO DIARIO
+- Abrí el panel con el ícono "Radar de vuelos" del escritorio.
+- Las búsquedas corren solas cada 6 horas, sin ventanas. "Buscar ahora" fuerza una.
+
+ARCHIVOS
+1_instalar.bat                  Instala lo necesario (una sola vez).
+2_buscar_ahora.bat              Una búsqueda manual, con ventana.
+3_abrir_panel.bat               Abre el panel (si ya corre en segundo plano, solo abre el navegador).
+4_probar_con_datos_demo.bat     Panel de prueba con precios inventados.
+5_activar_segundo_plano.bat     Panel siempre prendido sin ventana + búsquedas invisibles + ícono en el escritorio.
+6_desactivar_segundo_plano.bat  Vuelve atrás lo del paso 5.
+config.bat                      Telegram y rutas a buscar.
+
+Fuentes: Google Flights (precios), Promociones Aéreas y Fly4free (ofertas), DolarAPI (dólar oficial).
+Si algo deja de andar, mirá monitor.log y panel.log.

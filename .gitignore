@@ -1,0 +1,25 @@
+# Bases de datos y salidas generadas
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Claves y configuración personal
+.env
+*.env
+secrets.*
+
+# Logs, respaldos y temporales
+*.log
+*.pid
+backups/
+logs/
+__pycache__/
+*.pyc
+*.tmp
+node_modules/
+
+# Windows
+Thumbs.db
+desktop.ini
+*.lnk

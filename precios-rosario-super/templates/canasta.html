@@ -1,0 +1,126 @@
+<title>Mi canasta Rosario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Tablero de decisión: titular de ahorro, ranking de cadenas con canasta completa, detalle por producto. */
+:root{
+  --bg:#f5f4f1; --surface:#ffffff; --ink:#1f2328; --mute:#6a6f76; --line:#e2dfd8;
+  --accent:#a8590a; --good:#17714f; --good-bg:#e1f2ea; --bar:#d9d4c8; --bar-best:#17714f; --warn:#8a4b00; --warn-bg:#fdecd0;
+  --sans:"IBM Plex Sans",system-ui,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15130f; --surface:#1e1b16; --ink:#ece8df; --mute:#a29b8e; --line:#2e2a23;
+  --accent:#f0a43a; --good:#5dd3a0; --good-bg:#12332a; --bar:#3a352b; --bar-best:#5dd3a0; --warn:#f1b562; --warn-bg:#3b2a0d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15130f; --surface:#1e1b16; --ink:#ece8df; --mute:#a29b8e; --line:#2e2a23;
+  --accent:#f0a43a; --good:#5dd3a0; --good-bg:#12332a; --bar:#3a352b; --bar-best:#5dd3a0; --warn:#f1b562; --warn-bg:#3b2a0d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:24px 56px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-size:24px;line-height:1.2;margin:0;font-weight:600}
+h2{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);font-weight:500;margin:0 0 10px}
+.sub{color:var(--mute);margin:4px 0 0;font-size:14px}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.hero .k{font-size:13px;color:var(--mute)}
+.hero .v{font:500 30px/1.2 var(--mono);display:block;margin:2px 0}
+.hero .d{font-size:14px}
+.hero .save{color:var(--good)}
+.rank{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:104px 1fr auto;gap:12px;align-items:center;min-width:0}
+.row .name{font-weight:500;font-size:14px}
+.track{height:22px;background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fill{height:100%;background:var(--bar)}
+.row.best .fill{background:var(--bar-best)}
+.row .amt{font:500 15px var(--mono);text-align:right;min-width:92px}
+.row.partial{opacity:.62}
+.row.partial .track{border-style:dashed}
+.miss{display:block;font:400 12px var(--sans);color:var(--warn);text-align:right}
+.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:12px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.item h3{margin:0 0 8px;font-size:15px;font-weight:600}
+.opt{display:grid;grid-template-columns:96px 1fr auto;gap:10px;padding:5px 0;border-top:1px solid var(--line);font-size:14px;align-items:baseline;min-width:0}
+.opt:first-of-type{border-top:0}
+.opt .t{color:var(--mute);font-size:12.5px;min-width:0;overflow-wrap:anywhere}
+.opt .p{font:500 14px var(--mono);text-align:right}
+.opt.best .c,.opt.best .p{color:var(--good);font-weight:600}
+.opt a{color:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.tag{display:inline-block;font-size:11px;color:var(--warn);background:var(--warn-bg);border-radius:5px;padding:0 6px;margin-left:4px}
+.note{color:var(--mute);font-size:13px}
+.notfound{font-size:13px;color:var(--warn);margin-top:6px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:560px){.row{grid-template-columns:84px 1fr auto}.items{grid-template-columns:1fr}.opt{grid-template-columns:84px 1fr auto}.hero .v{font-size:26px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Mi canasta en Rosario</h1>
+    <p class="sub" id="sub"></p>
+  </header>
+  <section class="hero" id="hero" aria-live="polite"></section>
+  <section>
+    <h2>Cuánto cuesta la canasta completa</h2>
+    <div class="rank" id="rank"></div>
+    <p class="note" id="rankNote"></p>
+  </section>
+  <section>
+    <h2>Dónde conviene cada producto</h2>
+    <div class="items" id="items"></div>
+  </section>
+  <p class="note">Foto del día. Se elige el producto más barato de cada cadena que cumpla marca y tamaño; los títulos exactos están en cada tarjeta para que verifiques que es lo que comprás. Precios de Vea, Jumbo y Disco sin confirmar para Rosario. La lista se edita en <code>canasta.json</code>.</p>
+</div>
+
+<script>
+const DATA=__DATA__;
+const $=s=>document.querySelector(s);
+const money=n=>'$'+Math.round(n).toLocaleString('es-AR');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const items=DATA.items, N=items.length;
+
+// Total y faltantes por cadena
+const stats=DATA.chains.map(c=>{
+  const have=items.filter(i=>i.options[c]);
+  return {c,n:have.length,total:have.reduce((s,i)=>s+i.options[c].price,0),missing:items.filter(i=>!i.options[c]).map(i=>i.name)};
+});
+const complete=stats.filter(s=>s.n===N).sort((a,b)=>a.total-b.total);
+const partial=stats.filter(s=>s.n<N&&s.n>0).sort((a,b)=>b.n-a.n||a.total-b.total);
+
+// Mejor combinación: cada producto en su cadena más barata
+const bestPer=items.map(i=>{const e=Object.entries(i.options).sort((a,b)=>a[1].price-b[1].price);return e.length?{item:i.name,chain:e[0][0],price:e[0][1].price}:null}).filter(Boolean);
+const comboTotal=bestPer.reduce((s,b)=>s+b.price,0);
+const allFound=bestPer.length===N;
+
+const d=new Date(DATA.run_at);
+$('#sub').textContent=`${N} productos · ${DATA.chains.length} cadenas · relevado el ${d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}`;
+
+let h='';
+if(complete.length){
+  const best=complete[0], worst=complete[complete.length-1];
+  h+=`<div><span class="k">Canasta completa más barata</span><span class="v">${money(best.total)}</span><span class="d">${esc(best.c)}${complete.length>1?` · ${money(worst.total-best.total)} menos que ${esc(worst.c)}`:''}</span></div>`;
+  if(allFound){
+    const save=best.total-comboTotal, pct=save/best.total*100;
+    h+=`<div><span class="k">Comprando cada producto donde es más barato</span><span class="v">${money(comboTotal)}</span><span class="d save">${save>0?`Ahorrás ${money(save)} (${pct.toFixed(0)} %) frente a ${esc(best.c)}`:'Igual a la mejor cadena'}</span></div>`;
+  }
+}else{
+  h+=`<div><span class="k">Ninguna cadena tiene los ${N} productos</span><span class="v">-</span><span class="d">Mirá el detalle por producto</span></div>`;
+}
+$('#hero').innerHTML=h;
+
+// Ranking
+const max=Math.max(...[...complete,...partial].map(s=>s.total),1);
+const row=(s,cls)=>`<div class="row ${cls}"><span class="name">${esc(s.c)}</span><div class="track"><div class="fill" style="width:${(s.total/max*100).toFixed(1)}%"></div></div>
+  <span class="amt">${money(s.total)}${s.n<N?`<span class="miss">${s.n} de ${N} productos</span>`:''}</span></div>`;
+$('#rank').innerHTML=complete.map((s,i)=>row(s,i===0?'best':'')).join('')+partial.map(s=>row(s,'partial')).join('');
+$('#rankNote').textContent=partial.length?
+  `Las cadenas con barra punteada no tienen todos los productos (${partial.map(s=>s.c+': le falta '+s.missing.join(', ')).join('; ')}), por eso no se comparan por total.`:'';
+
+// Detalle por producto
+$('#items').innerHTML=items.map(i=>{
+  const opts=Object.entries(i.options).sort((a,b)=>a[1].price-b[1].price);
+  const missing=DATA.chains.filter(c=>!i.options[c]);
+  return `<article class="item"><h3>${esc(i.name)}</h3>`+
+    opts.map(([c,o],k)=>`<div class="opt ${k===0?'best':''}"><span class="c">${esc(c)}</span>
+      <span class="t"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.title)}</a>${o.promo?`<span class="tag">${esc(o.promo.slice(0,28))}</span>`:''}</span>
+      <span class="p">${money(o.price)}</span></div>`).join('')+
+    (missing.length?`<div class="notfound">No encontrado en: ${missing.map(esc).join(', ')}</div>`:'')+`</article>`;
+}).join('');
+</script>

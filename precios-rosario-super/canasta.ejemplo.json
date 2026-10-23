@@ -1,0 +1,10 @@
+{
+  "_ayuda": "Ejemplo de canasta. La primera vez, el programa copia este archivo a canasta.json (tu canasta personal, que no se sube a GitHub). Cada producto: name, query (qué se busca), size ([cantidad, 'g' o 'ml']), pack (1 por defecto); definido por 'title' (parecido de texto, lo que arma el panel con el botón + canasta) o por reglas 'require' / 'any' / 'exclude'.",
+  "items": [
+    {"name": "Yerba Taragüí 1 kg", "query": "yerba taragui", "require": ["taragui"], "exclude": ["saquito", "te en", "te negro", "mate cocido", "listo", "compuesta", "saq"], "size": [1000, "g"]},
+    {"name": "Leche entera La Serenísima 1 litro", "query": "leche serenisima", "require": ["serenisima", "entera"], "exclude": ["polvo", "chocolat", "deslact", "descrem"], "size": [1000, "ml"]},
+    {"name": "Aceite de girasol Cocinero 900 ml", "query": "aceite girasol cocinero", "require": ["cocinero", "girasol"], "exclude": ["mezcla", "oliva"], "size": [900, "ml"]},
+    {"name": "Fideos Matarazzo spaghetti 500 g", "query": "fideos matarazzo", "require": ["matarazzo"], "any": ["spaghetti", "espagueti", "spaghettis", "spagueti"], "exclude": ["integral", "spaghettini", "vegetal"], "size": [500, "g"]},
+    {"name": "Cerveza Quilmes clásica 473 ml", "query": "cerveza quilmes", "require": ["quilmes"], "exclude": ["bajo cero", "blanca", "hinchada", "cristal", "1890", "0.0", "sin alcohol", "s/a", "stout", " ipa", "negra", "session", "bock", "roja", "scotch"], "size": [473, "ml"]}
+  ]
+}

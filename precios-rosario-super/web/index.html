@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Precios Rosario</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: "media", theme: { extend: { fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "sans-serif"] } } } };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  .tabular { font-variant-numeric: tabular-nums; }
+  dialog::backdrop { background: rgba(15, 23, 42, .55); backdrop-filter: blur(2px); }
+  dialog { border: 0; padding: 0; }
+  .skeleton { background: linear-gradient(90deg, rgba(148,163,184,.18) 25%, rgba(148,163,184,.32) 50%, rgba(148,163,184,.18) 75%); background-size: 200% 100%; animation: sk 1.2s infinite; border-radius: .5rem; }
+  @keyframes sk { to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+</style>
+</head>
+<body class="h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+
+<header class="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
+  <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
+    <a href="#" class="flex items-center gap-2 font-semibold tracking-tight" id="logo">
+      <span class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white text-sm font-bold">$</span>
+      <span class="hidden sm:inline">Precios Rosario</span>
+    </a>
+    <nav class="ml-2 flex gap-1" aria-label="Secciones">
+      <button type="button" data-tab="search" class="tab rounded-lg px-3 py-1.5 text-sm font-medium">Buscar</button>
+      <button type="button" data-tab="catalog" class="tab rounded-lg px-3 py-1.5 text-sm font-medium">Catálogo</button>
+    </nav>
+    <div class="flex-1"></div>
+    <button type="button" id="openPalette" class="flex min-w-0 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+      <svg class="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.48l4.31 4.31a1 1 0 01-1.42 1.42l-4.3-4.31A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+      <span class="hidden sm:inline">Buscar producto…</span>
+      <kbd class="hidden rounded border border-slate-300 px-1.5 text-xs dark:border-slate-600 sm:inline" id="kbdHint">Ctrl K</kbd>
+    </button>
+    <a href="/clasico" id="canastaLink" hidden class="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 max-sm:!hidden">Mi canasta</a>
+  </div>
+</header>
+
+<main class="mx-auto max-w-7xl px-4 pb-24 pt-6">
+  <div id="loading" class="space-y-3" aria-busy="true">
+    <div class="skeleton h-12 w-full max-w-2xl"></div>
+    <div class="skeleton h-40 w-full"></div>
+    <div class="skeleton h-40 w-full"></div>
+  </div>
+  <div id="fatal" class="hidden"></div>
+
+  <!-- BUSCAR -->
+  <section id="viewSearch" hidden>
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-2xl font-semibold tracking-tight">¿Dónde conviene comprar?</h1>
+      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" id="updated"></p>
+      <label class="relative mt-4 block">
+        <span class="sr-only">Buscar producto</span>
+        <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Ej: 473 heineken lata, yerba taragui 1 kg, leche serenisima"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base shadow-sm placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 dark:border-slate-700 dark:bg-slate-900">
+      </label>
+      <div id="chips" class="mt-3 flex flex-wrap gap-2"></div>
+    </div>
+    <div id="searchOut" class="mx-auto mt-6 max-w-3xl space-y-4"></div>
+  </section>
+
+  <!-- CATÁLOGO -->
+  <section id="viewCatalog" hidden>
+    <div class="grid gap-6 lg:grid-cols-[260px_1fr]">
+      <aside class="space-y-5">
+        <details class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:open" id="filtersBox" open>
+          <summary class="cursor-pointer text-sm font-semibold lg:hidden">Filtros</summary>
+          <div class="space-y-5 lg:mt-0 mt-4">
+            <div>
+              <h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Categoría</h2>
+              <div id="cats" class="flex flex-col gap-0.5"></div>
+            </div>
+            <div>
+              <h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Supermercado</h2>
+              <div id="chainFilter" class="grid grid-cols-2 gap-1 text-sm"></div>
+            </div>
+            <div>
+              <h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Precio</h2>
+              <div class="flex items-center gap-2">
+                <input id="pMin" type="number" min="0" inputmode="numeric" placeholder="Mín" class="w-full rounded-lg border border-slate-300 bg-transparent px-2 py-1.5 text-sm dark:border-slate-700">
+                <span class="text-slate-400">–</span>
+                <input id="pMax" type="number" min="0" inputmode="numeric" placeholder="Máx" class="w-full rounded-lg border border-slate-300 bg-transparent px-2 py-1.5 text-sm dark:border-slate-700">
+              </div>
+            </div>
+            <div>
+              <label for="minDisc" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Descuento mínimo</label>
+              <select id="minDisc" class="w-full rounded-lg border border-slate-300 bg-transparent px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900">
+                <option value="0">Cualquiera</option><option value="10">10 % o más</option><option value="20">20 % o más</option>
+                <option value="30">30 % o más</option><option value="40">40 % o más</option><option value="50">50 % o más</option>
+              </select>
+            </div>
+            <label class="flex items-start gap-2 text-sm">
+              <input id="onlyAnom" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500">
+              <span>Solo posibles errores de precio<span class="block text-xs text-slate-500">Productos muy por debajo del mercado</span></span>
+            </label>
+            <button type="button" id="resetFilters" class="text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400">Limpiar filtros</button>
+          </div>
+        </details>
+      </aside>
+      <div>
+        <div class="mb-3 flex flex-wrap items-center gap-3">
+          <p class="text-sm text-slate-500" id="catCount" aria-live="polite"></p>
+          <div class="flex-1"></div>
+          <label class="flex items-center gap-2 text-sm">Ordenar
+            <select id="sort" class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900">
+              <option value="unit">Menor precio por kg / litro</option>
+              <option value="price">Menor precio</option>
+              <option value="discount">Mayor descuento</option>
+              <option value="chains">Más cadenas</option>
+              <option value="name">Nombre (A–Z)</option>
+            </select>
+          </label>
+        </div>
+        <div id="grid" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
+        <div class="mt-5 text-center"><button type="button" id="more" class="hidden rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">Ver más productos</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Paleta de comandos (Ctrl/Cmd + K) -->
+<dialog id="palette" class="w-[min(640px,calc(100vw-1.5rem))] rounded-2xl bg-white shadow-2xl dark:bg-slate-900 dark:text-slate-100" style="margin-top:10vh">
+  <div class="border-b border-slate-200 p-3 dark:border-slate-800">
+    <input id="pq" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar producto… (↑ ↓ para elegir, Enter para abrir)" aria-label="Buscar producto"
+      class="w-full bg-transparent px-2 py-2 text-base placeholder:text-slate-400 focus:outline-none">
+  </div>
+  <ul id="pList" class="max-h-[55vh] overflow-y-auto p-2" role="listbox"></ul>
+  <div class="flex items-center justify-between border-t border-slate-200 px-4 py-2 text-xs text-slate-500 dark:border-slate-800">
+    <span>Esc para cerrar</span><span id="pHint"></span>
+  </div>
+</dialog>
+
+<!-- Detalle de producto -->
+<dialog id="detail" class="w-[min(760px,calc(100vw-1.5rem))] rounded-2xl bg-white shadow-2xl dark:bg-slate-900 dark:text-slate-100" style="margin:5vh auto">
+  <div class="flex justify-end p-2"><button type="button" id="detailClose" class="rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Cerrar">Cerrar ✕</button></div>
+  <div id="detailBody" class="max-h-[80vh] overflow-y-auto px-4 pb-5"></div>
+</dialog>
+
+<script src="search.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

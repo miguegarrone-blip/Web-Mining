@@ -1,0 +1,10 @@
+# datos y salidas: viven en la rama "data", no en main
+historico.db
+historico.csv
+rosario.html
+archivar.log
+titulares.csv
+titulares_primera_version.csv
+muestra_para_validar.csv
+__pycache__/
+*.pyc
