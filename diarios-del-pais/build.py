@@ -288,7 +288,8 @@ EJ_AL = DB.execute(f"SELECT medio, titulo, bajada, COALESCE(url_real,url) FROM i
 EJ_CB = DB.execute("SELECT medio, titulo, cebo, COALESCE(url_real,url) FROM items WHERE cebo>=2 AND pub_ms>=? ORDER BY cebo DESC, pub_ms DESC LIMIT 12", (desde,)).fetchall()
 corte24 = (datetime.now() - timedelta(hours=24)).isoformat(timespec="seconds")
 SCR = DB.execute("SELECT medio, SUM(intentos), SUM(ok), SUM(bajada), SUM(ld), SUM(robots) FROM scraping WHERE run>=? GROUP BY medio ORDER BY medio", (corte24,)).fetchall()
-AGG.update({"sens": SENS, "aut": AUT, "ej_al": EJ_AL, "ej_cb": EJ_CB, "scr": SCR})
+PROG = DB.execute("SELECT SUM(ld IS NOT NULL OR enr>=2), COUNT(*) FROM items").fetchone()
+AGG.update({"prog": PROG, "sens": SENS, "aut": AUT, "ej_al": EJ_AL, "ej_cb": EJ_CB, "scr": SCR})
 
 # ---------- salud de datos ----------
 SAL = []

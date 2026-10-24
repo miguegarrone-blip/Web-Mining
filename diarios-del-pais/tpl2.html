@@ -104,6 +104,8 @@ a.upd:hover{color:var(--bg);filter:brightness(1.1);text-decoration:none}
 .sc .pt:hover{transform:scale(1.4)}
 .sc .lb{position:absolute;font-size:.72rem;color:var(--fg);white-space:nowrap;pointer-events:none;transform:translate(8px,50%)}
 .sc .ax{position:absolute;font-family:var(--mono);font-size:.7rem;color:var(--mute);white-space:nowrap}
+.sc .md{position:absolute;border:0 dashed var(--mute);opacity:.7;pointer-events:none}.sc .md.v{top:0;bottom:0;border-left-width:1px}.sc .md.h{left:0;right:0;border-top-width:1px}
+.sc .qd{position:absolute;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);pointer-events:none}
 .sc .gl{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
 .ej{padding-block:8px;border-bottom:1px solid var(--line);font-size:.9rem}.ej b{font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--accent);display:block}.ej a{font-weight:500}.ej p{margin:.2rem 0 0;font-size:.85rem;color:var(--mute)}
 .words{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}.words small{font-family:var(--mono);color:var(--mute);font-size:.7rem;margin-left:3px}
@@ -154,8 +156,9 @@ a.upd:hover{color:var(--bg);filter:brightness(1.1);text-decoration:none}
 </div>
 <div id="p-sens" hidden>
  <p class="note">Se compara el título de cada nota con su bajada (el resumen que publica el propio medio, obtenido entrando a la nota). Un título <b>exagera</b> cuando tiene tono negativo y la bajada no. Un título usa <b>recursos de cebo</b> (clickbait) cuando tiene preguntas, exclamaciones, adjetivos exagerados, frases de intriga ("lo que nadie…", "el truco"), segunda persona o listas. Datos de todo el histórico; solo medios con suficientes notas.</p>
- <section class="c"><h2>Mapa del sensacionalismo</h2><p class="note">Cada punto es un medio. Más a la derecha, más títulos con recursos de cebo; más arriba, más títulos que exageran respecto de su propia bajada.</p><div class="chartbox" id="x-box"><div id="x-sc"></div><div id="x-tip" class="tip" hidden></div></div></section>
- <section class="c"><h2>Títulos que exageran</h2><p class="note">De los títulos negativos que tienen bajada, qué parte tiene una bajada neutra o positiva.</p><div id="x-al"></div></section>
+ <p class="sum" id="x-prog" style="margin-bottom:1.6rem"></p>
+ <section class="c"><h2>Mapa del sensacionalismo</h2><p class="note">Cada punto es un medio. Más a la derecha, más títulos con recursos de cebo; más arriba, más títulos que exageran respecto de su propia bajada. Las líneas punteadas marcan la mediana de los medios y dividen el mapa en cuatro estilos.</p><div class="chartbox" id="x-box"><div id="x-sc"></div><div id="x-tip" class="tip" hidden></div></div></section>
+ <section class="c"><h2>Títulos que exageran</h2><p class="note">De los títulos negativos que tienen bajada, qué parte tiene una bajada neutra o positiva. Entre paréntesis, cuántos títulos negativos con bajada tiene cada medio.</p><div id="x-al"></div></section>
  <section class="c"><h2>Títulos con recursos de cebo</h2><div id="x-cb"></div></section>
  <section class="c"><h2>Ejemplos recientes: título negativo, bajada neutra</h2><div id="x-eal"></div></section>
  <section class="c"><h2>Ejemplos recientes: más recursos de cebo</h2><div id="x-ecb"></div></section>
@@ -357,11 +360,12 @@ else{$("sql").hidden=true;$("dl").hidden=true}
 
 /* ---- Como titulan ---- */
 {const S=(AGG.sens||[]).filter(r=>r.n>=30),pct=v=>Math.round(v*100)+"%";
+if(AGG.prog&&AGG.prog[1]){const[a,b]=AGG.prog,e=$("x-prog");e.append(document.createTextNode("Notas analizadas entrando a la página: "),mk("b","",a.toLocaleString("es-AR")+" de "+b.toLocaleString("es-AR")+" ("+pct(a/b)+")"),document.createTextNode(a/b<.9?". El resto se procesa en las próximas corridas, así que estos números todavía pueden cambiar.":"."))}
 const AL=S.filter(r=>r.tneg>=10).map(r=>({...r,ar:r.alarma/r.tneg}));
 const lnk=(t,u)=>{const a=mk("a","",t);a.href=u;a.target="_blank";a.rel="noopener";return a};
 const bars=(host,arr,val,lab,tit)=>{if(!arr.length){$(host).appendChild(mk("p","note","Todavía no hay datos suficientes: se completan a medida que se scrapean las notas."));return}
  const mx=Math.max(...arr.map(val))||1;arr.slice().sort((a,b)=>val(b)-val(a)).forEach(r=>rowBar($(host),r.m,[["s-a",val(r)]],val(r),mx,lab(r),tit&&tit(r)))};
-bars("x-al",AL,r=>r.ar,r=>pct(r.ar),r=>r.m+": "+r.alarma+" de "+r.tneg+" títulos negativos tienen bajada neutra o positiva");
+bars("x-al",AL.map(r=>({...r,m:r.m+" ("+r.tneg+")"})),r=>r.ar,r=>pct(r.ar),r=>r.m+": "+r.alarma+" de "+r.tneg+" títulos negativos tienen bajada neutra o positiva");
 bars("x-cb",S,r=>r.cebo_pct,r=>pct(r.cebo_pct),r=>r.m+": "+pct(r.cebo_pct)+" de "+r.n+" títulos con al menos un recurso de cebo");
 bars("x-fi",S.filter(r=>r.nld>=10),r=>r.firm/r.nld,r=>pct(r.firm/r.nld),r=>r.m+": "+r.firm+" de "+r.nld+" notas firmadas");
 bars("x-la",S.filter(r=>r.largo),r=>r.largo,r=>r.largo,r=>r.m+": "+r.largo+" palabras en promedio");
@@ -380,6 +384,9 @@ bars("x-la",S.filter(r=>r.largo),r=>r.largo,r=>r.largo,r=>r.m+": "+r.largo+" pal
   p.onpointerleave=()=>{tip.hidden=true};sc.appendChild(p);
   if(lab.has(r.m)){const w=r.m.length*0.9,der=[x,x+w],izq=[x-w,x],choca=([a,b])=>puestos.some(q=>a<q.b&&q.a<b&&Math.abs(q.y-y)<6),lado=!choca(der)?der:!choca(izq)?izq:null;   // ancho aprox. de la etiqueta en % del grafico
    if(lado){puestos.push({a:lado[0],b:lado[1],y});const l=mk("span","lb",r.m);l.style.left=x+"%";l.style.bottom=y+"%";if(lado===izq)l.style.transform="translate(calc(-100% - 8px),50%)";sc.appendChild(l)}}});
+ const med=v=>{const a=v.slice().sort((x,y)=>x-y),k=a.length>>1;return a.length%2?a[k]:(a[k-1]+a[k])/2},mx=med(AL.map(r=>r.cebo_pct))/mxX*100,my=med(AL.map(r=>r.ar))/mxY*100;
+ const vl=mk("div","md v");vl.style.left=mx+"%";sc.appendChild(vl);const hl=mk("div","md h");hl.style.bottom=my+"%";sc.appendChild(hl);
+ [["Alarmistas","left:6px;top:6px"],["Sensacionalistas","right:6px;top:6px"],["Sobrios","left:6px;bottom:6px"],["Clickbait","right:6px;bottom:6px"]].forEach(([t,c])=>{const q=mk("span","qd",t);q.style.cssText=c;sc.appendChild(q)});
  host.appendChild(sc)}}
 const ej=(host,arr,f)=>{if(!arr||!arr.length){$(host).appendChild(mk("p","note","Sin ejemplos en las últimas __VENTANA__ h."));return}arr.forEach(r=>$(host).appendChild(f(r)))};
 ej("x-eal",AGG.ej_al,([m,t,b,u])=>{const d=mk("div","ej");d.append(mk("b","",m),lnk(t,u),mk("p","","Bajada: "+b));return d});

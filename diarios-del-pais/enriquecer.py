@@ -15,8 +15,8 @@ try:
 except ImportError:
     gnewsdecoder = None
 
-TOPE_NOTAS = 700    # notas por corrida
-TOPE_SEG = 300      # tiempo maximo por corrida
+TOPE_NOTAS = 1200   # notas por corrida
+TOPE_SEG = 420      # tiempo maximo por corrida
 INTENTOS = 2        # despues de 2 fallos, la nota se deja como esta
 POR_DOMINIO = 2     # pedidos simultaneos maximos a un mismo sitio
 UA = {"User-Agent": "Mozilla/5.0 (compatible; monitor-de-medios/1.0; +https://miguegarrone-blip.github.io/Web-Mining/)",
@@ -130,7 +130,7 @@ def enriquecer(db):
     pend = db.execute("SELECT h,url,titulo,medio FROM items WHERE ld IS NULL AND enr<? ORDER BY pub_ms DESC LIMIT ?", (INTENTOS, TOPE_NOTAS)).fetchall()
     info = {h: (t, m) for h, _, t, m in pend}
     hechos, stats, t0 = {}, {}, time.time()
-    ex = cf.ThreadPoolExecutor(8)
+    ex = cf.ThreadPoolExecutor(12)
     futs = [ex.submit(una, h, u) for h, u, _, _ in pend]
     try:
         for f in cf.as_completed(futs, timeout=TOPE_SEG):
