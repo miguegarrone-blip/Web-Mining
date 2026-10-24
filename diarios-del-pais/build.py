@@ -261,6 +261,37 @@ for x in items:
     cnt[x["m"]] = cnt.get(x["m"], 0) + 1
     if cnt[x["m"]] <= POR_MEDIO_PAGINA: pag.append(x)
 
+# ---------- notas parecidas: embeddings de oraciones (titulo + bajada), ver semantica.py ----------
+# se guardan en la columna emb (float16) solo para las notas de los ultimos 7 dias que no lo tienen; las mas viejas se vacian
+# para que la base no crezca. Con los de la pagina: 5 vecinos de otros medios (x["sim"] = [indice, similitud%, ...]) y emb.bin
+# (el indice es la posicion en pag, que es la misma que en D del tablero: pag ya va ordenada por ts y el sort de JS es estable)
+import semantica
+TOPE_EMB = 6000         # notas por corrida que pasan por el modelo (la primera corrida llena los 7 dias; despues son ~200-400)
+if "emb" not in cols: DB.execute("ALTER TABLE items ADD COLUMN emb BLOB")
+lim_emb = ahora_ms - 7 * 24 * 3600 * 1000
+DB.execute("UPDATE items SET emb=NULL WHERE emb IS NOT NULL AND pub_ms<?", (lim_emb,))
+for h_ in hechos: DB.execute("UPDATE items SET emb=NULL WHERE h=?", (h_,))   # bajada nueva: cambia el texto
+if semantica.disponible():
+    t0 = time.time()
+    pend = DB.execute("SELECT h,titulo,bajada FROM items WHERE emb IS NULL AND pub_ms>=? ORDER BY pub_ms DESC LIMIT ?", (lim_emb, TOPE_EMB)).fetchall()
+    for i in range(0, len(pend), 500):                 # por tandas, para ir guardando
+        lote = pend[i:i + 500]
+        for (h_, _, _), v in zip(lote, semantica.vectores([semantica.texto(t_, b_) for _, t_, b_ in lote])):
+            DB.execute("UPDATE items SET emb=? WHERE h=?", (semantica.a_blob(v), h_))
+        DB.commit()
+    t1 = time.time()
+    EMB = dict(DB.execute("SELECT h,emb FROM items WHERE emb IS NOT NULL AND pub_ms>=?", (desde,)).fetchall())
+    con = [i for i, x in enumerate(pag) if x["h"] in EMB]
+    if con:
+        import numpy as np
+        M = np.stack([semantica.de_blob(EMB[pag[i]["h"]]) for i in con])
+        M /= np.linalg.norm(M, axis=1, keepdims=True)
+        for i, fila in zip(con, semantica.vecinos(M, [pag[i]["m"] for i in con])):
+            if fila: pag[i]["sim"] = [z for j, s in fila for z in (con[j], round(s * 100))]
+        semantica.guardar_bin(os.path.join(OUT, "emb.bin"), [pag[i]["h"] for i in con], M)
+    print(f"embeddings: {len(pend)} nuevos en {t1 - t0:.0f}s | notas parecidas: {sum('sim' in x for x in pag)} de {len(pag)} notas tienen vecinos ({time.time() - t1:.1f}s)")
+DB.commit()
+
 # ---------- calibracion del tono (ver tono_entrenar.py) ----------
 CALP = os.path.join(BASE, "calibracion.json")
 CAL = json.load(open(CALP, encoding="utf-8")) if os.path.exists(CALP) else None

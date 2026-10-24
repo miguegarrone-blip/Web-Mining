@@ -64,11 +64,13 @@ jobs:
       - name: Dependencias de BERT
         run: pip install torch transformers sentencepiece protobuf --extra-index-url https://download.pytorch.org/whl/cpu || echo "sin BERT"
 
-      - name: Cache del modelo BERT
+      # Cache de los modelos de Hugging Face: XLM-RoBERTa (tono) + MiniLM multilingue (notas parecidas, ver semantica.py).
+      # La clave nombra los dos modelos: si se agrega o cambia un modelo, cambiar la clave para que se guarde una cache nueva.
+      - name: Cache de los modelos (BERT y embeddings)
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: hf-xlm-roberta-sentiment-v1
+          key: hf-xlmr-sentiment-minilm-multi-v2
 
       - name: Correr pipeline
         env:
@@ -81,6 +83,8 @@ jobs:
           S="$GITHUB_WORKSPACE/sitio"
           cp "$S/rosario.html" "$S/index.html"
           cp "$GITHUB_WORKSPACE/datos/historico.db" "$GITHUB_WORKSPACE/datos/historico.csv" "$S/"
+          # emb.bin (embeddings de las notas para "Buscar por significado") lo escribe build.py directo en OUT_DIR
+          [ -f "$S/emb.bin" ] || echo "::warning::sin emb.bin: la busqueda por significado del tablero no va a funcionar"
           touch "$S/.nojekyll"
           ls -la "$S"
 
