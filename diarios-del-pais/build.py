@@ -296,6 +296,22 @@ horas = {h_: [round(x, 2) for x in v] for h_, v in horas.items()}
 horasT = {t: {h_: [round(x, 2) for x in v] for h_, v in hs.items()} for t, hs in horasT.items()}
 AGG = {"dn": dn, "dneg": dneg, "tema": tema, "ent": ent, "horas": horas, "horasT": horasT, "hoy": dia(ahora_ms)}
 
+# ---------- por medio y periodo (pestaña Analisis: filtros de periodo, agenda y tono por medio) ----------
+# MED[medio] = {r: alcance, tp: tipo, p: {dias: {n, t: [neg, neu, pos] esperados, tg: {tema: notas}}}}
+PERIODOS = (1, 2, 7, 30)
+MED = {m: {"r": F[m][0], "tp": F[m][1], "p": {d: {"n": 0, "t": [0.0, 0.0, 0.0], "tg": {}} for d in PERIODOS}} for m in F}
+for m, ms, tg, en, sa, sm in rows:
+    if m not in MED or ms > ahora_ms: continue
+    v = dist(sm, sa); temas_n = {merge_tema(x) for x in tg.split("|") if x}
+    for d in PERIODOS:
+        if ms < ahora_ms - d * 86400000: continue
+        a = MED[m]["p"][d]; a["n"] += 1
+        for k in range(3): a["t"][k] += v[k]
+        for t in temas_n: a["tg"][t] = a["tg"].get(t, 0) + 1
+for m in MED:
+    for d in PERIODOS: MED[m]["p"][d]["t"] = [round(x, 1) for x in MED[m]["p"][d]["t"]]
+AGG["med"] = MED
+
 # ---------- como titula cada medio (todo el historico) ----------
 # alarma: de los titulos negativos con bajada, cuantos tienen una bajada que NO es negativa (el titulo exagera el hecho)
 # cebo: rasgos de clickbait en el titulo (nlp.cebo). firmadas: notas con autor persona, sobre las que tienen JSON-LD
