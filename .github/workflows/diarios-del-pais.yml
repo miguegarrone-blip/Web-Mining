@@ -4,7 +4,10 @@ name: Diarios del país - monitor de medios
 # La base vive en la rama "data-diarios" (comprimida), para no mezclar datos con código en main.
 on:
   schedule:
-    - cron: "7 * * * *"      # cada hora, minuto 7 (GitHub puede demorarlo unos minutos)
+    # Dos veces por hora y lejos de la hora en punto: GitHub demora y a veces descarta las corridas
+    # programadas en los momentos de mucha carga (sobre todo al comienzo de cada hora).
+    # Si se descarta una, corre la otra; las notas repetidas se descartan solas.
+    - cron: "23,53 * * * *"
   workflow_dispatch: {}       # boton "Run workflow" para correrlo a mano
   push:
     branches: [main]

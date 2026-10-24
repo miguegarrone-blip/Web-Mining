@@ -146,7 +146,7 @@ const cuerpo = [
   ], [2000, 5326, 1700]),
   ESP(),
   H2("Automatización con GitHub Actions"),
-  P("El workflow `.github/workflows/diarios-del-pais.yml` se ejecuta cada hora (cron `7 * * * *`), a mano desde la pestaña Actions y con cada cambio de código. Cada corrida:"),
+  P("El workflow `.github/workflows/diarios-del-pais.yml` se ejecuta dos veces por hora (cron `23,53 * * * *`, lejos de la hora en punto porque GitHub demora y a veces descarta las corridas programadas en los momentos de mucha carga), a mano desde la pestaña Actions y con cada cambio de código. Cada corrida:"),
   ...NUEVA(),
   N("Restaura la base comprimida (`historico.db.gz`) desde la rama `data-diarios`."),
   N("Instala dependencias, incluido PyTorch para CPU, y recupera el modelo BERT de la caché."),
