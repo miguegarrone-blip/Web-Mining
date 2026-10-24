@@ -23,8 +23,24 @@ UA = {"User-Agent": "Mozilla/5.0 (compatible; monitor-de-medios/1.0; +https://mi
       "Accept-Language": "es-AR,es;q=0.9"}
 
 def limpiar(s, n=500):
-    s = re.sub(r"<[^>]+>", " ", html.unescape(s or ""))
+    s = html.unescape(html.unescape(s or ""))          # hay sitios que escapan dos veces (&amp;quot;)
+    s = re.sub(r"<[^>]+>", " ", s)
     return re.sub(r"\s+", " ", s).strip()[:n]
+
+def mojibake(s):
+    """UTF-8 leido como Latin-1 ("podrÃ¡" -> "podrá")"""
+    def arreglar(m):
+        try: return m.group().encode("latin-1").decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError): return m.group()
+    return re.sub("[Â-ô][-¿]+", arreglar, s)   # se corrige por tramos: puede convivir con texto sano
+
+_CODIGO = re.compile(r"function\s*\(|=>|addEventListener|googletag|\.push\(|document\.|window\.|\{\s*[a-z-]+\s*:|!important|var\s+\w+\s*=|const\s+\w+\s*=|:hover|\d+px|ease|\}\s*\.[\w-]+|background-color", re.I)
+def depurar_bajada(b):
+    """bajada lista para guardar, o "" si no es texto de una nota (codigo, CSS, etc.)"""
+    b = mojibake(limpiar(b))
+    b = re.sub(r"\s*\|\s*[^|]{2,30}$", "", b)      # " | eltrece": nombre del sitio al final
+    if _CODIGO.search(b) or len(re.findall(r"[{};=<>]", b)) > max(3, len(b) * 0.01): return ""
+    return b
 
 # ---------- robots.txt y limite por dominio ----------
 _robots, _sem, _lock = {}, {}, threading.Lock()
@@ -50,14 +66,17 @@ def semaforo(u):
 # ---------- extraccion ----------
 _META = [re.compile(r'<meta[^>]+(?:property|name)=["\'](?:og:description|description|twitter:description)["\'][^>]*content=["\']([^"\']{20,})', re.I),
          re.compile(r'<meta[^>]+content=["\']([^"\']{20,})["\'][^>]*(?:property|name)=["\'](?:og:description|description|twitter:description)', re.I)]
-_P = re.compile(r"<p[^>]*>(.{60,}?)</p>", re.I | re.S)
+_P = re.compile(r"<p(?:\s[^>]*)?>(.{60,}?)</p>", re.I | re.S)       # solo <p> de verdad (no <path>, <pre>, ni "i<p" en JS)
+_SCRIPT = re.compile(r"<(script|style|noscript|svg)\b.*?</\1>", re.I | re.S)
 _LD = re.compile(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', re.I | re.S)
 def bajada_de_html(p):
     for rx in _META:
         m = rx.search(p)
-        if m: return limpiar(m.group(1))
-    m = _P.search(p)
-    return limpiar(m.group(1)) if m else ""
+        if m and depurar_bajada(m.group(1)): return depurar_bajada(m.group(1))
+    for m in _P.finditer(_SCRIPT.sub(" ", p)):
+        b = depurar_bajada(m.group(1))
+        if len(b) >= 60: return b
+    return ""
 
 def _articulos(o):
     if isinstance(o, list):
@@ -120,10 +139,23 @@ def una(h, url):
         with semaforo(real):
             r = requests.get(real, headers=UA, timeout=(6, 15))
         if r.status_code != 200: return h, real, "", {}, "HTTP %s" % r.status_code
+        if "charset" not in r.headers.get("Content-Type", "").lower(): r.encoding = "utf-8"   # sin charset, requests asume Latin-1
         p = r.text[:600000]
         return h, r.url or real, bajada_de_html(p), json_ld(p), ""
     except Exception as e:
         return h, None, "", {}, str(e)[:80]
+
+def reparar(db):
+    """vuelve a depurar las bajadas ya guardadas que tienen sintomas de basura; devuelve {h: bajada} de las que cambiaron"""
+    sosp = db.execute("""SELECT h,bajada FROM items WHERE bajada!='' AND (bajada LIKE '%&%;%' OR bajada LIKE '%Ã%' OR bajada LIKE '%{%'
+                         OR bajada LIKE '%;%;%;%' OR bajada LIKE '%=>%' OR bajada LIKE '%|%' OR bajada LIKE '%function%')""").fetchall()
+    out = {}
+    for h, b in sosp:
+        nb = depurar_bajada(b)
+        if nb != b:
+            db.execute("UPDATE items SET bajada=?, tono_bajada=CASE WHEN ?='' THEN NULL ELSE tono_bajada END WHERE h=?", (nb, nb, h))
+            if nb: out[h] = nb
+    return out
 
 def enriquecer(db):
     """Procesa las notas pendientes (las mas nuevas primero). Devuelve ({h: bajada} de lo completado, estadisticas por medio)."""
@@ -150,6 +182,7 @@ def enriquecer(db):
     except cf.TimeoutError:
         pass
     ex.shutdown(wait=False, cancel_futures=True)
+    hechos.update(reparar(db))
     # descripciones genericas del sitio ("Las ultimas noticias de...") repetidas en muchas notas: no son bajadas
     db.execute("UPDATE items SET bajada='' WHERE bajada!='' AND (medio,bajada) IN (SELECT medio,bajada FROM items WHERE bajada!='' GROUP BY medio,bajada HAVING COUNT(*)>3)")
     db.commit()

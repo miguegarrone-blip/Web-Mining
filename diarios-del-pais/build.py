@@ -7,7 +7,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL
 from nlp import tone, cebo, ents as get_ents
-from enriquecer import enriquecer, limpiar
+from enriquecer import enriquecer, depurar_bajada
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.environ.get("DATA_DIR", BASE)   # donde viven historico.db y historico.csv
@@ -163,7 +163,7 @@ for m, ents, code, ms, err in res:
         if k in seen or canon(u) in seen: dups += 1; continue
         seen.add(k); seen.add(canon(u))
         x["h"] = h(canon(u))
-        x["b"] = "" if "news.google.com" in u else limpiar(e.get("summary", ""), 400)   # bajada que trae el RSS propio
+        x["b"] = "" if "news.google.com" in u else depurar_bajada(e.get("summary", ""))[:400]   # bajada que trae el RSS propio
         if x["b"].lower().startswith(t.lower()[:40]): x["b"] = ""
         x["tg"] = tag(t + " " + x["b"], m); x["sa"] = tone(t); x["e"] = get_ents(t)
         if u in LB: x["s"] = LB[u][1]
