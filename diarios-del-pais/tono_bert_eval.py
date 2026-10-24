@@ -111,15 +111,18 @@ print("resultados en tono_comparacion.json")
 # mismo formato que modelo_tono.json; las probas entran como rasgos __bert_n/__bert_0/__bert_p (x3, ver nlp.feats_bert)
 fin = LogisticRegression(C=3, max_iter=2000, class_weight="balanced").fit(X6, Y)
 nombres = list(dv.get_feature_names_out()) + ["__bert_n", "__bert_0", "__bert_p"]
+# el acierto y la calibracion se miden solo sobre los originales: es la muestra representativa de la poblacion
+# (los de aprendizaje activo se eligieron por dificiles y sesgarian ambos numeros hacia abajo)
+ACC = round(accuracy_score(Y[ORIG], P6[ORIG]), 4)
 modelo = {"B": {c: float(b) for c, b in zip(fin.classes_, fin.intercept_)},
           "W": {c: {k: round(float(w), 4) for k, w in zip(nombres, fila) if abs(w) >= 0.01} for c, fila in zip(fin.classes_, fin.coef_)},
-          "bert": bert.MODELO, "acierto_cv": round(accuracy_score(Y, P6), 4), "muestra": len(T), "activos": int((~ORIG).sum())}
+          "bert": bert.MODELO, "acierto_cv": ACC, "muestra": len(T), "activos": int((~ORIG).sum())}
 json.dump(modelo, open(os.path.join(AQUI, "modelo_tono_bert.json"), "w", encoding="utf-8"), ensure_ascii=False)
 # calibracion P(real | predicho) con las predicciones fuera de muestra, ponderadas a la poblacion (como tono_entrenar.py)
 cal = {}
 for pc in CL:
-    sel = P6 == pc; tot = W[sel].sum()
+    sel = (P6 == pc) & ORIG; tot = W[sel].sum()
     cal[pc] = {"n": int(sel.sum()), "p": {c: float(W[sel & (Y == c)].sum() / tot) if tot else 0.0 for c in CL}}
-json.dump({"cal": cal, "muestra": len(T), "acierto_cv": round(accuracy_score(Y, P6), 4), "modelo": "rasgos + XLM-RoBERTa"},
+json.dump({"cal": cal, "muestra": len(T), "acierto_cv": ACC, "modelo": "rasgos + XLM-RoBERTa", "activos": int((~ORIG).sum())},
           open(os.path.join(AQUI, "calibracion.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print("modelo_tono_bert.json y calibracion.json guardados:", sum(len(v) for v in modelo["W"].values()), "pesos")

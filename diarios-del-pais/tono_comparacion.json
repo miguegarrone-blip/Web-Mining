@@ -1,129 +1,255 @@
 [
  {
   "modelo": "1. regresion logistica actual (CV)",
-  "acierto": 0.703,
-  "acierto_ponderado": 0.696,
-  "f1_macro": 0.684,
-  "recall_neg": 0.653,
+  "acierto": 0.613,
+  "acierto_ponderado": 0.626,
+  "f1_macro": 0.563,
+  "recall_neg": 0.603,
   "confusion": [
    [
-    77,
-    39,
-    2
+    79,
+    49,
+    3
    ],
    [
-    17,
-    127,
-    17
+    22,
+    142,
+    28
    ],
    [
-    2,
-    24,
-    35
+    6,
+    47,
+    24
    ]
   ]
  },
  {
   "modelo": "2. pysentimiento (sin entrenar)",
-  "acierto": 0.644,
-  "acierto_ponderado": 0.664,
-  "f1_macro": 0.618,
-  "recall_neg": 0.661,
+  "acierto": 0.608,
+  "acierto_ponderado": 0.622,
+  "f1_macro": 0.582,
+  "recall_neg": 0.611,
   "confusion": [
    [
-    78,
-    40,
-    0
+    80,
+    50,
+    1
    ],
    [
-    20,
-    112,
-    29
+    26,
+    129,
+    37
    ],
    [
-    3,
-    29,
-    29
-   ]
-  ]
- },
- {
-  "modelo": "3. XLM-RoBERTa sentimiento (sin entrenar)",
-  "acierto": 0.741,
-  "acierto_ponderado": 0.759,
-  "f1_macro": 0.718,
-  "recall_neg": 0.771,
-  "confusion": [
-   [
-    91,
-    23,
-    4
-   ],
-   [
-    19,
-    125,
-    17
-   ],
-   [
-    2,
-    23,
-    36
-   ]
-  ]
- },
- {
-  "modelo": "4. embeddings RoBERTuito + reg. logistica (CV)",
-  "acierto": 0.724,
-  "acierto_ponderado": 0.725,
-  "f1_macro": 0.707,
-  "recall_neg": 0.797,
-  "confusion": [
-   [
-    94,
-    22,
-    2
-   ],
-   [
-    23,
-    113,
-    25
-   ],
-   [
-    3,
-    19,
-    39
-   ]
-  ]
- },
- {
-  "modelo": "5. combinado: actual + probas pysentimiento (CV)",
-  "acierto": 0.75,
-  "acierto_ponderado": 0.758,
-  "f1_macro": 0.725,
-  "recall_neg": 0.881,
-  "confusion": [
-   [
-    104,
-    14,
-    0
-   ],
-   [
-    28,
-    117,
-    16
-   ],
-   [
-    3,
-    24,
+    6,
+    37,
     34
    ]
   ]
  },
  {
+  "modelo": "3. XLM-RoBERTa sentimiento (sin entrenar)",
+  "acierto": 0.68,
+  "acierto_ponderado": 0.687,
+  "f1_macro": 0.66,
+  "recall_neg": 0.725,
+  "confusion": [
+   [
+    95,
+    30,
+    6
+   ],
+   [
+    27,
+    134,
+    31
+   ],
+   [
+    6,
+    28,
+    43
+   ]
+  ]
+ },
+ {
+  "modelo": "4. embeddings RoBERTuito + reg. logistica (CV)",
+  "acierto": 0.637,
+  "acierto_ponderado": 0.633,
+  "f1_macro": 0.624,
+  "recall_neg": 0.71,
+  "confusion": [
+   [
+    93,
+    31,
+    7
+   ],
+   [
+    39,
+    118,
+    35
+   ],
+   [
+    7,
+    26,
+    44
+   ]
+  ]
+ },
+ {
+  "modelo": "5. combinado: actual + probas pysentimiento (CV)",
+  "acierto": 0.68,
+  "acierto_ponderado": 0.691,
+  "f1_macro": 0.653,
+  "recall_neg": 0.794,
+  "confusion": [
+   [
+    104,
+    27,
+    0
+   ],
+   [
+    36,
+    132,
+    24
+   ],
+   [
+    7,
+    34,
+    36
+   ]
+  ]
+ },
+ {
   "modelo": "6. combinado: actual + probas XLM-R (CV)",
-  "acierto": 0.768,
-  "acierto_ponderado": 0.783,
-  "f1_macro": 0.748,
+  "acierto": 0.705,
+  "acierto_ponderado": 0.716,
+  "f1_macro": 0.679,
+  "recall_neg": 0.802,
+  "confusion": [
+   [
+    105,
+    25,
+    1
+   ],
+   [
+    29,
+    138,
+    25
+   ],
+   [
+    6,
+    32,
+    39
+   ]
+  ]
+ },
+ {
+  "modelo": "7. combinado: actual + ambos BERT (CV)",
+  "acierto": 0.698,
+  "acierto_ponderado": 0.705,
+  "f1_macro": 0.674,
+  "recall_neg": 0.786,
+  "confusion": [
+   [
+    103,
+    27,
+    1
+   ],
+   [
+    31,
+    136,
+    25
+   ],
+   [
+    8,
+    29,
+    40
+   ]
+  ]
+ },
+ {
+  "modelo": "8. solo probas de ambos BERT (CV)",
+  "acierto": 0.652,
+  "acierto_ponderado": 0.658,
+  "f1_macro": 0.644,
+  "recall_neg": 0.748,
+  "confusion": [
+   [
+    98,
+    27,
+    6
+   ],
+   [
+    36,
+    113,
+    43
+   ],
+   [
+    7,
+    20,
+    50
+   ]
+  ]
+ },
+ {
+  "modelo": "6a. antes activo, sobre ampliado (CV)",
+  "acierto": 0.705,
+  "acierto_ponderado": 0.712,
+  "f1_macro": 0.68,
+  "recall_neg": 0.794,
+  "confusion": [
+   [
+    104,
+    26,
+    1
+   ],
+   [
+    27,
+    138,
+    27
+   ],
+   [
+    8,
+    29,
+    40
+   ]
+  ],
+  "activo": "antes",
+  "conjunto": "ampliado",
+  "n": 400
+ },
+ {
+  "modelo": "6b. despues activo, sobre ampliado (CV)",
+  "acierto": 0.705,
+  "acierto_ponderado": 0.716,
+  "f1_macro": 0.679,
+  "recall_neg": 0.802,
+  "confusion": [
+   [
+    105,
+    25,
+    1
+   ],
+   [
+    29,
+    138,
+    25
+   ],
+   [
+    6,
+    32,
+    39
+   ]
+  ],
+  "activo": "despues",
+  "conjunto": "ampliado",
+  "n": 400
+ },
+ {
+  "modelo": "6a. antes activo, sobre 340 originales (CV)",
+  "acierto": 0.765,
+  "acierto_ponderado": 0.777,
+  "f1_macro": 0.742,
   "recall_neg": 0.839,
   "confusion": [
    [
@@ -132,22 +258,25 @@
     1
    ],
    [
-    20,
+    19,
     124,
-    17
+    18
    ],
    [
-    2,
+    3,
     21,
-    38
+    37
    ]
-  ]
+  ],
+  "activo": "antes",
+  "conjunto": "340 originales",
+  "n": 340
  },
  {
-  "modelo": "7. combinado: actual + ambos BERT (CV)",
-  "acierto": 0.753,
-  "acierto_ponderado": 0.763,
-  "f1_macro": 0.734,
+  "modelo": "6b. despues activo, sobre 340 originales (CV)",
+  "acierto": 0.765,
+  "acierto_ponderado": 0.78,
+  "f1_macro": 0.739,
   "recall_neg": 0.847,
   "confusion": [
    [
@@ -156,39 +285,72 @@
     1
    ],
    [
-    23,
-    118,
-    20
+    20,
+    125,
+    16
    ],
    [
-    1,
-    22,
-    38
+    2,
+    24,
+    35
    ]
-  ]
+  ],
+  "activo": "despues",
+  "conjunto": "340 originales",
+  "n": 340
  },
  {
-  "modelo": "8. solo probas de ambos BERT (CV)",
-  "acierto": 0.724,
-  "acierto_ponderado": 0.735,
-  "f1_macro": 0.713,
-  "recall_neg": 0.805,
+  "modelo": "6a. antes activo, sobre activos (CV)",
+  "acierto": 0.367,
+  "acierto_ponderado": 0.363,
+  "f1_macro": 0.332,
+  "recall_neg": 0.385,
   "confusion": [
    [
-    95,
-    20,
-    3
+    5,
+    8,
+    0
    ],
    [
-    24,
-    107,
-    30
-   ],
-   [
-    3,
+    8,
     14,
-    44
+    9
+   ],
+   [
+    5,
+    8,
+    3
    ]
-  ]
+  ],
+  "activo": "antes",
+  "conjunto": "activos",
+  "n": 60
+ },
+ {
+  "modelo": "6b. despues activo, sobre activos (CV)",
+  "acierto": 0.367,
+  "acierto_ponderado": 0.372,
+  "f1_macro": 0.344,
+  "recall_neg": 0.385,
+  "confusion": [
+   [
+    5,
+    8,
+    0
+   ],
+   [
+    9,
+    13,
+    9
+   ],
+   [
+    4,
+    8,
+    4
+   ]
+  ],
+  "activo": "despues",
+  "conjunto": "activos",
+  "n": 60
  }
 ]

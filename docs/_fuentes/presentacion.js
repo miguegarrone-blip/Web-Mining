@@ -232,10 +232,10 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
 
   // ===== Mas alla del diccionario: NER, embeddings y aprendizaje activo =====
   s = contenido("Cómo funciona", "MÁS ALLÁ DEL DICCIONARIO", "El sistema aprende lo que no le enseñamos",
-    "Tres técnicas para que el sistema no dependa solo de listas fijas. NER con spaCy descubre figuras nuevas, como Fundación Faro o Gonzalo Belloso. Los embeddings de oraciones encuentran la misma noticia contada con otras palabras y permiten buscar por significado desde el navegador. El aprendizaje activo elige los titulares donde el modelo de tono duda para que los etiquetemos a mano: el modelo pide ayuda donde más la necesita.");
+    "Tres técnicas para que el sistema no dependa solo de listas fijas. NER con spaCy descubre figuras nuevas, como Fundación Faro o Gonzalo Belloso. Los embeddings de oraciones encuentran la misma noticia contada con otras palabras y permiten buscar por significado desde el navegador. El aprendizaje activo elige los titulares donde el modelo de tono duda para que los etiquetemos a mano: el modelo pide ayuda donde más la necesita. En la primera ronda (60 titulares) el acierto se mantuvo en 76%: el modelo coincidía con nosotros solo en el 42% de esos casos y, aun reentrenado, acierta el 37% en ellos, casi el azar. Conclusión honesta: no eran errores aprendibles sino titulares ambiguos; la ronda sirvió para delimitar la frontera del criterio.");
   [[ic.users, "Figuras nuevas (NER)", "spaCy detecta personas e instituciones que no están en el diccionario y marca las que irrumpen hoy en la agenda.", "Ej.: Fundación Faro, Gonzalo Belloso"],
    [ic.tags, "Búsqueda por significado", "Embeddings MiniLM: notas parecidas de otros medios aunque no compartan palabras, y búsqueda semántica en el navegador.", "\"Murió una joven embarazada…\" ↔ La Voz: 0,85"],
-   [ic.smile, "Aprendizaje activo", "El modelo de tono elige los 60 titulares donde más duda para etiquetarlos a mano y reentrenar.", "Tema de la clase 3, aplicado"]].forEach(([icn, t, d, dato], i) => {
+   [ic.smile, "Aprendizaje activo", "El modelo de tono eligió los 60 titulares donde más dudaba; los etiquetamos a mano y reentrenamos.", "Resultado: 76% → 76%; eran casos ambiguos"]].forEach(([icn, t, d, dato], i) => {
     const x = M + i * 4.1;
     tarjeta(s, x, 2.2, 3.85, 4.3, "mas-" + i);
     s.addImage({ data: icn, x: x + 0.35, y: 2.5, w: 0.55, h: 0.55 });
