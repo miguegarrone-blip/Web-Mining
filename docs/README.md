@@ -3,7 +3,7 @@
 | Archivo | Qué es |
 |---|---|
 | [`informe-tp.docx`](informe-tp.docx) | Informe del trabajo: cómo funciona, cómo scrapea, herramientas, indicadores, tablero, resultados, ética y limitaciones. |
-| [`presentacion-tp.pptx`](presentacion-tp.pptx) | Presentación para la clase (20 diapositivas, con notas del orador). |
+| [`presentacion-tp.pptx`](presentacion-tp.pptx) | Presentación para la clase (24 diapositivas, con notas del orador). |
 
 Antes de entregar hay que completar los **integrantes** y los **docentes** en la portada de ambos documentos.
 

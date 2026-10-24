@@ -58,10 +58,14 @@ Todo corre solo cada hora en **GitHub Actions**. La base se guarda comprimida en
 
 | Indicador | Qué es |
 |---|---|
-| **Agenda** | Notas por medio, tema, día y hora; temas y personas que crecen fuera de lo normal. |
+| **Termómetro y resumen del día** | Un número de 0 a 100 con el % de notas negativas de las últimas 24 h, y un párrafo que resume la jornada armado automáticamente. |
+| **Agenda** | Qué parte de sus notas dedica cada medio a cada tema, contra el promedio; temas y personas que crecen fuera de lo normal. |
 | **Tono** | Porcentaje de notas negativas, neutras y positivas, corregido según los errores conocidos del modelo. |
 | **Share of voice** | Cuánto aparece una persona o institución en cada medio y con qué tono. |
-| **Cobertura cruzada** | Noticias que cuentan varios medios a la vez (similitud de títulos con TF-IDF). |
+| **Tono por figura** | Cómo trata cada medio a cada figura (Milei, Kicillof, Messi…): % negativo contra el promedio de los medios. |
+| **Encuadre** | La misma noticia contada por cada medio, lado a lado, con el tono y los recursos de cebo de cada título. |
+| **Primicia** | Qué medio publica primero las historias que después cubren los demás. |
+| **Mapa de medios** | Grafo de medios que cubren las mismas historias, con comunidades detectadas automáticamente. |
 | **Exageración** | Títulos negativos cuya bajada, escrita por el mismo medio, no lo es. |
 | **Cebo** | Títulos con preguntas, exclamaciones, adjetivos exagerados, intriga, segunda persona o listas. |
 | **Transparencia** | Porcentaje de notas firmadas por un periodista. |
@@ -69,11 +73,12 @@ Todo corre solo cada hora en **GitHub Actions**. La base se guarda comprimida en
 
 ## Algunos hallazgos
 
-Con las primeras horas de histórico (24/10/2026), que todavía son preliminares:
+Con el primer día de histórico (24/10/2026, 5.302 notas), que todavía son preliminares:
 
-- **A24 y El Trece** usan recursos de cebo en 1 de cada 5 títulos; La Capital y Perfil, en menos del 2%.
-- **Perfil** firma el 91% de sus notas; Radio Mitre y Rosario3 no firman ninguna.
+- **A24** usa recursos de cebo en el 22% de sus títulos, seguido por El Destape y Radio Mitre (19%); Perfil y El Chubut, en menos del 2%.
+- **Perfil** firma el 92% de sus notas; Radio Mitre, Rosario3 y Elonce no firman ninguna.
 - En **Diario Chaco** la mitad de las notas tiene tono negativo; en **El Chubut**, una de cada cinco.
+- La noticia más compartida (el sobreseimiento de Milei en la causa $Libra) la cubrieron 12 medios: la publicó primero **El Cronista** y el último llegó 8 horas después.
 - El modelo de tono que combina palabras con BERT acierta un **77%**, contra 70% del modelo inicial, y detecta el **84% de las notas negativas**, contra 65%. Se midió con 340 titulares etiquetados a mano y validación cruzada.
 
 ## Cómo consultar los datos
@@ -85,6 +90,7 @@ Con las primeras horas de histórico (24/10/2026), que todavía son preliminares
   FROM items GROUP BY medio HAVING COUNT(*) >= 50 ORDER BY pct_cebo DESC;
   ```
 - **Descargas:** la base SQLite y un CSV para Excel o Power BI, desde el encabezado del tablero.
+- **Notebook:** [`diarios-del-pais/analisis.ipynb`](diarios-del-pais/analisis.ipynb) reproduce los análisis principales con SQL y pandas (se ve ejecutado directamente en GitHub).
 
 ## Scraping responsable
 
@@ -106,7 +112,7 @@ python build.py                        # genera historico.db, historico.csv y ro
 
 | Ruta | Contenido |
 |---|---|
-| [`diarios-del-pais/`](diarios-del-pais/) | El pipeline: `build.py` orquesta; `enriquecer.py` scrapea las notas; `topics.py`, `nlp.py` y `bert.py` clasifican; `tpl2.html` es la plantilla del tablero. Detalle técnico en su [README](diarios-del-pais/README.md). |
+| [`diarios-del-pais/`](diarios-del-pais/) | El pipeline: `build.py` orquesta; `enriquecer.py` scrapea las notas; `topics.py`, `nlp.py` y `bert.py` clasifican; `tpl2.html` es la plantilla del tablero; `analisis.ipynb` es el notebook de análisis. Detalle técnico en su [README](diarios-del-pais/README.md). |
 | [`docs/`](docs/) | Informe del TP, presentación y los scripts que los generan. |
 | [`.github/workflows/`](.github/workflows/diarios-del-pais.yml) | Automatización horaria con GitHub Actions. |
 

@@ -162,7 +162,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     T(s, n, { x: x + 3.9, y: 2.5, w: 1.7, h: 0.5, fontSize: 18, bold: true, color: HEX.rojo, align: "right", valign: "middle" });
     T(s, items.map((it, k) => ({ text: it, options: { bullet: true, breakLine: k < items.length - 1 } })), { x: x + 0.35, y: 3.25, w: 5.2, h: 1.6, fontSize: 16, paraSpaceAfter: 8 });
   });
-  T(s, [{ text: `${(3237).toLocaleString("es-AR")} de ${D.tot[0].toLocaleString("es-AR")} notas `, options: { bold: true } }, { text: "llegaron por Google News: sin el paso siguiente, solo tendríamos su título." }],
+  T(s, [{ text: `${D.gn.toLocaleString("es-AR")} de ${D.tot[0].toLocaleString("es-AR")} notas `, options: { bold: true } }, { text: "llegaron por Google News: sin el paso siguiente, solo tendríamos su título." }],
     { x: M, y: 5.3, w: W - 2 * M, h: 0.5, fontSize: 18, color: HEX.gris });
 
   // ===== 6. Scraping de cada nota =====
@@ -230,8 +230,16 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   stat(s, 8.6, 2.3, 4.1, "77%", "de acierto (antes 70%), medido con notas que el modelo no vio");
   stat(s, 8.6, 4.4, 4.1, "84%", "de las notas negativas detectadas (antes 65%)", HEX.azul);
 
-  // ===== 11. Como titula =====
+  // ===== Termometro y resumen del dia =====
   pres.addSection({ title: "Qué encontramos" });
+  s = contenido("Qué encontramos", "EL DÍA EN UN NÚMERO", "Un termómetro y un resumen que se escriben solos",
+    "El termómetro es el porcentaje estimado de notas negativas de las últimas 24 horas, de 0 a 100, con bandas y la comparación contra los días anteriores. El resumen lo arma el tablero con plantillas a partir de los datos: tema más cubierto, noticia más compartida y quién la publicó primero, figura más mencionada, medio más y menos negativo. No usa un modelo de lenguaje: es reproducible y gratis.");
+  s.addImage({ path: IMG("termo.png"), x: M, y: 2.2, w: W - 2 * M, h: (W - 2 * M) * 450 / 1780, objectName: "termometro" });
+  T(s, [{ text: "Termómetro: ", options: { bold: true } }, { text: "% de notas negativas de las últimas 24 h (calmo, moderado, tenso, muy tenso).", options: { breakLine: true } },
+        { text: "Resumen: ", options: { bold: true } }, { text: "redactado con plantillas a partir de los datos del día; sin modelo de lenguaje, reproducible." }],
+    { x: M, y: 5.6, w: W - 2 * M, h: 1.0, fontSize: 16, paraSpaceAfter: 6 });
+
+  // ===== 11. Como titula =====
   s = contenido("Qué encontramos", "CÓMO TITULA CADA MEDIO", "Tres indicadores para medir el estilo, no solo el contenido",
     "Exageración: comparamos el tono del título con el de la bajada, que es el resumen escrito por el propio medio. Cebo: rasgos de clickbait. Transparencia: notas firmadas por una persona según el JSON-LD.");
   [["Exageración", "El título es negativo y la bajada del propio medio no lo es.", "\"El dramático relato…\" → bajada: datos del vuelo y los pasajeros"],
@@ -246,10 +254,11 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   });
 
   // ===== 12. Cebo =====
-  s = contenido("Qué encontramos", "CEBO", "A24 y El Trece usan recursos de cebo en 1 de cada 5 títulos",
-    "Porcentaje de títulos con al menos un recurso de cebo. En el otro extremo, La Capital, Perfil y El Chubut están por debajo del 2%.");
+  const [c1, c2] = D.cebo;
+  s = contenido("Qué encontramos", "CEBO", `${c1[0]} y ${c2[0]} usan recursos de cebo en casi 1 de cada 5 títulos`,
+    `Porcentaje de títulos con al menos un recurso de cebo. En el otro extremo, ${D.cebo.slice(-3).map((r) => r[0]).join(", ")} están por debajo del 3%.`);
   const cb = D.cebo.slice(0, 10).map((r) => [r[0], r[1]]);
-  barras(s, cb, { x: M - 0.1, y: 2.05, w: 7.8, h: 4.75, resaltar: ["A24", "El Trece"] });
+  barras(s, cb, { x: M - 0.1, y: 2.05, w: 7.8, h: 4.75, resaltar: [c1[0], c2[0]] });
   tarjeta(s, 8.8, 2.2, 3.93, 4.3, "extremo");
   T(s, "En el otro extremo", { x: 9.1, y: 2.45, w: 3.4, h: 0.45, fontSize: 18, bold: true });
   T(s, D.cebo.slice(-4).reverse().map((r, k, arr) => ({ text: `${r[0]}: ${String(r[1]).replace(".", ",")}%`, options: { bullet: true, breakLine: k < arr.length - 1 } })),
@@ -267,7 +276,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     { x: 10.15, y: 2.9, w: 2.4, h: 3.0, fontSize: 14, paraSpaceAfter: 10 });
 
   // ===== 14. Tono por medio =====
-  s = contenido("Qué encontramos", "TONO", "En Diario Chaco, 1 de cada 2 notas es negativa; en El Chubut, 1 de cada 5",
+  s = contenido("Qué encontramos", "TONO", `En ${D.neg[0][0]}, 1 de cada 2 notas es negativa; en ${D.neg[D.neg.length - 1][0]}, 1 de cada 5`,
     "Proporción de notas con tono negativo según el modelo combinado, medios con 60 notas o más. Muestra los 5 más negativos y los 5 menos negativos. El tono mide el hecho, no la postura del medio: un medio con más policiales tiene más negativas.");
   const ng = [...D.neg.slice(0, 5), ...D.neg.slice(-5)].map((r) => [r[0], r[1]]);
   barras(s, ng, { x: M - 0.1, y: 2.05, w: 8.0, h: 4.75, resaltar: D.neg.slice(0, 5).map((r) => r[0]), color: HEX.gris });
@@ -280,14 +289,43 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   });
 
   // ===== 15. Transparencia =====
-  s = contenido("Qué encontramos", "TRANSPARENCIA", "Perfil firma el 91% de sus notas; Radio Mitre y Rosario3, ninguna",
+  const sinFirma = D.firm.filter((r) => r[1] === 0).map((r) => r[0]);
+  s = contenido("Qué encontramos", "TRANSPARENCIA", `${D.firm[0][0]} firma el ${Math.round(D.firm[0][1])}% de sus notas; ${sinFirma.includes("Radio Mitre") ? "Radio Mitre y Rosario3" : sinFirma.slice(0, 2).join(" y ")}, ninguna`,
     "Proporción de notas firmadas por una persona, según el autor declarado en el JSON-LD de cada nota. Medios con 40 notas o más con datos estructurados.");
   const fi = D.firm.filter((r) => r[1] > 0).slice(0, 9).map((r) => [r[0], r[1]]);
-  barras(s, fi, { x: M - 0.1, y: 2.05, w: 7.8, h: 4.75, resaltar: ["Perfil"] });
+  barras(s, fi, { x: M - 0.1, y: 2.05, w: 7.8, h: 4.75, resaltar: [D.firm[0][0]] });
   tarjeta(s, 8.8, 2.2, 3.93, 4.3, "sin-firma");
   T(s, "Sin ninguna nota firmada", { x: 9.1, y: 2.45, w: 3.4, h: 0.45, fontSize: 18, bold: true });
   const cero = D.firm.filter((r) => r[1] === 0).map((r) => r[0]);
   T(s, cero.slice(0, 7).map((m, k, arr) => ({ text: m, options: { bullet: true, breakLine: k < arr.length - 1 } })), { x: 9.1, y: 3.05, w: 3.4, h: 3.2, fontSize: 16, paraSpaceAfter: 6 });
+
+  // ===== Encuadre y primicia =====
+  s = contenido("Qué encontramos", "ENCUADRE", "Una noticia, muchos encuadres",
+    "El sistema agrupa las notas que cuentan lo mismo (TF-IDF y similitud coseno) y muestra el título de cada medio en orden de publicación, con su tono y sus recursos de cebo. Ejemplo: el sobreseimiento de Milei en la causa Libra lo cubrieron 12 medios; la publicó primero El Cronista y el último llegó 8 horas después. Con eso también medimos quién llega primero.");
+  s.addImage({ path: IMG("encuadre.png"), x: M, y: 2.05, w: 7.6, h: 7.6 * 1160 / 1780, objectName: "encuadre" });
+  tarjeta(s, 8.6, 2.05, 4.13, 4.55, "primicia");
+  T(s, "Quién llega primero", { x: 8.9, y: 2.3, w: 3.6, h: 0.45, fontSize: 18, bold: true });
+  T(s, "Medio que más veces publicó primero una historia que después cubrieron otros:", { x: 8.9, y: 2.85, w: 3.6, h: 0.9, fontSize: 14, color: HEX.gris });
+  T(s, "Eldoce", { x: 8.9, y: 3.8, w: 3.6, h: 0.8, fontSize: 40, bold: true, fontFace: "Cambria", color: HEX.rojo });
+  T(s, "Cada tarjeta muestra el tono del título, sus recursos de cebo y los minutos de demora respecto del primero.", { x: 8.9, y: 4.75, w: 3.6, h: 1.6, fontSize: 14 });
+
+  // ===== Tono por figura =====
+  s = contenido("Qué encontramos", "TONO POR FIGURA", "Cómo trata cada medio a cada figura",
+    "Matriz medio por figura: porcentaje de notas negativas cuando el medio menciona a esa figura. Rojo: más negativo que el promedio de los medios; verde: menos. Solo celdas con 3 notas o más. Con pocos días de datos los valores son ilustrativos: muestran el método.");
+  s.addImage({ path: IMG("figuras.png"), x: M, y: 2.05, w: 9.2, h: 9.2 * 490 / 1780, objectName: "figuras" });
+  tarjeta(s, 10.1, 2.05, 2.63, 3.9, "figuras-lectura");
+  T(s, [{ text: "Rojo: ", options: { bold: true, color: HEX.rojo } }, { text: "más negativo que el promedio de los medios con esa figura.", options: { breakLine: true } },
+        { text: "Verde: ", options: { bold: true, color: HEX.verde } }, { text: "menos negativo.", options: { breakLine: true } },
+        { text: "Entre paréntesis, la cantidad de notas." }], { x: 10.35, y: 2.3, w: 2.2, h: 3.5, fontSize: 14, paraSpaceAfter: 8 });
+
+  // ===== Mapa de medios =====
+  s = contenido("Qué encontramos", "MINERÍA DE ESTRUCTURA", "El mapa de medios: quién comparte agenda con quién",
+    "Grafo de medios: una arista une a dos medios que cubren las mismas historias, ponderada por historias compartidas sobre las del medio más chico; cada medio conserva sus 3 vínculos más fuertes. Las comunidades salen de propagación de etiquetas y el dibujo es una disposición por fuerzas. Es la rama de minería de estructura de la teoría, aplicada a la cobertura y no a los links.");
+  s.addImage({ path: IMG("grafo.png"), x: M, y: 2.0, w: 7.3, h: 7.3 * 1090 / 1780, objectName: "grafo" });
+  tarjeta(s, 8.3, 2.05, 4.43, 4.55, "grafo-lectura");
+  T(s, "Cómo se arma", { x: 8.6, y: 2.3, w: 3.9, h: 0.45, fontSize: 18, bold: true });
+  T(s, ["Nodos: medios; tamaño según historias compartidas", "Aristas: cubren las mismas historias", "Colores: comunidades detectadas por propagación de etiquetas", "Disposición por fuerzas, animada en el tablero"].map((it, k, arr) => ({ text: it, options: { bullet: true, breakLine: k < arr.length - 1 } })),
+    { x: 8.6, y: 2.9, w: 3.95, h: 3.5, fontSize: 15, paraSpaceAfter: 8 });
 
   // ===== 16. Tablero =====
   pres.addSection({ title: "Cierre" });
@@ -295,9 +333,9 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     "Mostrar el tablero en vivo. Recorrer Resumen, Titulares (con buscador), Monitor (seguir una persona), Cómo titulan y Salud de datos. Es una página estática en GitHub Pages: funciona también en el celular.");
   s.addImage({ path: IMG("tablero-resumen.png"), x: M, y: 2.05, w: 7.2, h: 4.5, objectName: "captura" });
   s.addShape(pres.shapes.RECTANGLE, { x: M, y: 2.05, w: 7.2, h: 4.5, fill: { type: "none" }, line: { color: HEX.linea, width: 1 }, objectName: "marco" });
-  const pest = [["Resumen", "temas, entidades y noticias compartidas"], ["Titulares", "buscador y filtros por medio y tema"], ["Monitor", "seguir una persona o marca"],
-    ["Cómo titulan", "mapa, rankings y ejemplos"], ["Tendencias", "alertas y notas por hora"], ["Salud de datos", "fuentes y scraping"]];
-  pest.forEach(([a, b], i) => T(s, [{ text: a, options: { bold: true, breakLine: true } }, { text: b, options: { color: HEX.gris } }], { x: 8.2, y: 2.1 + i * 0.75, w: 4.5, h: 0.7, fontSize: 15 }));
+  const pest = [["Resumen", "termómetro, resumen del día y noticias compartidas"], ["Titulares", "buscador y filtros por medio y tema"], ["Monitor", "seguir una persona o marca"],
+    ["Análisis", "filtros, agenda, encuadre y mapa de medios"], ["Cómo titulan", "mapa, rankings y ejemplos"], ["Salud de datos", "fuentes y scraping"]];
+  pest.forEach(([a, b], i) => T(s, [{ text: a, options: { bold: true, breakLine: true } }, { text: b, options: { color: HEX.gris } }], { x: 8.2, y: 2.1 + i * 0.64, w: 4.5, h: 0.62, fontSize: 14 }));
 
   // ===== 17. Demo SQL =====
   s = contenido("Cierre", "DEMO EN VIVO", "La base se consulta con SQL desde el navegador",
@@ -315,7 +353,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s = contenido("Cierre", "HERRAMIENTAS", "Un stack simple, gratuito y reproducible",
     "Sin servidores ni costos: todo corre en GitHub. SQLite simplifica la operación y se puede abrir en el navegador.");
   const stack = [["Recolección", "requests · feedparser · googlenewsdecoder · urllib.robotparser"], ["Extracción", "expresiones regulares · JSON-LD (schema.org) · HTML"],
-    ["Lenguaje", "bolsa de palabras · Naive Bayes · regresión logística · XLM-RoBERTa (PyTorch, transformers)"], ["Datos", "SQLite · CSV · Datasette Lite"],
+    ["Lenguaje", "bolsa de palabras · Naive Bayes · regresión logística · XLM-RoBERTa (PyTorch, transformers)"], ["Datos", "SQLite · CSV · Datasette Lite · notebook con pandas"],
     ["Automatización", "GitHub Actions (cada hora) · rama de datos"], ["Visualización", "HTML, CSS y JavaScript sin frameworks · GitHub Pages"]];
   stack.forEach(([a, b], i) => {
     const x = M + (i % 2) * 6.2, y = 2.2 + Math.floor(i / 2) * 1.45;
@@ -326,9 +364,9 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
 
   // ===== 19. Limitaciones y proximos pasos =====
   s = contenido("Cierre", "LO QUE SIGUE", "Limitaciones honestas y próximos pasos",
-    "Ser claros con los límites: el tono es del título, 77% de acierto, 340 etiquetas de un criterio. El histórico es corto. Próximos pasos: NER con spaCy, sesgo de agenda, mapa de medios como grafo, primicia, resumen diario.");
+    "Ser claros con los límites: el tono es del título, 77% de acierto, 340 etiquetas de un criterio. El histórico es corto. Próximos pasos: NER con spaCy, evolución de comunidades, cruce con datos económicos y más etiquetas manuales.");
   [[ic.warn, "Limitaciones", ["Tono del título y la bajada, no de la nota completa", "77% de acierto con 340 etiquetas de un solo criterio", "Pocos días de histórico: los rankings se estabilizan con semanas", "Temas y entidades por diccionario requieren mantenimiento"]],
-   [ic.check, "Próximos pasos", ["Entidades con spaCy (NER) para descubrir figuras nuevas", "Sesgo de agenda y tono por entidad y medio", "Mapa de medios como grafo de historias compartidas", "Primicia: quién publica primero cada historia"]]].forEach(([icn, t, items], i) => {
+   [ic.check, "Próximos pasos", ["Entidades con spaCy (NER) para descubrir figuras nuevas", "Evolución de las comunidades a lo largo de las semanas", "Cruzar el termómetro con el dólar y otros datos", "Más etiquetas manuales, con varios anotadores"]]].forEach(([icn, t, items], i) => {
     const x = M + i * 6.2;
     tarjeta(s, x, 2.2, 5.9, 4.3, "cierre-" + i);
     s.addImage({ data: icn, x: x + 0.35, y: 2.5, w: 0.45, h: 0.45 });
