@@ -23,3 +23,6 @@ node_modules/
 Thumbs.db
 desktop.ini
 *.lnk
+
+# Copias de trabajo de agentes de Claude Code
+.claude/

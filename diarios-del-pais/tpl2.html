@@ -165,6 +165,9 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 .pill i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .pill.cb{border-style:dashed;color:var(--mute)}
 .badge{font-family:var(--mono);font-size:.64rem;background:var(--accent);color:var(--bg);border-radius:3px;padding:0 5px}
+/* Monitor: figuras detectadas por NER fuera del diccionario */
+.nf{border-bottom:0}.nf .badge{margin-left:6px;vertical-align:1px}.nfej{display:block;font-size:.8rem;color:var(--mute);padding:0 6px 8px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.nfej a{color:var(--mute)}.nfej small{font-family:var(--mono);font-size:.68rem;margin-left:6px}
+.nfo{display:flex;flex-wrap:wrap;gap:6px;margin-top:.4rem}
 #a-cmp-ctl select{max-width:min(36rem,100%)}
 #a-red{touch-action:manipulation}
 #a-red .ed{stroke:var(--mute);stroke-opacity:.35}
@@ -211,6 +214,7 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 
 <div id="p-mon" hidden>
  <p class="note">Elegí una persona, institución o marca, o escribí la tuya. Se cuenta cuántas veces aparece en los titulares, en qué medios y con qué tono.</p>
+ <section class="c" id="m-ner" hidden><h2>Nuevas en la agenda</h2><p class="note" id="m-ner-n"></p><div id="m-ner-l"></div><h2 style="margin-top:1.2rem">Otras figuras que aparecen hoy</h2><p class="note">Personas e instituciones que el reconocimiento de entidades encontró en las últimas 24 h y que no están en la lista de arriba. Tocá una para verla en el monitor.</p><div class="nfo" id="m-ner-o"></div></section>
  <div class="chips"><select id="ent" aria-label="Entidad"></select><input id="entq" type="search" placeholder="Seguir otra marca o persona" aria-label="Otra entidad" style="max-width:20rem"></div>
  <div id="mon" class="panel"></div>
 </div>
@@ -461,6 +465,19 @@ p.appendChild(mk("h2","","Últimas menciones"));items.slice(0,10).forEach(x=>{co
 es.onchange=()=>{$("entq").value="";monitor(D.filter(x=>(x.e||[]).includes(es.value)),es.value)};
 $("entq").oninput=e=>{const v=norm(e.target.value.trim());if(v.length<3){es.onchange();return}monitor(D.filter(x=>norm(x.t).includes(v)),'"'+e.target.value.trim()+'"')};
 if(ENTS.length)es.onchange();
+/* ---- Monitor: figuras detectadas por NER (spaCy) que no están en el diccionario; al tocarlas se cargan en el buscador del monitor ---- */
+{const N=AGG.ner;if(N&&N.fig&&N.fig.length){$("m-ner").hidden=false;const R=N.regla,F=N.fig.filter(f=>!f.dic&&f.n24>0);
+ const ver=f=>{const q=$("entq");q.value=f.q;q.oninput({target:q});$("mon").scrollIntoView({behavior:"smooth",block:"start"})};
+ const nv=F.filter(f=>f.nueva&&!f.dep),nd=F.filter(f=>f.nueva&&f.dep),lista=nv.length?nv:(N.hist?[]:F.slice(0,8)),ot=F.filter(f=>!lista.includes(f)&&!nd.includes(f)).slice(0,24),mx=Math.max(1,...lista.map(f=>f.n24));
+ $("m-ner-n").textContent=(N.hist?"Personas e instituciones que no están en el diccionario fijo del monitor y que hoy aparecen en al menos "+R[0]+" notas de "+R[1]+" medios o más, cuando en los 7 días anteriores tuvieron "+(R[2]?"a lo sumo "+R[2]+" nota":"ninguna nota")+". ":"Todavía no hay historia suficiente para decidir qué figura es nueva: se muestran las más mencionadas fuera del diccionario. ")+"Detectadas con reconocimiento de entidades (spaCy) en título y bajada.";
+ const L=$("m-ner-l");if(!lista.length)L.appendChild(mk("p","note","Hoy no apareció ninguna figura nueva con esa regla"+(nd.length?" fuera de deportes.":".")));
+ lista.forEach(f=>{const b=mk("button","trow nf");const nm=mk("span","",f.n);if(f.nueva)nm.appendChild(mk("span","badge","nueva"));const tr=mk("div","track");tr.innerHTML='<span class="s-a" style="width:'+f.n24/mx*100+'%"></span>';
+  b.append(nm,tr,mk("span","v",f.n24+" · "+f.m24+"m"));b.title=f.n24+" notas en "+f.m24+" medios (24 h) · "+f.n48+" en 48 h · "+f.prev+" en los 7 días anteriores";b.onclick=()=>ver(f);L.appendChild(b);
+  const ej=mk("span","nfej");const x=f.ej[0];if(x){const a=mk("a","",x[0]);a.href=x[2];a.target="_blank";a.rel="noopener";ej.append(a,mk("small","",x[1]+(f.ej.length>1?" · también "+f.ej.slice(1).map(z=>z[1]).join(", "):"")))}else ej.textContent=f.m24+" medios";L.appendChild(ej)});
+ const chip=(f,h)=>{const b=mk("button","",f.n);b.appendChild(mk("small","",f.n24));b.title=f.n24+" notas en "+f.m24+" medios (24 h)"+(f.ej[0]?" · ej.: "+f.ej[0][0]+" ("+f.ej[0][1]+")":"");b.onclick=()=>ver(f);h.appendChild(b)};
+ if(nd.length){const d=mk("div","nfo");d.appendChild(mk("span","cnt","También nuevas, en deportes:"));nd.forEach(f=>chip(f,d));L.appendChild(d)}
+ ot.forEach(f=>chip(f,$("m-ner-o")));
+ if(!ot.length)$("m-ner-o").appendChild(mk("p","note","Sin otras figuras fuera del diccionario."))}}
 
 /* ---- Explorar la base: Datasette Lite carga historico.db publicado junto a esta pagina (solo funciona servido por web, no desde file://) ---- */
 if(location.protocol.startsWith("http"))$("sql").href="https://lite.datasette.io/?url="+encodeURIComponent(new URL("historico.db",location.href).href)+"#/historico";

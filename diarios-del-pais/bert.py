@@ -18,6 +18,7 @@ def disponible():
 def probas(textos, lote=32):
     """[[p_neg, p_neu, p_pos], ...] en el mismo orden que textos"""
     out = []
+    if not textos: return out                     # transformers falla con una lista vacia
     for r in _pipe(list(textos), batch_size=lote):
         d = {z["label"]: z["score"] for z in r}
         out.append([round(d["negative"], 4), round(d["neutral"], 4), round(d["positive"], 4)])

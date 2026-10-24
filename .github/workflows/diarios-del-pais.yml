@@ -64,6 +64,11 @@ jobs:
       - name: Dependencias de BERT
         run: pip install torch transformers sentencepiece protobuf --extra-index-url https://download.pytorch.org/whl/cpu || echo "sin BERT"
 
+      # NER con spaCy (ner.py): el modelo en espanol se instala como wheel por pip, asi lo aprovecha la cache de pip.
+      # Si falla, build.py sigue sin la columna ner.
+      - name: Dependencias de NER (spaCy)
+        run: pip install "spacy>=3.8,<3.9" "es_core_news_md @ https://github.com/explosion/spacy-models/releases/download/es_core_news_md-3.8.0/es_core_news_md-3.8.0-py3-none-any.whl" || echo "sin NER"
+
       # Cache de los modelos de Hugging Face: XLM-RoBERTa (tono) + MiniLM multilingue (notas parecidas, ver semantica.py).
       # La clave nombra los dos modelos: si se agrega o cambia un modelo, cambiar la clave para que se guarde una cache nueva.
       - name: Cache de los modelos (BERT y embeddings)
