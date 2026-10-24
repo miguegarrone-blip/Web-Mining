@@ -274,13 +274,18 @@ with open(HC, "w", encoding="utf-8", newline="") as f:
     for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada,tono_bajada,cebo,autor,firmada,seccion,largo,bert_t,bert_b,ner FROM items ORDER BY visto, pub_ms"): w.writerow(r)
 
 # ---------- pagina: notas de las ultimas VENTANA_HORAS, con tope por medio ----------
-items.sort(key=lambda x: x["ts"], reverse=True)
+# se arma desde la base y no solo con lo bajado en esta corrida: si un feed falla una vez (p. ej. Google News
+# bloquea la IP del runner), sus notas de las ultimas horas siguen en el tablero; Salud de datos avisa la caida
 desde = ahora_ms - VENTANA_HORAS * 3600 * 1000
 cnt, pag = {}, []
-for x in items:
-    if x["ts"] and x["ts"] < desde: continue          # fuera de la ventana
-    cnt[x["m"]] = cnt.get(x["m"], 0) + 1
-    if cnt[x["m"]] <= POR_MEDIO_PAGINA: pag.append(x)
+for h_, m_, r_, tp_, t_, u_, ur_, ms_, b_, tg_, en_, sa_, sm_ in DB.execute("""SELECT h,medio,alcance,tipo,titulo,url,url_real,pub_ms,bajada,temas,entidades,tono_auto,tono_manual
+        FROM items WHERE pub_ms>=? AND pub_ms<=? ORDER BY pub_ms DESC""", (desde, ahora_ms + 3600 * 1000)):
+    cnt[m_] = cnt.get(m_, 0) + 1
+    if cnt[m_] > POR_MEDIO_PAGINA: continue
+    x = {"m": m_, "r": r_, "tp": tp_, "t": t_, "u": ur_ or u_, "ts": ms_, "h": h_, "b": b_ or "", "sa": sa_, "cr": cebo_rasgos(t_),
+         "tg": list(dict.fromkeys(merge_tema(z) for z in (tg_ or "Otros").split("|"))), "e": [z for z in (en_ or "").split("|") if z]}
+    if sm_: x["s"] = sm_
+    pag.append(x)
 
 # ---------- notas parecidas: embeddings de oraciones (titulo + bajada), ver semantica.py ----------
 # se guardan en la columna emb (float16) solo para las notas de los ultimos 7 dias que no lo tienen; las mas viejas se vacian

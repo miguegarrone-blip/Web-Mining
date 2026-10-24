@@ -10,6 +10,11 @@ from topics import norm
 MODELOS = ("es_core_news_md", "es_core_news_sm")   # el primero que este instalado
 _nlp = None
 
+def _aviso(msg):
+    # en GitHub Actions sale como anotacion de la corrida (visible sin iniciar sesion); en local, como texto
+    import os
+    print(("::warning title=NER::" if os.environ.get("GITHUB_ACTIONS") else "") + "NER no disponible: " + msg)
+
 def disponible():
     global _nlp
     if _nlp is None:
@@ -21,9 +26,9 @@ def disponible():
                     # solo hace falta el NER: se apagan el parser y demas componentes para ir mas rapido
                     _nlp = spacy.load(m, exclude=["parser", "lemmatizer", "morphologizer", "attribute_ruler", "tagger", "senter"]); break
                 except OSError: continue
-            if not _nlp: print("NER no disponible: falta el modelo de spaCy (", ", ".join(MODELOS), ")")
+            if not _nlp: _aviso("falta el modelo de spaCy (" + ", ".join(MODELOS) + ")")
         except Exception as e:
-            print("NER no disponible:", str(e)[:120])
+            _aviso(str(e)[:200])
     return bool(_nlp)
 
 # ---------- limpieza ----------
