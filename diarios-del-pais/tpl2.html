@@ -33,6 +33,9 @@ a{color:var(--fg);text-decoration:none;font-weight:500;min-width:0;overflow-wrap
 a:hover{color:var(--accent);text-decoration:underline}
 .empty{padding-block:2rem;color:var(--mute)}
 .bj{margin:.25rem 0 0;font-size:.85rem;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sw{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer}.sw input{width:auto;margin:0;accent-color:var(--accent)}
+.simb{margin-top:6px;font-size:.75rem;padding:.15rem .5rem;min-height:28px}.simb::before{content:"▸ "}.simb[aria-expanded="true"]::before{content:"▾ "}
+.sim ul{margin:6px 0 0;padding-left:10px;border-left:2px solid var(--line)}.sim li{padding-block:4px;font-size:.88rem}.sim li a{font-weight:400}.sim small{display:block;font-family:var(--mono);font-size:.68rem;color:var(--mute)}
 section.c{margin-bottom:1.6rem}
 .row{display:grid;grid-template-columns:8.5rem 1fr 2.4rem;align-items:center;gap:10px;margin-block:5px;font-size:.85rem}
 .row>span:first-child{min-width:0;overflow-wrap:anywhere}
@@ -193,6 +196,7 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 <div id="p-tit" hidden>
  <div class="bar">
   <input id="q" type="search" placeholder="Buscar en titulares y bajadas" aria-label="Buscar">
+  <div class="chips"><label class="sw" title="Encuentra notas con el mismo sentido aunque no usen las mismas palabras (modelo de lenguaje que corre en tu navegador)"><input type="checkbox" id="sem" role="switch"> Buscar por significado</label><span class="cnt" id="semst" role="status" aria-live="polite"></span></div>
   <div class="chips"><select id="medio" aria-label="Medio"></select><span id="alc" class="chips"></span><span id="tpc" class="chips"></span><button id="nofut" aria-pressed="false">Ocultar fútbol</button><span class="cnt" id="cnt"></span></div>
   <div class="chips" id="topics"></div>
  </div>
@@ -290,11 +294,39 @@ chipTopics();
 $("nofut").onclick=e=>{nofut=!nofut;e.currentTarget.setAttribute("aria-pressed",nofut);draw()};
 $("q").oninput=e=>{q=norm(e.target.value);draw()};
 function draw(){const ul=$("list");ul.textContent="";
-const r=D.filter(x=>(!medio||x.m===medio)&&(!alc||x.r===alc)&&(!tpo||x.tp===tpo)&&(!topic||x.tg.includes(topic))&&(!nofut||!x.tg.includes("Fútbol"))&&(!q||norm(x.t+" "+(x.b||"")).includes(q)));
-$("cnt").textContent=r.length+" notas";
+const r=D.filter(x=>(!medio||x.m===medio)&&(!alc||x.r===alc)&&(!tpo||x.tp===tpo)&&(!topic||x.tg.includes(topic))&&(!nofut||!x.tg.includes("Fútbol"))&&(SQ?SQ.get(x)>=SEMU:!q||norm(x.t+" "+(x.b||"")).includes(q)));
+if(SQ)r.sort((a,b)=>SQ.get(b)-SQ.get(a));
+$("cnt").textContent=r.length+(SQ?" notas por significado":" notas");
 if(!r.length){ul.appendChild(mk("li","empty","No hay titulares con ese filtro."));return}
-r.slice(0,300).forEach(x=>{const li=mk("li","n");const mt=mk("div","meta");mt.append(mk("b","",x.m),mk("span","",x.tp+" · "+fmt(x.ts)));
-const d=mk("div");const a=mk("a","",x.t);a.href=x.u;a.target="_blank";a.rel="noopener";const tg=mk("div","tg");x.tg.forEach(t=>tg.appendChild(mk("span","",t)));d.append(a);if(x.b)d.appendChild(mk("p","bj",x.b));d.appendChild(tg);li.append(mt,d);ul.appendChild(li)})}
+r.slice(0,300).forEach(x=>{const li=mk("li","n");const mt=mk("div","meta");mt.append(mk("b","",x.m),mk("span","",x.tp+" · "+fmt(x.ts)));if(SQ)mt.appendChild(mk("span","","similitud "+SQ.get(x).toFixed(2).replace(".",",")));
+const d=mk("div");const a=mk("a","",x.t);a.href=x.u;a.target="_blank";a.rel="noopener";const tg=mk("div","tg");x.tg.forEach(t=>tg.appendChild(mk("span","",t)));d.append(a);if(x.b)d.appendChild(mk("p","bj",x.b));d.appendChild(tg);if(x.sim)d.appendChild(simBox(x));li.append(mt,d);ul.appendChild(li)})}
+/* ---- Notas parecidas y búsqueda por significado: embeddings de oraciones (ver semantica.py) ----
+   x.sim = [índice en D, similitud %, ...]: notas de otros medios con sentido parecido (calculado en build.py).
+   La búsqueda por significado baja recién al activar el interruptor transformers.js, el mismo modelo (cuantizado) y emb.bin */
+let SQ=null,SEM=null,semT=0;const SEMU=.45,SEMM="Xenova/paraphrase-multilingual-MiniLM-L12-v2";
+function simBox(x){const w=mk("div","sim"),n=x.sim.length/2,b=mk("button","simb","Notas parecidas ("+n+")"),ul=mk("ul");ul.hidden=true;ul.id="sim-"+x.h;
+ b.setAttribute("aria-expanded","false");b.setAttribute("aria-controls",ul.id);b.title="Notas de otros medios con un sentido parecido, aunque no usen las mismas palabras";
+ b.onclick=()=>{const o=ul.hidden;ul.hidden=!o;b.setAttribute("aria-expanded",o);if(o&&!ul.firstChild)for(let k=0;k<x.sim.length;k+=2){const y=D[x.sim[k]];if(!y)continue;
+  const li=mk("li"),a=mk("a","",y.t);a.href=y.u;a.target="_blank";a.rel="noopener";li.append(mk("small","",y.m+" · "+fmt(y.ts)+" · similitud "+(x.sim[k+1]/100).toFixed(2).replace(".",",")),a);ul.appendChild(li)}};
+ w.append(b,ul);return w}
+const semSt=t=>$("semst").textContent=t;
+function semCargar(){if(SEM)return SEM;semSt("Cargando modelo… la primera vez tarda unos segundos");
+ SEM=Promise.all([import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2"),fetch("emb.bin?v="+encodeURIComponent(HEALTH.run)).then(r=>{if(!r.ok)throw Error("faltan los embeddings (emb.bin, HTTP "+r.status+")");return r.arrayBuffer()})]).then(async([T,buf])=>{
+  const dv=new DataView(buf);if(new TextDecoder().decode(new Uint8Array(buf,0,4))!=="EMB1")throw Error("emb.bin con formato desconocido");
+  const n=dv.getUint32(4,true),dim=dv.getUint32(8,true),hb=new Uint8Array(buf,12,8*n),V=new Int8Array(buf,12+8*n,n*dim),byH=new Map(D.map(x=>[x.h,x])),R=[];
+  for(let i=0;i<n;i++){let h="";for(let j=0;j<8;j++)h+=hb[8*i+j].toString(16).padStart(2,"0");const x=byH.get(h);if(!x)continue;let s=0;for(let j=i*dim;j<(i+1)*dim;j++)s+=V[j]*V[j];R.push([x,i*dim,1/Math.sqrt(s||1)])}
+  T.env.allowLocalModels=false;
+  const ext=await T.pipeline("feature-extraction",SEMM,{quantized:true,progress_callback:p=>{if(p.status==="progress"&&/onnx$/.test(p.file))semSt("Cargando modelo… "+Math.round(p.progress)+"%")}});
+  return{ext,V,R,dim}});
+ SEM.catch(()=>SEM=null);return SEM}
+async function semBuscar(){const t=$("q").value.trim();if(!$("sem").checked)return;if(!t&&SQ){SQ=null;draw()}
+ try{const E=await semCargar();if(!$("sem").checked)return;if(!t){semSt("Listo: escribí una idea, no hace falta acertar las palabras");return}semSt("Buscando…");const qv=(await E.ext(t,{pooling:"mean",normalize:true})).data;
+  if(!$("sem").checked||t!==$("q").value.trim())return;   // cambió la consulta mientras se calculaba
+  const S=new Map();E.R.forEach(([x,o,k])=>{let s=0;for(let j=0;j<E.dim;j++)s+=qv[j]*E.V[o+j];S.set(x,s*k)});D.forEach(x=>{if(!S.has(x))S.set(x,-1)});
+  SQ=S;semSt("Ordenadas por parecido con «"+t+"»");draw()}
+ catch(e){SQ=null;$("sem").checked=false;semSt("No se pudo activar la búsqueda por significado: "+(e&&e.message||e));draw()}}
+$("sem").onchange=e=>{if(e.target.checked)semBuscar();else{SQ=null;semSt("");draw()}};
+$("q").addEventListener("input",()=>{if($("sem").checked){clearTimeout(semT);semT=setTimeout(semBuscar,400)}});
 draw();
 
 /* ---- Por tema ---- */
