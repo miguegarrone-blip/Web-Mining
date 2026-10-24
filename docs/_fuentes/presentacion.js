@@ -230,6 +230,20 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   stat(s, 8.6, 2.3, 4.1, "77%", "de acierto (antes 70%), medido con notas que el modelo no vio");
   stat(s, 8.6, 4.4, 4.1, "84%", "de las notas negativas detectadas (antes 65%)", HEX.azul);
 
+  // ===== Mas alla del diccionario: NER, embeddings y aprendizaje activo =====
+  s = contenido("Cómo funciona", "MÁS ALLÁ DEL DICCIONARIO", "El sistema aprende lo que no le enseñamos",
+    "Tres técnicas para que el sistema no dependa solo de listas fijas. NER con spaCy descubre figuras nuevas, como Fundación Faro o Gonzalo Belloso. Los embeddings de oraciones encuentran la misma noticia contada con otras palabras y permiten buscar por significado desde el navegador. El aprendizaje activo elige los titulares donde el modelo de tono duda para que los etiquetemos a mano: el modelo pide ayuda donde más la necesita.");
+  [[ic.users, "Figuras nuevas (NER)", "spaCy detecta personas e instituciones que no están en el diccionario y marca las que irrumpen hoy en la agenda.", "Ej.: Fundación Faro, Gonzalo Belloso"],
+   [ic.tags, "Búsqueda por significado", "Embeddings MiniLM: notas parecidas de otros medios aunque no compartan palabras, y búsqueda semántica en el navegador.", "\"Murió una joven embarazada…\" ↔ La Voz: 0,85"],
+   [ic.smile, "Aprendizaje activo", "El modelo de tono elige los 60 titulares donde más duda para etiquetarlos a mano y reentrenar.", "Tema de la clase 3, aplicado"]].forEach(([icn, t, d, dato], i) => {
+    const x = M + i * 4.1;
+    tarjeta(s, x, 2.2, 3.85, 4.3, "mas-" + i);
+    s.addImage({ data: icn, x: x + 0.35, y: 2.5, w: 0.55, h: 0.55 });
+    T(s, t, { x: x + 0.35, y: 3.2, w: 3.2, h: 0.5, fontSize: 20, bold: true });
+    T(s, d, { x: x + 0.35, y: 3.75, w: 3.2, h: 1.8, fontSize: 15, color: HEX.gris });
+    T(s, dato, { x: x + 0.35, y: 5.65, w: 3.2, h: 0.6, fontSize: 14, bold: true, color: HEX.azul });
+  });
+
   // ===== Termometro y resumen del dia =====
   pres.addSection({ title: "Qué encontramos" });
   s = contenido("Qué encontramos", "EL DÍA EN UN NÚMERO", "Un termómetro y un resumen que se escriben solos",
@@ -333,7 +347,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     "Mostrar el tablero en vivo. Recorrer Resumen, Titulares (con buscador), Monitor (seguir una persona), Cómo titulan y Salud de datos. Es una página estática en GitHub Pages: funciona también en el celular.");
   s.addImage({ path: IMG("tablero-resumen.png"), x: M, y: 2.05, w: 7.2, h: 4.5, objectName: "captura" });
   s.addShape(pres.shapes.RECTANGLE, { x: M, y: 2.05, w: 7.2, h: 4.5, fill: { type: "none" }, line: { color: HEX.linea, width: 1 }, objectName: "marco" });
-  const pest = [["Resumen", "termómetro, resumen del día y noticias compartidas"], ["Titulares", "buscador y filtros por medio y tema"], ["Monitor", "seguir una persona o marca"],
+  const pest = [["Resumen", "termómetro, resumen del día y noticias compartidas"], ["Titulares", "buscador por texto o por significado y notas parecidas"], ["Monitor", "figuras nuevas (NER) y seguimiento de una persona"],
     ["Análisis", "filtros, agenda, encuadre y mapa de medios"], ["Cómo titulan", "mapa, rankings y ejemplos"], ["Salud de datos", "fuentes y scraping"]];
   pest.forEach(([a, b], i) => T(s, [{ text: a, options: { bold: true, breakLine: true } }, { text: b, options: { color: HEX.gris } }], { x: 8.2, y: 2.1 + i * 0.64, w: 4.5, h: 0.62, fontSize: 14 }));
 
@@ -353,7 +367,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s = contenido("Cierre", "HERRAMIENTAS", "Un stack simple, gratuito y reproducible",
     "Sin servidores ni costos: todo corre en GitHub. SQLite simplifica la operación y se puede abrir en el navegador.");
   const stack = [["Recolección", "requests · feedparser · googlenewsdecoder · urllib.robotparser"], ["Extracción", "expresiones regulares · JSON-LD (schema.org) · HTML"],
-    ["Lenguaje", "bolsa de palabras · Naive Bayes · regresión logística · XLM-RoBERTa (PyTorch, transformers)"], ["Datos", "SQLite · CSV · Datasette Lite · notebook con pandas"],
+    ["Lenguaje", "bolsa de palabras · Naive Bayes · regresión logística · XLM-RoBERTa · MiniLM · spaCy (NER)"], ["Datos", "SQLite · CSV · Datasette Lite · notebook con pandas"],
     ["Automatización", "GitHub Actions (cada hora) · rama de datos"], ["Visualización", "HTML, CSS y JavaScript sin frameworks · GitHub Pages"]];
   stack.forEach(([a, b], i) => {
     const x = M + (i % 2) * 6.2, y = 2.2 + Math.floor(i / 2) * 1.45;
@@ -366,7 +380,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s = contenido("Cierre", "LO QUE SIGUE", "Limitaciones honestas y próximos pasos",
     "Ser claros con los límites: el tono es del título, 77% de acierto, 340 etiquetas de un criterio. El histórico es corto. Próximos pasos: NER con spaCy, evolución de comunidades, cruce con datos económicos y más etiquetas manuales.");
   [[ic.warn, "Limitaciones", ["Tono del título y la bajada, no de la nota completa", "77% de acierto con 340 etiquetas de un solo criterio", "Pocos días de histórico: los rankings se estabilizan con semanas", "Temas y entidades por diccionario requieren mantenimiento"]],
-   [ic.check, "Próximos pasos", ["Entidades con spaCy (NER) para descubrir figuras nuevas", "Evolución de las comunidades a lo largo de las semanas", "Cruzar el termómetro con el dólar y otros datos", "Más etiquetas manuales, con varios anotadores"]]].forEach(([icn, t, items], i) => {
+   [ic.check, "Próximos pasos", ["Completar rondas de aprendizaje activo y medir la mejora", "Evolución de las comunidades a lo largo de las semanas", "Cruzar el termómetro con el dólar y otros datos", "Más etiquetas manuales, con varios anotadores"]]].forEach(([icn, t, items], i) => {
     const x = M + i * 6.2;
     tarjeta(s, x, 2.2, 5.9, 4.3, "cierre-" + i);
     s.addImage({ data: icn, x: x + 0.35, y: 2.5, w: 0.45, h: 0.45 });

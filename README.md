@@ -46,9 +46,10 @@ flowchart LR
 3. **Scraping de cada nota.** Decodifica los enlaces de Google News y entra a la página del medio para leer la **bajada** y el bloque **JSON-LD** `NewsArticle` que los diarios publican para los buscadores: autor, sección, palabras clave y largo del cuerpo.
 4. **Procesamiento de lenguaje.**
    - **Tema:** reglas sobre título y bajada, más un Naive Bayes que aprende de lo que ya clasificaron las reglas.
-   - **Entidades:** personas, instituciones y clubes mencionados.
+   - **Entidades:** personas, instituciones y clubes del diccionario, más las que detecta **spaCy** (reconocimiento de entidades) aunque no estén en la lista.
    - **Tono:** si el hecho es bueno o malo para los involucrados. Combina palabras clave con **XLM-RoBERTa** (BERT).
    - **Cebo:** puntaje de clickbait de cada título.
+   - **Embeddings de oraciones** (MiniLM multilingüe): para encontrar notas parecidas y buscar por significado.
 5. **Almacenamiento.** SQLite con 30 días de histórico y exportación a CSV.
 6. **Publicación.** Genera el tablero y lo publica junto con la base en GitHub Pages.
 
@@ -66,6 +67,8 @@ Todo corre solo cada hora en **GitHub Actions**. La base se guarda comprimida en
 | **Encuadre** | La misma noticia contada por cada medio, lado a lado, con el tono y los recursos de cebo de cada título. |
 | **Primicia** | Qué medio publica primero las historias que después cubren los demás. |
 | **Mapa de medios** | Grafo de medios que cubren las mismas historias, con comunidades detectadas automáticamente. |
+| **Figuras nuevas** | Personas e instituciones que aparecen hoy en varios medios y no estaban en la agenda de los días anteriores (spaCy). |
+| **Notas parecidas** | Para cada titular, las notas de otros medios que cuentan lo mismo aunque usen otras palabras (similitud de embeddings). |
 | **Exageración** | Títulos negativos cuya bajada, escrita por el mismo medio, no lo es. |
 | **Cebo** | Títulos con preguntas, exclamaciones, adjetivos exagerados, intriga, segunda persona o listas. |
 | **Transparencia** | Porcentaje de notas firmadas por un periodista. |
@@ -90,6 +93,7 @@ Con el primer día de histórico (24/10/2026, 5.302 notas), que todavía son pre
   FROM items GROUP BY medio HAVING COUNT(*) >= 50 ORDER BY pct_cebo DESC;
   ```
 - **Descargas:** la base SQLite y un CSV para Excel o Power BI, desde el encabezado del tablero.
+- **Búsqueda por significado:** en Titulares, el interruptor "Buscar por significado" carga el modelo en el navegador y ordena las notas por parecido con lo que escribís (por ejemplo, "suba de precios en los supermercados").
 - **Notebook:** [`diarios-del-pais/analisis.ipynb`](diarios-del-pais/analisis.ipynb) reproduce los análisis principales con SQL y pandas (se ve ejecutado directamente en GitHub).
 
 ## Scraping responsable
@@ -116,4 +120,4 @@ python build.py                        # genera historico.db, historico.csv y ro
 | [`docs/`](docs/) | Informe del TP, presentación y los scripts que los generan. |
 | [`.github/workflows/`](.github/workflows/diarios-del-pais.yml) | Automatización horaria con GitHub Actions. |
 
-**Herramientas:** Python · requests · feedparser · googlenewsdecoder · SQLite · PyTorch y Hugging Face transformers (XLM-RoBERTa) · scikit-learn · HTML, CSS y JavaScript sin frameworks · GitHub Actions · GitHub Pages · Datasette Lite.
+**Herramientas:** Python · requests · feedparser · googlenewsdecoder · SQLite · PyTorch y Hugging Face transformers (XLM-RoBERTa, MiniLM) · spaCy · transformers.js · scikit-learn · HTML, CSS y JavaScript sin frameworks · GitHub Actions · GitHub Pages · Datasette Lite.
