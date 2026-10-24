@@ -109,6 +109,10 @@ a.upd:hover{color:var(--bg);filter:brightness(1.1);text-decoration:none}
 .sc .gl{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
 .ej{padding-block:8px;border-bottom:1px solid var(--line);font-size:.9rem}.ej b{font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--accent);display:block}.ej a{font-weight:500}.ej p{margin:.2rem 0 0;font-size:.85rem;color:var(--mute)}
 .fbar{margin-bottom:1rem}
+.sc button.pt{padding:0;border:0;z-index:1}.sc .pt.off,.sc .pt.off:hover{opacity:.18;z-index:0;cursor:default;transform:none}.sc .lb{z-index:2}
+#p-sens .row small{font-family:var(--mono);font-size:.7rem;color:var(--mute);margin-left:4px}#p-sens .ej b .lk{color:var(--accent)}
+#p-sens .row .track{transition:width .45s ease}#p-sens .row.nuevo{animation:aparece .4s ease}
+@media (prefers-reduced-motion:reduce){#p-sens .row .track{transition:none}#p-sens .row.nuevo{animation:none}}
 .fbar select,.fbar input{padding:.3rem .5rem;font-size:.85rem}
 .lk{background:none;border:0;padding:0;font:inherit;font-size:inherit;color:var(--fg);text-align:left;cursor:pointer;min-width:0;overflow-wrap:anywhere}
 .lk:hover{color:var(--accent);text-decoration:underline}
@@ -221,14 +225,18 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 <div id="p-sens" hidden>
  <p class="note">Se compara el título de cada nota con su bajada (el resumen que publica el propio medio, obtenido entrando a la nota). Un título <b>exagera</b> cuando tiene tono negativo y la bajada no. Un título usa <b>recursos de cebo</b> (clickbait) cuando tiene preguntas, exclamaciones, adjetivos exagerados, frases de intriga ("lo que nadie…", "el truco"), segunda persona o listas. Datos de todo el histórico; solo medios con suficientes notas.</p>
  <p class="sum" id="x-prog" style="margin-bottom:1.6rem"></p>
- <section class="c"><h2>Mapa del sensacionalismo</h2><p class="note">Cada punto es un medio. Más a la derecha, más títulos con recursos de cebo; más arriba, más títulos que exageran respecto de su propia bajada. Las líneas punteadas marcan la mediana de los medios y dividen el mapa en cuatro estilos.</p><div class="chartbox" id="x-box"><div id="x-sc"></div><div id="x-tip" class="tip" hidden></div></div></section>
- <section class="c"><h2>Títulos que exageran</h2><p class="note">De los títulos negativos que tienen bajada, qué parte tiene una bajada neutra o positiva. Entre paréntesis, cuántos títulos negativos con bajada tiene cada medio.</p><div id="x-al"></div></section>
- <section class="c"><h2>Títulos con recursos de cebo</h2><div id="x-cb"></div></section>
+ <div class="bar fbar" id="x-f" role="group" aria-label="Filtros de medios">
+  <div class="chips"><span id="x-alc" class="chips"></span><select id="x-tipo" aria-label="Tipo de medio"></select></div>
+  <div class="chips"><select id="x-ord" aria-label="Ordenar las listas"></select><input id="x-q" type="search" placeholder="Buscar medio" aria-label="Buscar medio" style="max-width:12rem"><span class="cnt" id="x-cnt"></span></div>
+ </div>
+ <section class="c"><h2>Mapa del sensacionalismo</h2><p class="note">Cada punto es un medio. Más a la derecha, más títulos con recursos de cebo; más arriba, más títulos que exageran respecto de su propia bajada. Las líneas punteadas marcan la mediana de todos los medios (no cambian con los filtros) y dividen el mapa en cuatro estilos. Los medios que quedan fuera del filtro se ven atenuados. Tocá un punto para ver la ficha del medio.</p><div class="chartbox" id="x-box"><div id="x-sc"></div><div id="x-tip" class="tip" hidden></div></div></section>
+ <section class="c"><h2>Títulos que exageran</h2><p class="note">De los títulos negativos que tienen bajada, qué parte tiene una bajada neutra o positiva. Entre paréntesis, cuántos títulos negativos con bajada tiene cada medio.</p><div id="x-al"></div><button id="x-al-more" class="go" hidden></button></section>
+ <section class="c"><h2>Títulos con recursos de cebo</h2><div id="x-cb"></div><button id="x-cb-more" class="go" hidden></button></section>
  <section class="c"><h2>Ejemplos recientes: título negativo, bajada neutra</h2><div id="x-eal"></div></section>
  <section class="c"><h2>Ejemplos recientes: más recursos de cebo</h2><div id="x-ecb"></div></section>
- <section class="c"><h2>Transparencia: notas firmadas por un periodista</h2><p class="note">Según el autor que el propio medio declara en los datos estructurados de la nota (JSON-LD). "Redacción" o el nombre del medio no cuentan como firma.</p><div id="x-fi"></div></section>
- <section class="c"><h2>Periodistas con más notas</h2><div id="x-au"></div></section>
- <section class="c"><h2>Largo promedio de las notas (palabras)</h2><div id="x-la"></div></section>
+ <section class="c"><h2>Transparencia: notas firmadas por un periodista</h2><p class="note">Según el autor que el propio medio declara en los datos estructurados de la nota (JSON-LD). "Redacción" o el nombre del medio no cuentan como firma.</p><div id="x-fi"></div><button id="x-fi-more" class="go" hidden></button></section>
+ <section class="c"><h2>Periodistas con más notas</h2><div id="x-au"></div><button id="x-au-more" class="go" hidden></button></section>
+ <section class="c"><h2>Largo promedio de las notas (palabras)</h2><div id="x-la"></div><button id="x-la-more" class="go" hidden></button></section>
 </div>
 <div id="p-sal" hidden>
  <div class="kpis" id="s-kpi"></div>
@@ -431,35 +439,61 @@ else{$("sql").hidden=true;$("dl").hidden=true}
 if(AGG.prog&&AGG.prog[1]){const[a,b]=AGG.prog,e=$("x-prog");e.append(document.createTextNode("Notas analizadas entrando a la página: "),mk("b","",a.toLocaleString("es-AR")+" de "+b.toLocaleString("es-AR")+" ("+pct(a/b)+")"),document.createTextNode(a/b<.9?". El resto se procesa en las próximas corridas, así que estos números todavía pueden cambiar.":"."))}
 const AL=S.filter(r=>r.tneg>=10).map(r=>({...r,ar:r.alarma/r.tneg}));
 const lnk=(t,u)=>{const a=mk("a","",t);a.href=u;a.target="_blank";a.rel="noopener";return a};
-const bars=(host,arr,val,lab,tit)=>{if(!arr.length){$(host).appendChild(mk("p","note","Todavía no hay datos suficientes: se completan a medida que se scrapean las notas."));return}
- const mx=Math.max(...arr.map(val))||1;arr.slice().sort((a,b)=>val(b)-val(a)).forEach(r=>rowBar($(host),r.m,[["s-a",val(r)]],val(r),mx,lab(r),tit&&tit(r)))};
-bars("x-al",AL.map(r=>({...r,m:r.m+" ("+r.tneg+")"})),r=>r.ar,r=>pct(r.ar),r=>r.m+": "+r.alarma+" de "+r.tneg+" títulos negativos tienen bajada neutra o positiva");
-bars("x-cb",S,r=>r.cebo_pct,r=>pct(r.cebo_pct),r=>r.m+": "+pct(r.cebo_pct)+" de "+r.n+" títulos con al menos un recurso de cebo");
-bars("x-fi",S.filter(r=>r.nld>=10),r=>r.firm/r.nld,r=>pct(r.firm/r.nld),r=>r.m+": "+r.firm+" de "+r.nld+" notas firmadas");
-bars("x-la",S.filter(r=>r.largo),r=>r.largo,r=>r.largo,r=>r.m+": "+r.largo+" palabras en promedio");
-/* dispersion: x = % con cebo, y = % que exagera */
+/* filtros (alcance, tipo, buscador) y orden: afectan al mapa y a todas las listas. Las medianas del mapa quedan fijas (todos los medios) */
+const MED=AGG.med||{},TOP=10,fx={alc:"",tipo:"",ord:"d",q:""},todo={},quieto=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ok=m=>{const i=MED[m]||{};return(!fx.alc||i.r===fx.alc)&&(!fx.tipo||i.tp===fx.tipo)&&(!fx.q||norm(m).includes(fx.q))};
+const lkM=m=>{if(!MED[m])return mk("span","",m);const b=mk("button","lk",m);b.title="Ver la ficha de "+m;b.onclick=()=>window.ficha&&ficha(m);return b};
+[["","Todos"],["Rosario","Rosario"],["Nacional","Nacional"],["Interior","Interior"]].forEach(([v,l])=>{const b=mk("button","",l);b.setAttribute("aria-pressed",v==="");b.onclick=()=>{fx.alc=v;[...$("x-alc").children].forEach(c=>c.setAttribute("aria-pressed",c===b));pintarX()};$("x-alc").appendChild(b)});
+[["","Todos los tipos"],["Diario","Diarios"],["Digital","Digitales"],["TV","TV"],["Radio","Radios"],["Oficial","Oficiales"]].forEach(([v,l])=>$("x-tipo").appendChild(new Option(l,v)));
+[["d","Mayor a menor"],["a","Menor a mayor"],["az","A–Z"]].forEach(([v,l])=>$("x-ord").appendChild(new Option(l,v)));
+$("x-tipo").onchange=e=>{fx.tipo=e.target.value;pintarX()};$("x-ord").onchange=e=>{fx.ord=e.target.value;pintarX()};$("x-q").oninput=e=>{fx.q=norm(e.target.value.trim());pintarX()};
+const masX=(k,n,txt)=>{const b=$("x-"+k+"-more");b.hidden=n<=TOP;b.textContent=todo[k]?"Mostrar solo los primeros "+TOP:"Ver los "+n+" "+txt;b.onclick=()=>{todo[k]=!todo[k];pintarX()}};
+/* barras con top 10 y reordenamiento animado (FLIP: se mide la posicion vieja y se anima hasta la nueva); la escala es la de todos los medios para que no salte al filtrar */
+const filasX={};
+function barras(k,arr,val,lab,tit,ext){const host=$("x-"+k),R=filasX[k]||(filasX[k]=new Map()),antes=new Map();R.forEach((el,m)=>antes.set(m,el.getBoundingClientRect().top));
+ const L=arr.filter(r=>ok(r.m)).sort(fx.ord==="az"?(p,q)=>p.m.localeCompare(q.m,"es"):fx.ord==="a"?(p,q)=>val(p)-val(q):(p,q)=>val(q)-val(p)),V=todo[k]?L:L.slice(0,TOP),mx=Math.max(...arr.map(val))||1;
+ [...host.children].forEach(el=>{if(!V.some(r=>r.m===el.dataset.m)){el.remove();R.delete(el.dataset.m)}});
+ if(!V.length)host.appendChild(mk("p","note",arr.length?"Ningún medio coincide con el filtro.":"Todavía no hay datos suficientes: se completan a medida que se scrapean las notas."));
+ V.forEach(r=>{let el=R.get(r.m);if(!el){el=mk("div","row nuevo");el.dataset.m=r.m;el.addEventListener("animationend",()=>el.classList.remove("nuevo"),{once:true});
+   const nm=mk("span"),w=mk("div"),tr=mk("div","track"),s=mk("span","s-a");w.style.minWidth="0";s.style.width="100%";tr.appendChild(s);w.appendChild(tr);nm.appendChild(lkM(r.m));if(ext)nm.appendChild(mk("small","",ext(r)));el.append(nm,w,mk("span","v"));R.set(r.m,el)}
+  el.children[1].firstChild.style.width=val(r)/mx*100+"%";el.children[2].textContent=lab(r);el.title=tit(r);host.appendChild(el)});
+ if(!quieto)V.forEach(r=>{const el=R.get(r.m),t0=antes.get(r.m);if(t0==null)return;const dy=t0-el.getBoundingClientRect().top;if(!dy)return;
+  el.style.transition="none";el.style.transform="translateY("+dy+"px)";void el.offsetWidth;requestAnimationFrame(()=>{el.style.transition="transform .45s ease";el.style.transform=""})});
+ masX(k,L.length,"medios")}
+/* dispersion: x = % con cebo, y = % que exagera. Los medios filtrados se atenuan y las etiquetas se recalculan entre los visibles */
+const PT=new Map();let sc=null,mxX=1,mxY=1;
 {const host=$("x-sc");if(AL.length<3){host.appendChild(mk("p","note","El mapa aparece cuando haya al menos 3 medios con suficientes títulos negativos con bajada."))}else{
- const mxX=Math.max(...AL.map(r=>r.cebo_pct))*1.1||1,mxY=Math.max(...AL.map(r=>r.ar))*1.1||1,sc=mk("div","sc");
+ mxX=Math.max(...AL.map(r=>r.cebo_pct))*1.1||1;mxY=Math.max(...AL.map(r=>r.ar))*1.1||1;sc=mk("div","sc");
  [.5,1].forEach(f=>{const g=mk("div","gl");g.style.bottom=f*100+"%";sc.appendChild(g);const l=mk("span","ax",pct(f*mxY));l.style.left="-2.6rem";l.style.bottom="calc("+f*100+"% - .45rem)";sc.appendChild(l)});
  [0,.5,1].forEach(f=>{const l=mk("span","ax",pct(f*mxX));l.style.left=f*100+"%";l.style.bottom="-1.3rem";l.style.transform="translateX(-50%)";sc.appendChild(l)});
  const xl=mk("span","ax","% títulos con recursos de cebo →");xl.style.right="0";xl.style.bottom="-2.6rem";sc.appendChild(xl);
  const yl=mk("span","ax","↑ % que exagera");yl.style.left="-2.6rem";yl.style.top="-1.4rem";sc.appendChild(yl);
  const tip=$("x-tip"),box=$("x-box");
- const ext=AL.slice().sort((a,b)=>(b.cebo_pct/mxX+b.ar/mxY)-(a.cebo_pct/mxX+a.ar/mxY)),lab=new Set([...ext.slice(0,4),...ext.slice(-2)].map(r=>r.m)),puestos=[];
- AL.forEach(r=>{const p=mk("div","pt"),x=r.cebo_pct/mxX*100,y=r.ar/mxY*100;p.style.left=x+"%";p.style.bottom=y+"%";p.setAttribute("aria-label",r.m);
-  p.onpointerenter=()=>{tip.textContent="";tip.append(mk("b","",r.m),document.createTextNode(pct(r.cebo_pct)+" con cebo · "+pct(r.ar)+" exagera ("+r.tneg+" negativos con bajada)"));tip.hidden=false;
-   const br=box.getBoundingClientRect(),pr=p.getBoundingClientRect();tip.style.left=Math.min(Math.max(pr.left-br.left-tip.offsetWidth/2,0),br.width-tip.offsetWidth)+"px";tip.style.top=(pr.top-br.top-tip.offsetHeight-8)+"px"};
-  p.onpointerleave=()=>{tip.hidden=true};sc.appendChild(p);
-  if(lab.has(r.m)){const w=r.m.length*0.9,der=[x,x+w],izq=[x-w,x],choca=([a,b])=>puestos.some(q=>a<q.b&&q.a<b&&Math.abs(q.y-y)<6),lado=!choca(der)?der:!choca(izq)?izq:null;   // ancho aprox. de la etiqueta en % del grafico
-   if(lado){puestos.push({a:lado[0],b:lado[1],y});const l=mk("span","lb",r.m);l.style.left=x+"%";l.style.bottom=y+"%";if(lado===izq)l.style.transform="translate(calc(-100% - 8px),50%)";sc.appendChild(l)}}});
+ AL.forEach(r=>{const p=mk("button","pt"),x=r.cebo_pct/mxX*100,y=r.ar/mxY*100;p.type="button";p.style.left=x+"%";p.style.bottom=y+"%";p.setAttribute("aria-label",r.m+": "+pct(r.cebo_pct)+" con cebo, "+pct(r.ar)+" exagera. Ver ficha");
+  const on=()=>{tip.textContent="";tip.append(mk("b","",r.m),document.createTextNode(pct(r.cebo_pct)+" con cebo · "+pct(r.ar)+" exagera ("+r.tneg+" negativos con bajada)"));tip.hidden=false;
+   const br=box.getBoundingClientRect(),pr=p.getBoundingClientRect();tip.style.left=Math.min(Math.max(pr.left-br.left-tip.offsetWidth/2,0),br.width-tip.offsetWidth)+"px";tip.style.top=(pr.top-br.top-tip.offsetHeight-8)+"px"},off=()=>{tip.hidden=true};
+  p.onpointerenter=on;p.onfocus=on;p.onpointerleave=off;p.onblur=off;p.onclick=()=>{off();if(window.ficha&&MED[r.m])ficha(r.m)};sc.appendChild(p);PT.set(r.m,{p,r,x,y})});
  const med=v=>{const a=v.slice().sort((x,y)=>x-y),k=a.length>>1;return a.length%2?a[k]:(a[k-1]+a[k])/2},mx=med(AL.map(r=>r.cebo_pct))/mxX*100,my=med(AL.map(r=>r.ar))/mxY*100;
  const vl=mk("div","md v");vl.style.left=mx+"%";sc.appendChild(vl);const hl=mk("div","md h");hl.style.bottom=my+"%";sc.appendChild(hl);
  [["Alarmistas","left:6px;top:6px"],["Sensacionalistas","right:6px;top:6px"],["Sobrios","left:6px;bottom:6px"],["Clickbait","right:6px;bottom:6px"]].forEach(([t,c])=>{const q=mk("span","qd",t);q.style.cssText=c;sc.appendChild(q)});
  host.appendChild(sc)}}
-const ej=(host,arr,f)=>{if(!arr||!arr.length){$(host).appendChild(mk("p","note","Sin ejemplos en las últimas __VENTANA__ h."));return}arr.forEach(r=>$(host).appendChild(f(r)))};
-ej("x-eal",AGG.ej_al,([m,t,b,u])=>{const d=mk("div","ej");d.append(mk("b","",m),lnk(t,u),mk("p","","Bajada: "+b));return d});
-ej("x-ecb",AGG.ej_cb,([m,t,c,u])=>{const d=mk("div","ej");d.append(mk("b","",m+" · "+c+" recursos"),lnk(t,u));return d});
-ej("x-au",AGG.aut,([a,m,n,ng])=>{const d=mk("div","cr");d.append(mk("em","",n+" notas"),document.createTextNode(a+" · "+m+" · "+pct(ng)+" negativas"));return d});
+function mapa(){if(!sc)return;sc.querySelectorAll(".lb").forEach(l=>l.remove());const vis=[];PT.forEach(({p,r})=>{const v=ok(r.m);p.classList.toggle("off",!v);p.disabled=!v;if(v)vis.push(r)});
+ const ext=vis.slice().sort((a,b)=>(b.cebo_pct/mxX+b.ar/mxY)-(a.cebo_pct/mxX+a.ar/mxY)),lab=new Set([...ext.slice(0,4),...ext.slice(-2)].map(r=>r.m)),puestos=[];
+ vis.forEach(r=>{if(!lab.has(r.m))return;const{x,y}=PT.get(r.m),w=r.m.length*0.9,der=[x,x+w],izq=[x-w,x],choca=([a,b])=>puestos.some(q=>a<q.b&&q.a<b&&Math.abs(q.y-y)<6),lado=!choca(der)?der:!choca(izq)?izq:null;   // ancho aprox. de la etiqueta en % del grafico
+  if(lado){puestos.push({a:lado[0],b:lado[1],y});const l=mk("span","lb",r.m);l.style.left=x+"%";l.style.bottom=y+"%";if(lado===izq)l.style.transform="translate(calc(-100% - 8px),50%)";sc.appendChild(l)}})}
+const ej=(host,arr,f)=>{const h=$(host);h.textContent="";if(!arr||!arr.length){h.appendChild(mk("p","note","Sin ejemplos en las últimas __VENTANA__ h."));return}const F=arr.filter(r=>ok(r[0]));if(!F.length)h.appendChild(mk("p","note","Ningún ejemplo de los medios filtrados."));F.forEach(r=>h.appendChild(f(r)))};
+function autores(){const h=$("x-au"),A=(AGG.aut||[]).filter(r=>ok(r[1])),V=todo.au?A:A.slice(0,TOP);h.textContent="";
+ if(!V.length)h.appendChild(mk("p","note",(AGG.aut||[]).length?"Ningún periodista de los medios filtrados.":"Todavía no hay notas firmadas."));
+ V.forEach(([a,m,n,ng])=>{const d=mk("div","cr"),t=mk("span");t.append(a+" · ",lkM(m)," · "+pct(ng)+" negativas");d.append(mk("em","",n+" notas"),t);h.appendChild(d)});masX("au",A.length,"periodistas")}
+function pintarX(){$("x-cnt").textContent=S.filter(r=>ok(r.m)).length+" medios";mapa();
+ barras("al",AL,r=>r.ar,r=>pct(r.ar),r=>r.m+": "+r.alarma+" de "+r.tneg+" títulos negativos tienen bajada neutra o positiva",r=>" ("+r.tneg+")");
+ barras("cb",S,r=>r.cebo_pct,r=>pct(r.cebo_pct),r=>r.m+": "+pct(r.cebo_pct)+" de "+r.n+" títulos con al menos un recurso de cebo");
+ barras("fi",S.filter(r=>r.nld>=10),r=>r.firm/r.nld,r=>pct(r.firm/r.nld),r=>r.m+": "+r.firm+" de "+r.nld+" notas firmadas");
+ barras("la",S.filter(r=>r.largo),r=>r.largo,r=>r.largo,r=>r.m+": "+r.largo+" palabras en promedio");
+ ej("x-eal",AGG.ej_al,([m,t,b,u])=>{const d=mk("div","ej"),h=mk("b");h.appendChild(lkM(m));d.append(h,lnk(t,u),mk("p","","Bajada: "+b));return d});
+ ej("x-ecb",AGG.ej_cb,([m,t,c,u])=>{const d=mk("div","ej"),h=mk("b");h.append(lkM(m)," · "+c+" recursos");d.append(h,lnk(t,u));return d});
+ autores()}
+pintarX();
 /* salud: scraping por medio */
 {const t=$("s-scr"),R=AGG.scr||[];if(!R.length)t.appendChild(mk("p","note","Sin datos de scraping en las últimas 24 h."));else{const hd=mk("div","srow h");["","Medio","Intentos","OK","Bajada","JSON-LD","robots.txt"].forEach(x=>hd.appendChild(mk("span","",x)));t.appendChild(hd);
  R.forEach(([m,i,o,b,l,rb])=>{const w=mk("div","srow");w.append(mk("span","dot "+(o/i>=.8?"s-p":o/i>=.4?"s-0":"s-n")),mk("span","",m),mk("span","v",i),mk("span","v",pct(o/i)),mk("span","v",o?pct(b/o):"-"),mk("span","v",o?pct(l/o):"-"),mk("span","v",rb));t.appendChild(w)})}}}
@@ -518,6 +552,17 @@ window.ficha=function(m){const c=$("ficha-c");c.textContent="";const per=PER.fin
   [sn.n?pc(sn.cebo_pct):"-","títulos con cebo"],[sn.tneg>=10?pc(sn.alarma/sn.tneg):"-","títulos que exageran"],[sn.nld>=10?pc(sn.firm/sn.nld):"-","notas firmadas"]].forEach(([v,l])=>{const e=mk("div","kpi");e.append(mk("b","",v),mk("span","",l));k.appendChild(e)});c.appendChild(k);
  const dest=Object.entries(a.tg).filter(([t,v])=>t!=="Otros"&&v>=3).map(([t,v])=>{const sh=v/a.n,ref=avg[t]||Object.keys(MED).reduce((s2,mm)=>s2+(P(mm).tg[t]||0),0)/Math.max(1,Object.keys(MED).reduce((s2,mm)=>s2+P(mm).n,0));return[t,sh,ref?sh/ref:0]}).sort((p,q)=>q[2]-p[2]).slice(0,4);
  c.appendChild(mk("h2","","En qué se diferencia"));c.appendChild(mk("p","note",dest.length?dest.map(([t,sh,r])=>t+": "+pc(sh)+" de sus notas ("+(r>=1?r.toFixed(1).replace(".",",")+" veces el promedio":"menos que el promedio")+")").join(" · "):"Todavía no hay suficientes notas para comparar."));
+ /* como titula: sus valores contra la mediana de los medios (todo el histórico) y sus ejemplos recientes si los hay */
+ {const SS=(AGG.sens||[]).filter(r=>r.n>=30),md=v=>{const s=v.slice().sort((p,q)=>p-q),k=s.length>>1;return s.length?(s.length%2?s[k]:(s[k-1]+s[k])/2):0},ct=[];
+  if(sn.n)ct.push(["Cebo",pc(sn.cebo_pct)+" de sus títulos · mediana de los medios "+pc(md(SS.map(r=>r.cebo_pct)))]);
+  if(sn.tneg>=10)ct.push(["Exagera",pc(sn.alarma/sn.tneg)+" de sus títulos negativos · mediana "+pc(md(SS.filter(r=>r.tneg>=10).map(r=>r.alarma/r.tneg)))]);
+  if(sn.nld>=10)ct.push(["Firmadas",pc(sn.firm/sn.nld)+" de sus notas · mediana "+pc(md(SS.filter(r=>r.nld>=10).map(r=>r.firm/r.nld)))]);
+  if(sn.largo)ct.push(["Largo",sn.largo+" palabras · mediana "+Math.round(md(SS.filter(r=>r.largo).map(r=>r.largo)))]);
+  const ea=(AGG.ej_al||[]).filter(r=>r[0]===m).slice(0,2),eb=(AGG.ej_cb||[]).filter(r=>r[0]===m).slice(0,2);
+  if(ct.length||ea.length||eb.length){c.appendChild(mk("h2","","Cómo titula"));ct.forEach(([l,v])=>{const d=mk("div","cr");d.append(mk("em","",l),mk("span","",v));c.appendChild(d)});
+   const ln=(t,u)=>{const e=mk("a","",t);e.href=u;e.target="_blank";e.rel="noopener";return e};
+   ea.forEach(([,t,b,u])=>{const d=mk("div","ej");d.append(mk("b","","Título negativo, bajada neutra"),ln(t,u),mk("p","","Bajada: "+b));c.appendChild(d)});
+   eb.forEach(([,t,n,u])=>{const d=mk("div","ej");d.append(mk("b","",n+" recursos de cebo"),ln(t,u));c.appendChild(d)})}}
  const its=D.filter(y=>y.m===m).slice(0,8);c.appendChild(mk("h2","","Últimos titulares"));
  its.forEach(y=>{const d=mk("div","hl");const a2=mk("a","",y.t);a2.href=y.u;a2.target="_blank";a2.rel="noopener";d.append(mk("span","dot s-"+tn(y)),a2,mk("small","",fmt(y.ts)+" · "+y.tg.join(", ")));c.appendChild(d)});
  if(!its.length)c.appendChild(mk("p","note","Sin notas en las últimas __VENTANA__ h."));
