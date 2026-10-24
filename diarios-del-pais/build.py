@@ -160,16 +160,19 @@ for m, ents, code, ms, err in res:
         if cur.rowcount: nuevos.append(x)
 for m, s in stat.items():
     DB.execute("INSERT INTO salud VALUES(?,?,?,?,?,?,?,?)", (run, m, s["ok"], s["http"], s["n_raw"], s["n_valid"], s["ms"], s["err"]))
-# retencion: se borra lo mas viejo que RETENCION_DIAS
-corte = (datetime.now() - timedelta(days=RETENCION_DIAS)).isoformat(timespec="seconds")
-for t in ("items", "salud", "cuarentena"):
-    col = "visto" if t == "items" else "run"
+# retencion: se borra lo mas viejo que RETENCION_DIAS (la cuarentena solo sirve para diagnostico: 7 dias)
+for t, col, dias in (("items", "visto", RETENCION_DIAS), ("salud", "run", RETENCION_DIAS), ("cuarentena", "run", 7)):
+    corte = (datetime.now() - timedelta(days=dias)).isoformat(timespec="seconds")
     DB.execute("DELETE FROM %s WHERE %s < ?" % (t, col), (corte,))
 DB.commit()
 
-# re-clasifica el tono de todo lo guardado con el modelo vigente, y aplica las etiquetas manuales
-for h_, t_ in DB.execute("SELECT h,titulo FROM items").fetchall():
-    DB.execute("UPDATE items SET tono_auto=? WHERE h=?", (tone(t_), h_))
+# si cambio el modelo de tono, re-clasifica todo lo guardado; siempre aplica las etiquetas manuales
+DB.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
+huella = hashlib.sha1(b"".join(open(os.path.join(BASE, f), "rb").read() for f in ("nlp.py", "modelo_tono.json"))).hexdigest()
+if (DB.execute("SELECT v FROM meta WHERE k='modelo_tono'").fetchone() or [""])[0] != huella:
+    for h_, t_ in DB.execute("SELECT h,titulo FROM items").fetchall():
+        DB.execute("UPDATE items SET tono_auto=? WHERE h=?", (tone(t_), h_))
+    DB.execute("INSERT OR REPLACE INTO meta VALUES('modelo_tono',?)", (huella,))
 for u_, (k_, s_) in LB.items():
     DB.execute("UPDATE items SET tono_manual=? WHERE url=?", (s_, u_))
 DB.commit()
@@ -245,5 +248,6 @@ tpl = open(os.path.join(BASE, "tpl2.html"), encoding="utf-8").read()
 js = lambda o: json.dumps(o, ensure_ascii=False)
 out = tpl.replace("__DATA__", js(pag)).replace("__AGG__", js(AGG)).replace("__HEALTH__", js(HEALTH)).replace("__NOW__", now).replace("__AGREE__", str(AG)).replace("__CAL__", js(CAL["cal"] if CAL else None)).replace("__VENTANA__", str(VENTANA_HORAS)).replace("__RETENCION__", str(RETENCION_DIAS))
 open(os.path.join(OUT, "rosario.html"), "w", encoding="utf-8").write(out)
+DB.execute("VACUUM")   # devuelve el espacio de lo borrado por la retencion
 print("corrida", run, "| validas", len(items), "| nuevas", len(nuevos), "| duplicadas", dups, "| cuarentena", cuarentena, "| acuerdo tono", AG)
 print("fuentes caidas/degradadas:", [(r["m"], r["estado"]) for r in SAL if r["estado"] != "ok"])

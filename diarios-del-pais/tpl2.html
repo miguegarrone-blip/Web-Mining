@@ -1,5 +1,6 @@
 <meta charset="utf-8">
-<title>Titulares Rosario</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor de medios</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
 <style>
 /* Layout: one reading column; sticky filter bar on Titulares; Por tema = topic list + per-medio comparison; Análisis = charts */
@@ -48,11 +49,9 @@ section.c{margin-bottom:1.6rem}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
 .hl{padding-block:6px;border-bottom:1px solid var(--line);font-size:.92rem}.hl a{font-weight:400}.hl small{display:block;font-family:var(--mono);font-size:.68rem;color:var(--mute);margin-left:14px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.upd{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:500;white-space:nowrap;margin-top:.3rem}
-.updx{float:right;margin:-2px -4px 0 8px;padding:0 .45rem;line-height:1.4;background:none;border:0;color:var(--mute);font-size:1rem}
-.updx:hover{color:var(--fg)}
-.updbox{margin:.8rem 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--chip)}
-.updbox p{margin:0 0 6px;font-size:.85rem}.updbox code{display:block;font-family:var(--mono);font-size:.75rem;overflow-wrap:anywhere;user-select:all}
+.upd{background:var(--accent);border:1px solid var(--accent);color:var(--bg);font-weight:500;font-size:.85rem;white-space:nowrap;margin-top:.3rem;padding:.3rem .7rem;border-radius:4px}
+a.upd:hover{color:var(--bg);filter:brightness(1.1);text-decoration:none}
+.sub a{color:var(--accent);font-weight:400}
 .chartbox{position:relative;margin-top:.6rem}
 .chartbox svg{display:block;width:100%;height:auto;touch-action:manipulation;cursor:crosshair}
 .tip{position:absolute;pointer-events:none;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;font-size:.78rem;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.18);white-space:nowrap;z-index:3}
@@ -102,9 +101,8 @@ section.c{margin-bottom:1.6rem}
 @media(max-width:560px){li.n{grid-template-columns:1fr;gap:4px}.meta{flex-direction:row;gap:10px}.trow{grid-template-columns:1fr 4.5rem}.trow .track{display:none}.row{grid-template-columns:6rem 1fr 2.2rem}}
 </style>
 <div class="wrap">
-<div class="top"><h1>Monitor de medios</h1><button id="upd" class="upd" title="Copia el comando para actualizar los datos en tu compu">Actualizar</button></div>
-<div id="updbox" class="updbox" hidden><button id="updx" class="updx" aria-label="Cerrar" title="Cerrar">✕</button><p id="updmsg"></p><code id="updcmd"></code></div>
-<p class="sub">Actualizado __NOW__ · <span id="n"></span> notas de las últimas __VENTANA__ h · <span id="nm"></span> medios</p>
+<div class="top"><h1>Monitor de medios</h1><a id="sql" class="upd" target="_blank" rel="noopener" title="Abre la base SQLite en el navegador para consultarla con SQL (Datasette Lite)">Explorar la base (SQL)</a></div>
+<p class="sub">Actualizado __NOW__ · <span id="n"></span> notas de las últimas __VENTANA__ h · <span id="nm"></span> medios<span id="dl"> · descargar <a href="historico.db" download>base SQLite</a> · <a href="historico.csv" download>CSV</a></span></p>
 <div class="chips tabs" id="tabs"><button data-t="res" aria-pressed="true">Resumen</button><button data-t="tit" aria-pressed="false">Titulares</button><button data-t="tema" aria-pressed="false">Por tema</button><button data-t="mon" aria-pressed="false">Monitor</button><button data-t="an" aria-pressed="false">Análisis</button><button data-t="tend" aria-pressed="false">Tendencias</button><button data-t="sal" aria-pressed="false">Salud de datos</button></div>
 
 <div id="p-res">
@@ -332,13 +330,9 @@ es.onchange=()=>{$("entq").value="";monitor(D.filter(x=>(x.e||[]).includes(es.va
 $("entq").oninput=e=>{const v=norm(e.target.value.trim());if(v.length<3){es.onchange();return}monitor(D.filter(x=>norm(x.t).includes(v)),'"'+e.target.value.trim()+'"')};
 if(ENTS.length)es.onchange();
 
-/* ---- Boton Actualizar: copia el comando para PowerShell ---- */
-{const CMD='& "C:\\Python314\\python.exe" "C:\\Users\\User\\Desktop\\MCD\\Web Mining\\titulares-rosario\\archivar.py"; Start-Process "C:\\Users\\User\\Desktop\\MCD\\Web Mining\\titulares-rosario\\rosario.html"';
-$("updcmd").textContent=CMD;
-let updT;const cerrar=()=>{clearTimeout(updT);$("updbox").hidden=true};$("updx").onclick=cerrar;
-$("upd").onclick=async()=>{const box=$("updbox"),msg=$("updmsg");box.hidden=false;clearTimeout(updT);updT=setTimeout(cerrar,20000);
-let ok=false;try{await navigator.clipboard.writeText(CMD);ok=true}catch(e){const r=document.createRange();r.selectNodeContents($("updcmd"));const s=getSelection();s.removeAllRanges();s.addRange(r)}
-msg.textContent=ok?"Comando copiado. Abrí PowerShell, pegalo con clic derecho y apretá Enter. Al terminar se abre el tablero actualizado.":"Seleccioné el comando de abajo: copialo (Ctrl+C), pegalo en PowerShell y apretá Enter."}}
+/* ---- Explorar la base: Datasette Lite carga historico.db publicado junto a esta pagina (solo funciona servido por web, no desde file://) ---- */
+if(location.protocol.startsWith("http"))$("sql").href="https://lite.datasette.io/?url="+encodeURIComponent(new URL("historico.db",location.href).href)+"#/historico";
+else{$("sql").hidden=true;$("dl").hidden=true}
 
 function tab(k){document.querySelectorAll("#tabs button").forEach(c=>c.setAttribute("aria-pressed",c.dataset.t===k));["res","tit","tema","mon","an","tend","sal"].forEach(t=>$("p-"+t).hidden=t!==k)}
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
