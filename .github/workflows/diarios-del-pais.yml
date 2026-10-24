@@ -65,10 +65,11 @@ jobs:
         run: pip install torch transformers sentencepiece protobuf --extra-index-url https://download.pytorch.org/whl/cpu || echo "sin BERT"
 
       # NER con spaCy (ner.py): el modelo en espanol se instala como wheel por pip, asi lo aprovecha la cache de pip.
-      # Si falla, build.py sigue sin la columna ner.
+      # Si falla, build.py sigue sin la columna ner. preshed 3.0.14 rompe la carga del modelo en Python 3.12
+      # (OverflowError en el tokenizador): se fija la version anterior.
       - name: Dependencias de NER (spaCy)
         run: |
-          if ! pip install "spacy>=3.8,<3.9" "es_core_news_md @ https://github.com/explosion/spacy-models/releases/download/es_core_news_md-3.8.0/es_core_news_md-3.8.0-py3-none-any.whl" > /tmp/ner.log 2>&1; then
+          if ! pip install "spacy>=3.8,<3.9" "preshed<3.0.14" "es_core_news_md @ https://github.com/explosion/spacy-models/releases/download/es_core_news_md-3.8.0/es_core_news_md-3.8.0-py3-none-any.whl" > /tmp/ner.log 2>&1; then
             echo "::warning title=NER::No se pudo instalar spaCy: $(grep -iE 'error|conflict' /tmp/ner.log | tail -n 3 | tr '\n' ' ' | cut -c1-500)"
           fi
           python -c "import spacy, es_core_news_md; print('spaCy', spacy.__version__, 'OK')" || echo "::warning title=NER::spaCy no se puede importar: $(python -c 'import spacy' 2>&1 | tail -n 1 | cut -c1-300)"
