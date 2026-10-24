@@ -5,8 +5,9 @@ import concurrent.futures as cf
 from datetime import datetime, timezone, timedelta
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from topics import tag, merge_tema
+from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL
 from nlp import tone, ents as get_ents
+from enriquecer import enriquecer, limpiar
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.environ.get("DATA_DIR", BASE)   # donde viven historico.db y historico.csv
@@ -119,11 +120,16 @@ CREATE UNIQUE INDEX IF NOT EXISTS ix_medio_titulo ON items(medio, th);
 CREATE TABLE IF NOT EXISTS salud(run TEXT, medio TEXT, ok INTEGER, http INTEGER, n_raw INTEGER, n_valid INTEGER, ms INTEGER, err TEXT);
 CREATE TABLE IF NOT EXISTS cuarentena(run TEXT, medio TEXT, motivo TEXT, titulo TEXT, url TEXT);
 """)
+# columnas agregadas despues (bases viejas): url real del medio, bajada y cantidad de intentos de enriquecimiento
+cols = {r[1] for r in DB.execute("PRAGMA table_info(items)")}
+for c, tipo in (("url_real", "TEXT"), ("bajada", "TEXT"), ("enr", "INTEGER DEFAULT 0"), ("tema_fuente", "TEXT DEFAULT 'reglas'")):
+    if c not in cols: DB.execute("ALTER TABLE items ADD COLUMN %s %s" % (c, tipo))
+COLS = "h,th,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,visto"
 # migracion unica desde el CSV anterior
 if DB.execute("SELECT COUNT(*) FROM items").fetchone()[0] == 0 and os.path.exists(os.path.join(DATA, "historico.csv")):
     with open(os.path.join(DATA, "historico.csv"), encoding="utf-8", newline="") as f:
         for r in csv.DictReader(f):
-            DB.execute("INSERT OR IGNORE INTO items VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (h(canon(r["url"])), h(ntitle(r["titulo"])), r["medio"], r["alcance"], r["tipo"], r["titulo"], r["url"], int(r["publicado_ms"] or 0), r["temas"], r["entidades"], r["tono_auto"], r["tono_manual"], r["capturado"]))
+            DB.execute("INSERT OR IGNORE INTO items(" + COLS + ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (h(canon(r["url"])), h(ntitle(r["titulo"])), r["medio"], r["alcance"], r["tipo"], r["titulo"], r["url"], int(r["publicado_ms"] or 0), r["temas"], r["entidades"], r["tono_auto"], r["tono_manual"], r["capturado"]))
     DB.commit()
 
 LB = json.load(open(os.path.join(BASE, "labels.json"), encoding="utf-8"))
@@ -153,10 +159,13 @@ for m, ents, code, ms, err in res:
         k = (m, h(ntitle(t)))
         if k in seen or canon(u) in seen: dups += 1; continue
         seen.add(k); seen.add(canon(u))
-        x["tg"] = tag(t, m); x["sa"] = tone(t); x["e"] = get_ents(t)
+        x["h"] = h(canon(u))
+        x["b"] = "" if "news.google.com" in u else limpiar(e.get("summary", ""), 400)   # bajada que trae el RSS propio
+        if x["b"].lower().startswith(t.lower()[:40]): x["b"] = ""
+        x["tg"] = tag(t + " " + x["b"], m); x["sa"] = tone(t); x["e"] = get_ents(t)
         if u in LB: x["s"] = LB[u][1]
         items.append(x); s["n_valid"] += 1
-        cur = DB.execute("INSERT OR IGNORE INTO items VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (h(canon(u)), k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run))
+        cur = DB.execute("INSERT OR IGNORE INTO items(" + COLS + ",url_real,bajada) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (x["h"], k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run, None if "news.google.com" in u else u, x["b"] or None))
         if cur.rowcount: nuevos.append(x)
 for m, s in stat.items():
     DB.execute("INSERT INTO salud VALUES(?,?,?,?,?,?,?,?)", (run, m, s["ok"], s["http"], s["n_raw"], s["n_valid"], s["ms"], s["err"]))
@@ -165,6 +174,36 @@ for t, col, dias in (("items", "visto", RETENCION_DIAS), ("salud", "run", RETENC
     corte = (datetime.now() - timedelta(days=dias)).isoformat(timespec="seconds")
     DB.execute("DELETE FROM %s WHERE %s < ?" % (t, col), (corte,))
 DB.commit()
+
+# enriquecimiento (url real + bajada scrapeada del medio) y re-etiquetado de temas con titulo + bajada
+for h_, b_ in enriquecer(DB).items():
+    t_, m_ = DB.execute("SELECT titulo,medio FROM items WHERE h=?", (h_,)).fetchone()
+    DB.execute("UPDATE items SET temas=?, tema_fuente='reglas' WHERE h=?", ("|".join(tag(t_ + " " + b_, m_)), h_))
+DB.commit()
+
+# temas: si cambiaron las reglas se re-etiqueta todo; despues un Naive Bayes entrenado con lo que
+# clasificaron las reglas completa las notas "Otros" (solo si esta seguro, ver topics.UMBRAL)
+DB.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
+huella_t = hashlib.sha1(open(os.path.join(BASE, "topics.py"), "rb").read()).hexdigest()
+if (DB.execute("SELECT v FROM meta WHERE k='temas'").fetchone() or [""])[0] != huella_t:
+    for h_, t_, b_, m_ in DB.execute("SELECT h,titulo,bajada,medio FROM items").fetchall():
+        DB.execute("UPDATE items SET temas=?, tema_fuente='reglas' WHERE h=?", ("|".join(tag(t_ + " " + (b_ or ""), m_)), h_))
+    DB.execute("INSERT OR REPLACE INTO meta VALUES('temas',?)", (huella_t,))
+NB = entrenar_nb([(t_ + " " + (b_ or ""), tg.split("|")[0]) for t_, b_, tg in DB.execute("SELECT titulo,bajada,temas FROM items WHERE tema_fuente='reglas' AND temas!='Otros'")])
+n_nb = 0
+for h_, t_, b_ in DB.execute("SELECT h,titulo,bajada FROM items WHERE temas='Otros' OR tema_fuente='modelo'").fetchall():
+    k_, p_ = predecir_nb(NB, t_ + " " + (b_ or ""))
+    if k_ and p_ >= UMBRAL: DB.execute("UPDATE items SET temas=?, tema_fuente='modelo' WHERE h=?", (k_, h_)); n_nb += 1
+    else: DB.execute("UPDATE items SET temas='Otros', tema_fuente='reglas' WHERE h=?", (h_,))
+DB.commit()
+print("temas asignados por el modelo:", n_nb)
+EXTRA = {h_: (ur or "", b_ or "", tg) for h_, ur, b_, tg in DB.execute("SELECT h,url_real,bajada,temas FROM items WHERE pub_ms>=?", (ahora_ms - VENTANA_HORAS * 3600 * 1000,))}
+for x in items:
+    if x["h"] in EXTRA:
+        ur, b_, tg = EXTRA[x["h"]]
+        if ur: x["u"] = ur
+        if b_: x["b"] = b_
+        if tg: x["tg"] = [merge_tema(z) for z in tg.split("|")]
 
 # si cambio el modelo de tono, re-clasifica todo lo guardado; siempre aplica las etiquetas manuales
 DB.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
@@ -181,8 +220,8 @@ DB.commit()
 HC = os.path.join(DATA, "historico.csv")
 with open(HC, "w", encoding="utf-8", newline="") as f:
     w = csv.writer(f)
-    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual"])
-    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual FROM items ORDER BY visto, pub_ms"): w.writerow(r)
+    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada"])
+    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada FROM items ORDER BY visto, pub_ms"): w.writerow(r)
 
 # ---------- pagina: notas de las ultimas VENTANA_HORAS, con tope por medio ----------
 items.sort(key=lambda x: x["ts"], reverse=True)

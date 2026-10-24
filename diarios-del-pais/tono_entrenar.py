@@ -19,7 +19,7 @@ assert len(mias300) == 300, len(mias300)
 
 muestra = json.load(open(os.path.join(AQUI, "muestra_300.json"), encoding="utf-8"))
 LB = json.load(open(os.path.join(AQUI, "labels.json"), encoding="utf-8"))
-db = sqlite3.connect(os.path.join(AQUI, "historico.db"))
+db = sqlite3.connect(os.path.join(os.environ.get("DATA_DIR", AQUI), "historico.db"))
 
 # ---------- conjunto etiquetado: (titulo, clase, origen) ----------
 DATA, vistos = [], set()
