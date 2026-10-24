@@ -8,7 +8,25 @@ los clasifica (tema, tono, entidades), los acumula en SQLite y publica un tabler
   `NewsArticle` (autor, seccion, palabras clave, largo). Respeta robots.txt y limita pedidos por dominio.
 - `nlp.py`: tono (regresion logistica), entidades y puntaje de "cebo" (clickbait) de cada titulo.
 - `tono_entrenar.py`: entrena y evalua el modelo de tono con las notas etiquetadas a mano.
+- `tono_bert_eval.py`: compara modelos de tono y exporta el combinado (rasgos + XLM-RoBERTa) a `modelo_tono_bert.json`.
+- `tono_activo.py`: aprendizaje activo (elige los titulares mas dudosos para etiquetar y suma las etiquetas a `labels_activo.json`).
 - Local: `Actualizar.bat` o `python archivar.py` (deja `historico.db`, `historico.csv` y `rosario.html` en esta carpeta).
+
+## Aprendizaje activo del tono
+
+En vez de etiquetar titulares al azar, se etiquetan los que el modelo combinado tiene mas dudosos
+(menor margen entre las dos clases mas probables): cada etiqueta aporta mas informacion.
+
+1. `python tono_activo.py seleccionar --n 60`: entrena el modelo con todo lo etiquetado y elige de `historico.db`
+   los 60 titulares de menor margen, sin repetir los ya etiquetados ni casi duplicados (Jaccard de palabras >= 0,5)
+   y con hasta 4 por medio. Genera `muestra_activa.xlsx` (para completar) y `muestra_activa.json` (prediccion,
+   probabilidades, margen y entropia). La planilla no muestra la prediccion del modelo, para no sesgar.
+2. Completar la columna «Tu tono» de `muestra_activa.xlsx` (criterio en la hoja Instrucciones).
+3. `python tono_activo.py ingestar muestra_activa.xlsx`: valida y agrega las etiquetas a `labels_activo.json`
+   (acumulativo entre rondas); informa el acuerdo modelo-humano y la matriz de confusion en esos casos.
+4. `python tono_bert_eval.py`: reentrena sumando `labels_activo.json` y compara el modelo **antes** (sin las etiquetas
+   nuevas) y **despues** con los mismos pliegues del conjunto ampliado, y tambien sobre los 340 originales.
+   Las filas `6a`/`6b` quedan en `tono_comparacion.json`. Despues se puede volver al paso 1 para otra ronda.
 
 ## Tablas de la base (`historico.db`)
 
