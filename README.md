@@ -1,16 +1,15 @@
-# Web-Mining
+# Web-Mining · Monitor de medios argentinos
 
-Proyectos de extracción y análisis de datos de la web, pensados para Rosario y Argentina. Cada carpeta es un proyecto independiente, con su propio README.
+Trabajo práctico de Web Mining (Maestría en Ciencia de Datos). Todo el proyecto vive en
+[`diarios-del-pais/`](diarios-del-pais/): baja cada hora los titulares de 46 medios argentinos,
+entra a cada nota para extraer su bajada y sus datos estructurados, clasifica tema, tono
+(palabras clave + BERT) y entidades, mide cómo titula cada medio y publica un tablero web.
 
-| Carpeta | Qué hace |
-|---|---|
-| [`precios-rosario-super/`](precios-rosario-super/) | Monitor de precios de supermercados (Carrefour, Jumbo, Coto, La Gallega, DAR): relevamiento diario completo, comparación entre cadenas, alertas de precios anómalos y una página para buscar y comparar. |
-| [`diarios-del-pais/`](diarios-del-pais/) | Monitor de medios: baja titulares de unos 38 medios argentinos, los clasifica por tema, tono y entidades y genera un tablero. |
-| [`radar-de-vuelos/`](radar-de-vuelos/) | Radar de "error fares": busca precios de vuelos desde Argentina y detecta tarifas anormalmente bajas. |
+- **Tablero:** https://miguegarrone-blip.github.io/Web-Mining/
+- **Base SQLite:** se puede consultar con SQL desde el botón "Explorar la base (SQL)" del tablero.
+- **Documentación del TP:** [`docs/`](docs/).
+- **Automatización:** [`.github/workflows/diarios-del-pais.yml`](.github/workflows/diarios-del-pais.yml) (GitHub Actions, cada hora).
 
 ## Qué no está en el repo
-Las bases de datos y las salidas generadas (por ejemplo `precios.db`, `historico.db`, `fares.sqlite`), los logs, los respaldos y las claves o tokens
-(Telegram, APIs). Cada proyecto las crea al correr. Los `.gitignore` los dejan afuera para que no se suban por error.
-
-## Requisitos generales
-Python 3 y, según el proyecto, las librerías de su `requirements.txt` o de su README. Los lanzadores `.bat` están pensados para Windows.
+La base (`historico.db`) y las salidas generadas no se versionan en `main`: la base vive comprimida
+en la rama `data-diarios` y el tablero se publica en GitHub Pages.
