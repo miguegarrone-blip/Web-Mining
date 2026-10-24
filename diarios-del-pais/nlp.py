@@ -56,3 +56,19 @@ def tone(title):
     f = feats(title)
     z = {c: m["B"][c] + sum(m["W"][c].get(k, 0.0) * v for k, v in f.items()) for c in ("n", "0", "p")}
     return max(z, key=z.get)
+
+
+# ---------- cebo (clickbait): rasgos de titulo que buscan el clic mas que informar ----------
+# Cada rasgo presente suma 1. Con 2 o mas se considera titulo "cebo". Ver tambien la "alarma" en build.py:
+# titulo negativo cuando la bajada (el resumen de la propia nota) no lo es.
+_CEBO = {
+ "pregunta": re.compile(r"[?¿]"),
+ "exclamacion": re.compile(r"[!¡]"),
+ "exagera": re.compile(r"\b(?:impactante|insolito|increible|bomba|escandalo|escandaloso|furia|brutal|picante|tremend[oa]|terrible|dramatic[oa]|polemic[oa]|explosiv[oa]|estallo|exploto|durisim[oa]|lapidari[oa]|contundente|sin filtro|filtr(?:o|aron)|destapo|desopilante|letal|alarmante|shock|viral|furor|bochorn\w*|escandal\w*|bombazo|inesperad[oa]|sorpresiv[oa])\b"),
+ "intriga": re.compile(r"(?:^|[\s:.,\"“])(?:lo que|la razon|el motivo|el truco|el secreto|la verdad|nadie|esto es|asi (?:es|fue|quedo|son|luce)|que es|por que|quien es|quienes son|cual es|cuales son|como (?:es|hacer|saber|evitar)|el dato|la clave|lo que (?:hay|tenes|nadie))\b"),
+ "segunda_persona": re.compile(r"\b(?:tenes|podes|debes|sabias|mira|descubri|enterate|conoce|evita|hace esto|tu|vos)\b"),
+ "lista": re.compile(r"^(?:las?|los)?\s*\d{1,2}\s+(?:claves|cosas|razones|consejos|trucos|errores|alimentos|senales|pasos|formas|motivos|datos|lugares|frases|preguntas|beneficios|habitos)\b"),
+}
+def cebo(title):
+    n = norm(title)
+    return sum(1 for rx in _CEBO.values() if rx.search(n if rx.pattern[0] != "[" else title))

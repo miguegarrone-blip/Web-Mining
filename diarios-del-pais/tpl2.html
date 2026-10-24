@@ -98,13 +98,21 @@ a.upd:hover{color:var(--bg);filter:brightness(1.1);text-decoration:none}
 .mgrp a{display:block;font-weight:400;font-size:.92rem;margin-block:3px}
 .go{margin-top:.6rem}
 .cl{padding-block:8px;border-bottom:1px solid var(--line);font-size:.9rem}.cl b{font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--accent);display:block;margin-bottom:2px}.cl a{display:block;font-weight:400;margin-block:2px}
+.sc{position:relative;height:320px;margin:1.6rem 0 3rem 2.6rem;border-left:1px solid var(--mute);border-bottom:1px solid var(--mute)}
+.sc .pt{position:absolute;width:10px;height:10px;margin:0 0 -5px -5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg);cursor:pointer}
+.sc .pt::after{content:"";position:absolute;inset:-8px}
+.sc .pt:hover{transform:scale(1.4)}
+.sc .lb{position:absolute;font-size:.72rem;color:var(--fg);white-space:nowrap;pointer-events:none;transform:translate(8px,50%)}
+.sc .ax{position:absolute;font-family:var(--mono);font-size:.7rem;color:var(--mute);white-space:nowrap}
+.sc .gl{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.ej{padding-block:8px;border-bottom:1px solid var(--line);font-size:.9rem}.ej b{font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--accent);display:block}.ej a{font-weight:500}.ej p{margin:.2rem 0 0;font-size:.85rem;color:var(--mute)}
 .words{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}.words small{font-family:var(--mono);color:var(--mute);font-size:.7rem;margin-left:3px}
 @media(max-width:560px){li.n{grid-template-columns:1fr;gap:4px}.meta{flex-direction:row;gap:10px}.trow{grid-template-columns:1fr 4.5rem}.trow .track{display:none}.row{grid-template-columns:6rem 1fr 2.2rem}}
 </style>
 <div class="wrap">
 <div class="top"><h1>Monitor de medios</h1><a id="sql" class="upd" target="_blank" rel="noopener" title="Abre la base SQLite en el navegador para consultarla con SQL (Datasette Lite)">Explorar la base (SQL)</a></div>
 <p class="sub">Actualizado __NOW__ · <span id="n"></span> notas de las últimas __VENTANA__ h · <span id="nm"></span> medios<span id="dl"> · descargar <a href="historico.db" download>base SQLite</a> · <a href="historico.csv" download>CSV</a></span></p>
-<div class="chips tabs" id="tabs"><button data-t="res" aria-pressed="true">Resumen</button><button data-t="tit" aria-pressed="false">Titulares</button><button data-t="tema" aria-pressed="false">Por tema</button><button data-t="mon" aria-pressed="false">Monitor</button><button data-t="an" aria-pressed="false">Análisis</button><button data-t="tend" aria-pressed="false">Tendencias</button><button data-t="sal" aria-pressed="false">Salud de datos</button></div>
+<div class="chips tabs" id="tabs"><button data-t="res" aria-pressed="true">Resumen</button><button data-t="tit" aria-pressed="false">Titulares</button><button data-t="tema" aria-pressed="false">Por tema</button><button data-t="mon" aria-pressed="false">Monitor</button><button data-t="an" aria-pressed="false">Análisis</button><button data-t="sens" aria-pressed="false">Cómo titulan</button><button data-t="tend" aria-pressed="false">Tendencias</button><button data-t="sal" aria-pressed="false">Salud de datos</button></div>
 
 <div id="p-res">
  <div class="kpis" id="kpis"></div>
@@ -144,10 +152,22 @@ a.upd:hover{color:var(--bg);filter:brightness(1.1);text-decoration:none}
  <section class="c"><h2>Notas por día y % negativo</h2><div id="t-days"></div></section>
  <section class="c"><h2>Temas por día</h2><div class="xs"><div id="t-heat"></div></div></section>
 </div>
+<div id="p-sens" hidden>
+ <p class="note">Se compara el título de cada nota con su bajada (el resumen que publica el propio medio, obtenido entrando a la nota). Un título <b>exagera</b> cuando tiene tono negativo y la bajada no. Un título usa <b>recursos de cebo</b> (clickbait) cuando tiene preguntas, exclamaciones, adjetivos exagerados, frases de intriga ("lo que nadie…", "el truco"), segunda persona o listas. Datos de todo el histórico; solo medios con suficientes notas.</p>
+ <section class="c"><h2>Mapa del sensacionalismo</h2><p class="note">Cada punto es un medio. Más a la derecha, más títulos con recursos de cebo; más arriba, más títulos que exageran respecto de su propia bajada.</p><div class="chartbox" id="x-box"><div id="x-sc"></div><div id="x-tip" class="tip" hidden></div></div></section>
+ <section class="c"><h2>Títulos que exageran</h2><p class="note">De los títulos negativos que tienen bajada, qué parte tiene una bajada neutra o positiva.</p><div id="x-al"></div></section>
+ <section class="c"><h2>Títulos con recursos de cebo</h2><div id="x-cb"></div></section>
+ <section class="c"><h2>Ejemplos recientes: título negativo, bajada neutra</h2><div id="x-eal"></div></section>
+ <section class="c"><h2>Ejemplos recientes: más recursos de cebo</h2><div id="x-ecb"></div></section>
+ <section class="c"><h2>Transparencia: notas firmadas por un periodista</h2><p class="note">Según el autor que el propio medio declara en los datos estructurados de la nota (JSON-LD). "Redacción" o el nombre del medio no cuentan como firma.</p><div id="x-fi"></div></section>
+ <section class="c"><h2>Periodistas con más notas</h2><div id="x-au"></div></section>
+ <section class="c"><h2>Largo promedio de las notas (palabras)</h2><div id="x-la"></div></section>
+</div>
 <div id="p-sal" hidden>
  <div class="kpis" id="s-kpi"></div>
  <section class="c"><h2>Estado de cada fuente</h2><div class="xs"><div id="s-tab"></div></div></section>
  <section class="c"><h2>Notas descartadas por validación</h2><div id="s-q"></div></section>
+ <section class="c"><h2>Scraping de notas (últimas 24 h)</h2><p class="note">Se entra a cada nota para leer la bajada y los datos estructurados. Se respeta el robots.txt de cada sitio y se hacen como máximo 2 pedidos a la vez por sitio.</p><div class="xs"><div id="s-scr"></div></div></section>
  <p class="note">Una fuente se marca degradada si trae menos de la mitad de las notas que suele traer, y caída si no responde o viene vacía. Las notas se descartan si tienen título demasiado corto o largo, no son una nota (por ejemplo "Videos mobile"), tienen URL inválida o una fecha imposible.</p>
 </div>
 <div id="p-an" hidden>
@@ -335,6 +355,40 @@ if(ENTS.length)es.onchange();
 if(location.protocol.startsWith("http"))$("sql").href="https://lite.datasette.io/?url="+encodeURIComponent(new URL("historico.db",location.href).href)+"#/historico";
 else{$("sql").hidden=true;$("dl").hidden=true}
 
-function tab(k){document.querySelectorAll("#tabs button").forEach(c=>c.setAttribute("aria-pressed",c.dataset.t===k));["res","tit","tema","mon","an","tend","sal"].forEach(t=>$("p-"+t).hidden=t!==k)}
+/* ---- Como titulan ---- */
+{const S=(AGG.sens||[]).filter(r=>r.n>=30),pct=v=>Math.round(v*100)+"%";
+const AL=S.filter(r=>r.tneg>=10).map(r=>({...r,ar:r.alarma/r.tneg}));
+const lnk=(t,u)=>{const a=mk("a","",t);a.href=u;a.target="_blank";a.rel="noopener";return a};
+const bars=(host,arr,val,lab,tit)=>{if(!arr.length){$(host).appendChild(mk("p","note","Todavía no hay datos suficientes: se completan a medida que se scrapean las notas."));return}
+ const mx=Math.max(...arr.map(val))||1;arr.slice().sort((a,b)=>val(b)-val(a)).forEach(r=>rowBar($(host),r.m,[["s-a",val(r)]],val(r),mx,lab(r),tit&&tit(r)))};
+bars("x-al",AL,r=>r.ar,r=>pct(r.ar),r=>r.m+": "+r.alarma+" de "+r.tneg+" títulos negativos tienen bajada neutra o positiva");
+bars("x-cb",S,r=>r.cebo_pct,r=>pct(r.cebo_pct),r=>r.m+": "+pct(r.cebo_pct)+" de "+r.n+" títulos con al menos un recurso de cebo");
+bars("x-fi",S.filter(r=>r.nld>=10),r=>r.firm/r.nld,r=>pct(r.firm/r.nld),r=>r.m+": "+r.firm+" de "+r.nld+" notas firmadas");
+bars("x-la",S.filter(r=>r.largo),r=>r.largo,r=>r.largo,r=>r.m+": "+r.largo+" palabras en promedio");
+/* dispersion: x = % con cebo, y = % que exagera */
+{const host=$("x-sc");if(AL.length<3){host.appendChild(mk("p","note","El mapa aparece cuando haya al menos 3 medios con suficientes títulos negativos con bajada."))}else{
+ const mxX=Math.max(...AL.map(r=>r.cebo_pct))*1.1||1,mxY=Math.max(...AL.map(r=>r.ar))*1.1||1,sc=mk("div","sc");
+ [.5,1].forEach(f=>{const g=mk("div","gl");g.style.bottom=f*100+"%";sc.appendChild(g);const l=mk("span","ax",pct(f*mxY));l.style.left="-2.6rem";l.style.bottom="calc("+f*100+"% - .45rem)";sc.appendChild(l)});
+ [0,.5,1].forEach(f=>{const l=mk("span","ax",pct(f*mxX));l.style.left=f*100+"%";l.style.bottom="-1.3rem";l.style.transform="translateX(-50%)";sc.appendChild(l)});
+ const xl=mk("span","ax","% títulos con recursos de cebo →");xl.style.right="0";xl.style.bottom="-2.6rem";sc.appendChild(xl);
+ const yl=mk("span","ax","↑ % que exagera");yl.style.left="-2.6rem";yl.style.top="-1.4rem";sc.appendChild(yl);
+ const tip=$("x-tip"),box=$("x-box");
+ const ext=AL.slice().sort((a,b)=>(b.cebo_pct/mxX+b.ar/mxY)-(a.cebo_pct/mxX+a.ar/mxY)),lab=new Set([...ext.slice(0,4),...ext.slice(-2)].map(r=>r.m)),puestos=[];
+ AL.forEach(r=>{const p=mk("div","pt"),x=r.cebo_pct/mxX*100,y=r.ar/mxY*100;p.style.left=x+"%";p.style.bottom=y+"%";p.setAttribute("aria-label",r.m);
+  p.onpointerenter=()=>{tip.textContent="";tip.append(mk("b","",r.m),document.createTextNode(pct(r.cebo_pct)+" con cebo · "+pct(r.ar)+" exagera ("+r.tneg+" negativos con bajada)"));tip.hidden=false;
+   const br=box.getBoundingClientRect(),pr=p.getBoundingClientRect();tip.style.left=Math.min(Math.max(pr.left-br.left-tip.offsetWidth/2,0),br.width-tip.offsetWidth)+"px";tip.style.top=(pr.top-br.top-tip.offsetHeight-8)+"px"};
+  p.onpointerleave=()=>{tip.hidden=true};sc.appendChild(p);
+  if(lab.has(r.m)){const w=r.m.length*0.9,der=[x,x+w],izq=[x-w,x],choca=([a,b])=>puestos.some(q=>a<q.b&&q.a<b&&Math.abs(q.y-y)<6),lado=!choca(der)?der:!choca(izq)?izq:null;   // ancho aprox. de la etiqueta en % del grafico
+   if(lado){puestos.push({a:lado[0],b:lado[1],y});const l=mk("span","lb",r.m);l.style.left=x+"%";l.style.bottom=y+"%";if(lado===izq)l.style.transform="translate(calc(-100% - 8px),50%)";sc.appendChild(l)}}});
+ host.appendChild(sc)}}
+const ej=(host,arr,f)=>{if(!arr||!arr.length){$(host).appendChild(mk("p","note","Sin ejemplos en las últimas __VENTANA__ h."));return}arr.forEach(r=>$(host).appendChild(f(r)))};
+ej("x-eal",AGG.ej_al,([m,t,b,u])=>{const d=mk("div","ej");d.append(mk("b","",m),lnk(t,u),mk("p","","Bajada: "+b));return d});
+ej("x-ecb",AGG.ej_cb,([m,t,c,u])=>{const d=mk("div","ej");d.append(mk("b","",m+" · "+c+" recursos"),lnk(t,u));return d});
+ej("x-au",AGG.aut,([a,m,n,ng])=>{const d=mk("div","cr");d.append(mk("em","",n+" notas"),document.createTextNode(a+" · "+m+" · "+pct(ng)+" negativas"));return d});
+/* salud: scraping por medio */
+{const t=$("s-scr"),R=AGG.scr||[];if(!R.length)t.appendChild(mk("p","note","Sin datos de scraping en las últimas 24 h."));else{const hd=mk("div","srow h");["","Medio","Intentos","OK","Bajada","JSON-LD","robots.txt"].forEach(x=>hd.appendChild(mk("span","",x)));t.appendChild(hd);
+ R.forEach(([m,i,o,b,l,rb])=>{const w=mk("div","srow");w.append(mk("span","dot "+(o/i>=.8?"s-p":o/i>=.4?"s-0":"s-n")),mk("span","",m),mk("span","v",i),mk("span","v",pct(o/i)),mk("span","v",o?pct(b/o):"-"),mk("span","v",o?pct(l/o):"-"),mk("span","v",rb));t.appendChild(w)})}}}
+
+function tab(k){document.querySelectorAll("#tabs button").forEach(c=>c.setAttribute("aria-pressed",c.dataset.t===k));["res","tit","tema","mon","an","sens","tend","sal"].forEach(t=>$("p-"+t).hidden=t!==k)}
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
 </script>

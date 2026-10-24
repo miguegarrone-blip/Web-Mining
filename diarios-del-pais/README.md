@@ -4,8 +4,18 @@ Baja titulares de ~46 medios argentinos (RSS y Google News por sitio), los valid
 los clasifica (tema, tono, entidades), los acumula en SQLite y publica un tablero web.
 
 - `build.py`: pipeline completo. `topics.py` y `nlp.py`: clasificacion. `tpl2.html`: plantilla del tablero.
+- `enriquecer.py`: entra a cada nota (resuelve las URLs de Google News) y extrae la bajada y el JSON-LD
+  `NewsArticle` (autor, seccion, palabras clave, largo). Respeta robots.txt y limita pedidos por dominio.
+- `nlp.py`: tono (regresion logistica), entidades y puntaje de "cebo" (clickbait) de cada titulo.
 - `tono_entrenar.py`: entrena y evalua el modelo de tono con las notas etiquetadas a mano.
 - Local: `Actualizar.bat` o `python archivar.py` (deja `historico.db`, `historico.csv` y `rosario.html` en esta carpeta).
+
+## Tablas de la base (`historico.db`)
+
+- `items`: una fila por nota. Ademas de titulo, medio, fecha, temas, entidades y tono: `url_real`, `bajada`,
+  `tono_bajada`, `cebo`, `autor`, `firmada`, `seccion`, `claves`, `largo`, `tema_fuente` (reglas o modelo).
+- `salud`: estado de cada feed en cada corrida. `scraping`: resultado del scraping de notas por medio.
+- `cuarentena`: notas descartadas por validacion (7 dias). `meta`: huellas de los modelos vigentes.
 
 ## En la nube (GitHub Actions + GitHub Pages)
 

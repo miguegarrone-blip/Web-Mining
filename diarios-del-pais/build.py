@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL
-from nlp import tone, ents as get_ents
+from nlp import tone, cebo, ents as get_ents
 from enriquecer import enriquecer, limpiar
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -119,10 +119,13 @@ CREATE TABLE IF NOT EXISTS items(h TEXT PRIMARY KEY, th TEXT, medio TEXT, alcanc
 CREATE UNIQUE INDEX IF NOT EXISTS ix_medio_titulo ON items(medio, th);
 CREATE TABLE IF NOT EXISTS salud(run TEXT, medio TEXT, ok INTEGER, http INTEGER, n_raw INTEGER, n_valid INTEGER, ms INTEGER, err TEXT);
 CREATE TABLE IF NOT EXISTS cuarentena(run TEXT, medio TEXT, motivo TEXT, titulo TEXT, url TEXT);
+CREATE TABLE IF NOT EXISTS scraping(run TEXT, medio TEXT, intentos INTEGER, ok INTEGER, bajada INTEGER, ld INTEGER, robots INTEGER);
 """)
-# columnas agregadas despues (bases viejas): url real del medio, bajada y cantidad de intentos de enriquecimiento
+# columnas agregadas despues (bases viejas): datos del enriquecimiento (ver enriquecer.py) y de "como titula" (nlp.cebo)
 cols = {r[1] for r in DB.execute("PRAGMA table_info(items)")}
-for c, tipo in (("url_real", "TEXT"), ("bajada", "TEXT"), ("enr", "INTEGER DEFAULT 0"), ("tema_fuente", "TEXT DEFAULT 'reglas'")):
+for c, tipo in (("url_real", "TEXT"), ("bajada", "TEXT"), ("enr", "INTEGER DEFAULT 0"), ("tema_fuente", "TEXT DEFAULT 'reglas'"),
+                ("ld", "INTEGER"), ("autor", "TEXT"), ("firmada", "INTEGER"), ("seccion", "TEXT"), ("mod_ms", "INTEGER"), ("claves", "TEXT"), ("largo", "INTEGER"),
+                ("tono_bajada", "TEXT"), ("cebo", "INTEGER")):
     if c not in cols: DB.execute("ALTER TABLE items ADD COLUMN %s %s" % (c, tipo))
 COLS = "h,th,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,visto"
 # migracion unica desde el CSV anterior
@@ -165,7 +168,7 @@ for m, ents, code, ms, err in res:
         x["tg"] = tag(t + " " + x["b"], m); x["sa"] = tone(t); x["e"] = get_ents(t)
         if u in LB: x["s"] = LB[u][1]
         items.append(x); s["n_valid"] += 1
-        cur = DB.execute("INSERT OR IGNORE INTO items(" + COLS + ",url_real,bajada) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (x["h"], k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run, None if "news.google.com" in u else u, x["b"] or None))
+        cur = DB.execute("INSERT OR IGNORE INTO items(" + COLS + ",url_real,bajada,tono_bajada,cebo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (x["h"], k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run, None if "news.google.com" in u else u, x["b"] or None, tone(x["b"]) if x["b"] else None, cebo(t)))
         if cur.rowcount: nuevos.append(x)
 for m, s in stat.items():
     DB.execute("INSERT INTO salud VALUES(?,?,?,?,?,?,?,?)", (run, m, s["ok"], s["http"], s["n_raw"], s["n_valid"], s["ms"], s["err"]))
@@ -175,10 +178,14 @@ for t, col, dias in (("items", "visto", RETENCION_DIAS), ("salud", "run", RETENC
     DB.execute("DELETE FROM %s WHERE %s < ?" % (t, col), (corte,))
 DB.commit()
 
-# enriquecimiento (url real + bajada scrapeada del medio) y re-etiquetado de temas con titulo + bajada
-for h_, b_ in enriquecer(DB).items():
+# enriquecimiento (pagina de cada nota: url real, bajada, JSON-LD) y re-etiquetado de temas con titulo + bajada
+hechos, scr = enriquecer(DB)
+for h_, b_ in hechos.items():
     t_, m_ = DB.execute("SELECT titulo,medio FROM items WHERE h=?", (h_,)).fetchone()
-    DB.execute("UPDATE items SET temas=?, tema_fuente='reglas' WHERE h=?", ("|".join(tag(t_ + " " + b_, m_)), h_))
+    DB.execute("UPDATE items SET temas=?, tema_fuente='reglas', tono_bajada=? WHERE h=?", ("|".join(tag(t_ + " " + b_, m_)), tone(b_), h_))
+for m_, st in scr.items():
+    DB.execute("INSERT INTO scraping VALUES(?,?,?,?,?,?,?)", (run, m_, st["intentos"], st["ok"], st["bajada"], st["ld"], st["robots"]))
+DB.execute("DELETE FROM scraping WHERE run < ?", ((datetime.now() - timedelta(days=RETENCION_DIAS)).isoformat(timespec="seconds"),))
 DB.commit()
 
 # temas: si cambiaron las reglas se re-etiqueta todo; despues un Naive Bayes entrenado con lo que
@@ -209,8 +216,8 @@ for x in items:
 DB.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
 huella = hashlib.sha1(b"".join(open(os.path.join(BASE, f), "rb").read() for f in ("nlp.py", "modelo_tono.json"))).hexdigest()
 if (DB.execute("SELECT v FROM meta WHERE k='modelo_tono'").fetchone() or [""])[0] != huella:
-    for h_, t_ in DB.execute("SELECT h,titulo FROM items").fetchall():
-        DB.execute("UPDATE items SET tono_auto=? WHERE h=?", (tone(t_), h_))
+    for h_, t_, b_ in DB.execute("SELECT h,titulo,bajada FROM items").fetchall():
+        DB.execute("UPDATE items SET tono_auto=?, tono_bajada=?, cebo=? WHERE h=?", (tone(t_), tone(b_) if b_ else None, cebo(t_), h_))
     DB.execute("INSERT OR REPLACE INTO meta VALUES('modelo_tono',?)", (huella,))
 for u_, (k_, s_) in LB.items():
     DB.execute("UPDATE items SET tono_manual=? WHERE url=?", (s_, u_))
@@ -220,8 +227,8 @@ DB.commit()
 HC = os.path.join(DATA, "historico.csv")
 with open(HC, "w", encoding="utf-8", newline="") as f:
     w = csv.writer(f)
-    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada"])
-    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada FROM items ORDER BY visto, pub_ms"): w.writerow(r)
+    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada", "tono_bajada", "cebo", "autor", "firmada", "seccion", "largo"])
+    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada,tono_bajada,cebo,autor,firmada,seccion,largo FROM items ORDER BY visto, pub_ms"): w.writerow(r)
 
 # ---------- pagina: notas de las ultimas VENTANA_HORAS, con tope por medio ----------
 items.sort(key=lambda x: x["ts"], reverse=True)
@@ -266,6 +273,22 @@ dneg = {d: round(v, 2) for d, v in dneg.items()}
 horas = {h_: [round(x, 2) for x in v] for h_, v in horas.items()}
 horasT = {t: {h_: [round(x, 2) for x in v] for h_, v in hs.items()} for t, hs in horasT.items()}
 AGG = {"dn": dn, "dneg": dneg, "tema": tema, "ent": ent, "horas": horas, "horasT": horasT, "hoy": dia(ahora_ms)}
+
+# ---------- como titula cada medio (todo el historico) ----------
+# alarma: de los titulos negativos con bajada, cuantos tienen una bajada que NO es negativa (el titulo exagera el hecho)
+# cebo: rasgos de clickbait en el titulo (nlp.cebo). firmadas: notas con autor persona, sobre las que tienen JSON-LD
+TONO = "COALESCE(NULLIF(tono_manual,''),tono_auto)"
+SENS = [dict(zip(("m", "n", "cebo", "cebo_pct", "tneg", "alarma", "nld", "firm", "largo"), r)) for r in DB.execute(f"""
+  SELECT medio, COUNT(*), ROUND(AVG(cebo),3), ROUND(AVG(cebo>=1),3),
+         SUM(tono_bajada IS NOT NULL AND {TONO}='n'), SUM(tono_bajada IS NOT NULL AND {TONO}='n' AND tono_bajada!='n'),
+         SUM(ld=1), SUM(ld=1 AND firmada=1), CAST(AVG(CASE WHEN largo>30 THEN largo END) AS INTEGER)
+  FROM items GROUP BY medio""")]
+AUT = DB.execute(f"SELECT autor, medio, COUNT(*) n, ROUND(AVG({TONO}='n'),2) FROM items WHERE firmada=1 GROUP BY autor, medio ORDER BY n DESC LIMIT 25").fetchall()
+EJ_AL = DB.execute(f"SELECT medio, titulo, bajada, COALESCE(url_real,url) FROM items WHERE {TONO}='n' AND tono_bajada='0' AND pub_ms>=? ORDER BY cebo DESC, pub_ms DESC LIMIT 12", (desde,)).fetchall()
+EJ_CB = DB.execute("SELECT medio, titulo, cebo, COALESCE(url_real,url) FROM items WHERE cebo>=2 AND pub_ms>=? ORDER BY cebo DESC, pub_ms DESC LIMIT 12", (desde,)).fetchall()
+corte24 = (datetime.now() - timedelta(hours=24)).isoformat(timespec="seconds")
+SCR = DB.execute("SELECT medio, SUM(intentos), SUM(ok), SUM(bajada), SUM(ld), SUM(robots) FROM scraping WHERE run>=? GROUP BY medio ORDER BY medio", (corte24,)).fetchall()
+AGG.update({"sens": SENS, "aut": AUT, "ej_al": EJ_AL, "ej_cb": EJ_CB, "scr": SCR})
 
 # ---------- salud de datos ----------
 SAL = []
