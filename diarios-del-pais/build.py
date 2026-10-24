@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL
-from nlp import tone, cebo, ents as get_ents
+from nlp import tone, cebo, cebo_rasgos, ents as get_ents
 from enriquecer import enriquecer, depurar_bajada
 import bert
 
@@ -18,7 +18,7 @@ TOPE = 100          # notas maximas por feed que se leen
 # ---- REGLAS (para que ningun numero crezca sin limite) ----
 VENTANA_HORAS = 48      # "notas analizadas" = notas publicadas en las ultimas 48 h
 POR_MEDIO_PAGINA = 100  # tope por medio dentro de esa ventana
-RETENCION_DIAS = 90     # la base y el CSV guardan solo los ultimos 90 dias
+RETENCION_DIAS = 30     # la base y el CSV guardan solo los ultimos 30 dias (la base comprimida debe quedar bajo el limite de 100 MB de GitHub)
 TOPE_BERT = 4000        # textos por corrida que pasan por XLM-RoBERTa (titulos y bajadas por separado)
 H = {"User-Agent": "Mozilla/5.0 (monitor-de-medios; uso personal)"}
 AR = timedelta(hours=-3)
@@ -167,7 +167,7 @@ for m, ents, code, ms, err in res:
         x["h"] = h(canon(u))
         x["b"] = "" if "news.google.com" in u else depurar_bajada(e.get("summary", ""))[:400]   # bajada que trae el RSS propio
         if x["b"].lower().startswith(t.lower()[:40]): x["b"] = ""
-        x["tg"] = tag(t + " " + x["b"], m); x["sa"] = tone(t); x["e"] = get_ents(t)
+        x["tg"] = tag(t + " " + x["b"], m); x["sa"] = tone(t); x["e"] = get_ents(t); x["cr"] = cebo_rasgos(t)
         if u in LB: x["s"] = LB[u][1]
         items.append(x); s["n_valid"] += 1
         cur = DB.execute("INSERT OR IGNORE INTO items(" + COLS + ",url_real,bajada,tono_bajada,cebo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (x["h"], k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run, None if "news.google.com" in u else u, x["b"] or None, tone(x["b"]) if x["b"] else None, cebo(t)))
@@ -299,7 +299,7 @@ AGG = {"dn": dn, "dneg": dneg, "tema": tema, "ent": ent, "horas": horas, "horasT
 # ---------- por medio y periodo (pestaña Analisis: filtros de periodo, agenda y tono por medio) ----------
 # MED[medio] = {r: alcance, tp: tipo, p: {dias: {n, t: [neg, neu, pos] esperados, tg: {tema: notas}}}}
 PERIODOS = (1, 2, 7, 30)
-MED = {m: {"r": F[m][0], "tp": F[m][1], "p": {d: {"n": 0, "t": [0.0, 0.0, 0.0], "tg": {}} for d in PERIODOS}} for m in F}
+MED = {m: {"r": F[m][0], "tp": F[m][1], "p": {d: {"n": 0, "t": [0.0, 0.0, 0.0], "tg": {}, "en": {}} for d in PERIODOS}} for m in F}
 for m, ms, tg, en, sa, sm in rows:
     if m not in MED or ms > ahora_ms: continue
     v = dist(sm, sa); temas_n = {merge_tema(x) for x in tg.split("|") if x}
@@ -308,8 +308,12 @@ for m, ms, tg, en, sa, sm in rows:
         a = MED[m]["p"][d]; a["n"] += 1
         for k in range(3): a["t"][k] += v[k]
         for t in temas_n: a["tg"][t] = a["tg"].get(t, 0) + 1
+        for e in en.split("|"):            # menciones de cada figura y cuantas se esperan negativas (matriz medio x figura)
+            if e: z = a["en"].setdefault(e, [0, 0.0]); z[0] += 1; z[1] += v[0]
 for m in MED:
-    for d in PERIODOS: MED[m]["p"][d]["t"] = [round(x, 1) for x in MED[m]["p"][d]["t"]]
+    for d in PERIODOS:
+        MED[m]["p"][d]["t"] = [round(x, 1) for x in MED[m]["p"][d]["t"]]
+        MED[m]["p"][d]["en"] = {e: [z[0], round(z[1], 1)] for e, z in MED[m]["p"][d]["en"].items()}
 AGG["med"] = MED
 
 # ---------- como titula cada medio (todo el historico) ----------

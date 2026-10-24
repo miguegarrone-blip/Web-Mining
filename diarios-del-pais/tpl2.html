@@ -139,6 +139,38 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 #ficha .kpis{margin:1rem 0}
 @media (prefers-reduced-motion:reduce){.dvr .l span,.dvr .r span,.rrow .track .bb{transition:none}.dvr.nuevo{animation:none}}
 @media(max-width:560px){.dvr{grid-template-columns:6rem 1fr 1fr 2.6rem}.rrow{grid-template-columns:7rem 1fr}}
+.hoy{display:grid;grid-template-columns:13rem 1fr;gap:20px;align-items:center;margin-bottom:1.6rem}
+.hoy .sum{margin-top:0}
+.termo svg{display:block;width:100%;height:auto}
+.termo .tv{font-family:var(--display);font-size:2rem;text-anchor:middle;fill:var(--fg)}
+.termo .tl{font-family:var(--mono);font-size:.7rem;text-anchor:middle;fill:var(--mute)}
+.termo p{margin:.2rem 0 0;font-family:var(--mono);font-size:.72rem;color:var(--mute);text-align:center}
+@media(max-width:560px){.hoy{grid-template-columns:1fr}.termo{max-width:15rem;margin:0 auto}}
+.cmp{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:12px;margin-top:.6rem}
+.cc{border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.cc.prim{border-color:var(--accent)}
+.cc header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--mono);font-size:.72rem;color:var(--mute)}
+.cc header .lk{font-family:var(--mono);font-size:.75rem;color:var(--accent)}
+.cc a{font-weight:500}
+.cc p{margin:0;font-size:.82rem;color:var(--mute);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cc footer{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:auto}
+.pill{font-family:var(--mono);font-size:.66rem;border:1px solid var(--line);border-radius:10px;padding:1px 7px;color:var(--fg)}
+.pill i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.pill.cb{border-style:dashed;color:var(--mute)}
+.badge{font-family:var(--mono);font-size:.64rem;background:var(--accent);color:var(--bg);border-radius:3px;padding:0 5px}
+#a-cmp-ctl select{max-width:min(36rem,100%)}
+#a-red{touch-action:manipulation}
+#a-red .ed{stroke:var(--mute);stroke-opacity:.35}
+#a-red .ed.on{stroke:var(--fg);stroke-opacity:.8}
+#a-red .nd{stroke:var(--bg);stroke-width:2;cursor:pointer}
+#a-red .nd.off{opacity:.25}
+#a-red text{font-family:var(--body);font-size:11px;fill:var(--fg);pointer-events:none;paint-order:stroke;stroke:var(--bg);stroke-width:3px}
+#a-red .dim{opacity:.15}
+.com{display:grid;grid-template-columns:1.2rem 1fr;gap:8px;font-size:.85rem;margin-block:5px}
+.com i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-top:4px}
+:root{--c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c1:#3987e5;--c2:#d95926;--c3:#199e70}}
+:root[data-theme="dark"]{--c1:#3987e5;--c2:#d95926;--c3:#199e70}
 .words{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}.words small{font-family:var(--mono);color:var(--mute);font-size:.7rem;margin-left:3px}
 @media(max-width:560px){li.n{grid-template-columns:1fr;gap:4px}.meta{flex-direction:row;gap:10px}.trow{grid-template-columns:1fr 4.5rem}.trow .track{display:none}.row{grid-template-columns:6rem 1fr 2.2rem}}
 </style>
@@ -148,6 +180,7 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 <div class="chips tabs" id="tabs"><button data-t="res" aria-pressed="true">Resumen</button><button data-t="tit" aria-pressed="false">Titulares</button><button data-t="tema" aria-pressed="false">Por tema</button><button data-t="mon" aria-pressed="false">Monitor</button><button data-t="an" aria-pressed="false">Análisis</button><button data-t="sens" aria-pressed="false">Cómo titulan</button><button data-t="tend" aria-pressed="false">Tendencias</button><button data-t="sal" aria-pressed="false">Salud de datos</button></div>
 
 <div id="p-res">
+ <div class="hoy"><div id="r-termo" class="termo"></div><div><h2>Resumen del día</h2><p class="sum" id="r-resumen"></p></div></div>
  <div class="kpis" id="kpis"></div>
  <section class="c"><h2>De qué se habla</h2><div id="r-top"></div></section>
  <section class="c"><h2>Quién aparece en las noticias</h2><div id="r-ent"></div></section>
@@ -211,8 +244,10 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
  </div>
  <section class="c"><h2>Agenda de cada medio</h2><p class="note">Qué parte de sus notas dedica cada medio a cada tema. Cuanto más intenso el color, más cubre ese tema respecto del promedio de los medios. Tocá un medio para ver su ficha.</p><div class="xs"><div id="a-heat"></div></div><button id="a-heat-more" class="go" hidden></button></section>
  <section class="c"><h2>Tono por medio</h2><p class="note" id="a-tnote"></p><div id="a-sent" class="dv"></div><button id="a-sent-more" class="go" hidden></button><div class="legend"><span><i class="s-n"></i>Negativo (hacia la izquierda)</span><span><i class="s-p"></i>Positivo (hacia la derecha)</span><span>El resto es neutro</span></div></section>
+ <section class="c"><h2>Cómo trata cada medio a cada figura</h2><p class="note">Porcentaje de notas negativas de cada medio cuando menciona a cada figura. Rojo: más negativo que el promedio de los medios con esa figura; verde: menos negativo. Solo celdas con 3 notas o más; entre paréntesis, la cantidad de notas.</p><div class="xs"><div id="a-ent"></div></div><button id="a-ent-more" class="go" hidden></button></section>
+ <section class="c"><h2>Mapa de medios</h2><p class="note">Cada punto es un medio y cada línea une a dos medios que cubren las mismas historias (últimas __VENTANA__ h). Los colores son comunidades detectadas automáticamente: grupos de medios que comparten agenda. El tamaño indica cuántas historias compartidas cubre. Tocá un medio para ver su ficha.</p><div class="chartbox" id="a-red-box"><svg id="a-red" viewBox="0 0 800 520" role="img" aria-label="Grafo de medios que cubren las mismas historias"></svg><div id="a-red-tip" class="tip" hidden></div></div><div id="a-red-com"></div></section>
  <section class="c"><h2>Temas día por día</h2><p class="note" id="a-race-note">Cómo cambia la agenda: los temas más cubiertos de cada día. Tocá reproducir o mové el control.</p><div class="chips" id="a-race-ctl"></div><div id="a-race" class="race"></div></section>
- <section class="c"><h2>Noticias que cubren varios medios</h2><div id="a-cross"></div></section>
+ <section class="c"><h2>Una noticia, muchos encuadres</h2><p class="note">La misma historia contada por cada medio, en orden de publicación, con el tono de cada título y sus recursos de cebo. Elegí una de las historias que cubrieron más medios.</p><div class="chips" id="a-cmp-ctl"></div><p class="sum" id="a-cmp-sum"></p><div id="a-cross" class="cmp"></div><h2 style="margin-top:1.4rem">Quién llega primero</h2><p class="note">Veces que cada medio publicó primero una historia que después cubrieron otros (últimas __VENTANA__ h).</p><div id="a-prim"></div></section>
  <section class="c"><h2>Palabras más repetidas</h2><div id="a-words" class="words"></div></section>
 </div>
 </div>
@@ -282,7 +317,7 @@ let best=-1,bs=0.5;cand.forEach(k=>{const c=cosv(V[i],V[grupos[k].seed]);if(c>bs
 if(best>=0)grupos[best].it.push(i);else{grupos.push({seed:i,it:[i]});T[i].forEach(w=>{if(!post.has(w))post.set(w,[]);post.get(w).push(grupos.length-1)})}});
 const nm=g=>new Set(g.map(x=>x.m)).size;
 const cr=grupos.map(g=>g.it.map(i=>D[i])).filter(g=>nm(g)>=2).sort((a,b)=>nm(b)-nm(a)||b.length-a.length).slice(0,25);
-window.CR=cr;const h=$("a-cross");if(!cr.length)h.appendChild(mk("p","note","No se detectaron noticias repetidas entre medios."));
+window.CR=cr;window.GR=grupos.map(g=>g.it.map(i=>D[i])).filter(g=>nm(g)>=2);const h=$("a-cross");if(!cr.length)h.appendChild(mk("p","note","No se detectaron noticias repetidas entre medios."));
 cr.forEach(g=>{const d=mk("div","cl");const ms=[...new Set(g.map(x=>x.m))];d.appendChild(mk("b","",ms.length+" medios · "+ms.slice(0,6).join(" · ")+(ms.length>6?" +"+(ms.length-6):"")));
 const vistos=new Set();const uno=g.filter(x=>!vistos.has(x.m)&&vistos.add(x.m));
 uno.slice(0,6).forEach(x=>{const r=mk("div","cr");r.appendChild(mk("em","",x.m));const a=mk("a","",x.t);a.href=x.u;a.target="_blank";a.rel="noopener";r.appendChild(a);d.appendChild(r)});
@@ -473,7 +508,7 @@ function tono(L){const host=$("a-sent"),V=todos.sent?L:L.slice(0,TOP),antes=new 
  if(!quieto)V.forEach(m=>{const el=filas.get(m),t0=antes.get(m);if(t0==null)return;const dy=t0-el.getBoundingClientRect().top;if(!dy)return;
   el.style.transition="none";el.style.transform="translateY("+dy+"px)";requestAnimationFrame(()=>{el.style.transition="transform .45s ease";el.style.transform=""})});
  masBtn("a-sent-more","sent",L.length)}
-function pintar(){const L=lista();$("an-cnt").textContent=L.length+" medios";heat(L);tono(L)}
+function pintar(){const L=lista();window.LISTA_AN=L;$("an-cnt").textContent=L.length+" medios";heat(L);tono(L)}
 /* ficha de medio */
 const dlg=$("ficha");dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
 window.ficha=function(m){const c=$("ficha-c");c.textContent="";const per=PER.find(x=>x[0]===fx.per)[1],a=P(m),sn=(AGG.sens||[]).find(r=>r.m===m)||{},{temas,avg}=promedios();
@@ -507,6 +542,127 @@ window.ficha=function(m){const c=$("ficha-c");c.textContent="";const per=PER.fin
  ctl.append(play,sl);if(dias.length<2){play.disabled=true;sl.disabled=true;$("a-race-note").textContent="Los temas más cubiertos de cada día. La animación se activa cuando haya al menos 2 días completos de datos."}
  paso()}
 pintar()}
+
+/* ---- Comparador de encuadre, primicia, tono por figura, mapa de medios y resumen del dia ---- */
+{const CR=window.CR||[],GR=window.GR||[],TONO={n:"Negativo","0":"Neutro",p:"Positivo"},COLT={n:"var(--neg)","0":"var(--neu)",p:"var(--pos)"};
+const hhmm=ts=>new Date(ts).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hour12:false});
+const dur=ms=>{const m=Math.round(ms/6e4);return m<60?m+" min":Math.floor(m/60)+" h "+String(m%60).padStart(2,"0")+" min"};
+const unoPorMedio=g=>{const v=new Map();g.slice().sort((a,b)=>(a.ts||9e15)-(b.ts||9e15)).forEach(x=>{if(!v.has(x.m))v.set(x.m,x)});return[...v.values()]};
+const lkM=m=>{const b=mk("button","lk",m);b.onclick=()=>window.ficha&&ficha(m);return b};
+/* comparador */
+const ctl=$("a-cmp-ctl"),sel=document.createElement("select");sel.setAttribute("aria-label","Historia");let cur=0;
+CR.forEach((g,i)=>{const t=g[0].t;sel.appendChild(new Option(new Set(g.map(x=>x.m)).size+" medios · "+(t.length>80?t.slice(0,78)+"…":t),i))});
+const ant=mk("button","","‹ Anterior"),sig=mk("button","","Siguiente ›");
+ant.onclick=()=>{if(cur>0)comparar(cur-1)};sig.onclick=()=>{if(cur<CR.length-1)comparar(cur+1)};sel.onchange=()=>comparar(+sel.value);
+if(CR.length)ctl.append(ant,sel,sig);
+function comparar(i){cur=i;sel.value=i;ant.disabled=i===0;sig.disabled=i===CR.length-1;const host=$("a-cross"),sm=$("a-cmp-sum");host.textContent="";sm.textContent="";
+ if(!CR.length){sm.textContent="No se detectaron noticias repetidas entre medios.";return}
+ const its=unoPorMedio(CR[i]),t0=its[0].ts,tl=its[its.length-1].ts,cnt={n:0,"0":0,p:0},ncb=its.filter(x=>(x.cr||[]).length).length;its.forEach(x=>cnt[tn(x)]++);
+ sm.append(mk("b","",its.length+" medios"),document.createTextNode(" · primero "),mk("b","",its[0].m),document.createTextNode((t0?" a las "+hhmm(t0):"")+(t0&&tl>t0?"; el último llegó "+dur(tl-t0)+" después":"")+" · títulos: "+cnt.n+" negativos, "+cnt["0"]+" neutros, "+cnt.p+" positivos · "+ncb+" con recursos de cebo."));
+ its.forEach((x,k)=>{const c=mk("article","cc"+(k===0?" prim":"")),hd=mk("header");hd.appendChild(lkM(x.m));
+  const tt=mk("span","",x.ts?hhmm(x.ts)+(k&&t0?" · +"+dur(x.ts-t0):""):"");if(k===0){tt.textContent=(x.ts?hhmm(x.ts)+" ":"");tt.appendChild(mk("span","badge","Primero"))}hd.appendChild(tt);
+  const a=mk("a","",x.t);a.href=x.u;a.target="_blank";a.rel="noopener";c.append(hd,a);if(x.b)c.appendChild(mk("p","",x.b));
+  const ft=mk("footer"),pl=mk("span","pill");const dot=mk("i");dot.style.background=COLT[tn(x)];pl.append(dot,document.createTextNode(TONO[tn(x)]));ft.appendChild(pl);
+  (x.cr||[]).forEach(r=>ft.appendChild(mk("span","pill cb",r)));c.appendChild(ft);host.appendChild(c)})}
+window.comparar=comparar;comparar(0);
+/* primicia: quien publica primero las historias compartidas */
+{const pr={},cub={};GR.forEach(g=>{const its=unoPorMedio(g).filter(x=>x.ts);if(its.length<2)return;pr[its[0].m]=(pr[its[0].m]||0)+1;its.forEach(x=>cub[x.m]=(cub[x.m]||0)+1)});
+ const E=Object.entries(pr).filter(([m])=>cub[m]>=3).sort((a,b)=>b[1]-a[1]).slice(0,10),h=$("a-prim");window.PRIM=E;
+ if(!E.length)h.appendChild(mk("p","note","Todavía no hay suficientes historias compartidas."));
+ E.forEach(([m,n])=>rowBar(h,m,[["s-a",n]],n,E[0][1],n,m+": primero en "+n+" de las "+cub[m]+" historias compartidas que cubrió ("+pc(n/cub[m])+")"))}
+/* resumen: las historias compartidas abren el comparador */
+{const h=$("r-cross");h.textContent="";CR.slice(0,5).forEach((g,i)=>{const d=mk("div","cl"),ms=[...new Set(g.map(x=>x.m))];d.appendChild(mk("b","",ms.length+" medios · "+ms.slice(0,6).join(" · ")));
+ const a=mk("a","",g[0].t);a.href=g[0].u;a.target="_blank";a.rel="noopener";d.appendChild(a);const go=mk("button","go","Comparar encuadres →");go.onclick=()=>{tab("an");comparar(i);$("a-cmp-ctl").scrollIntoView({behavior:"smooth"})};d.appendChild(go);h.appendChild(d)})}
+/* tono por figura: matriz medio x figura, divergente contra el promedio de la figura */
+{const MED=AGG.med||{},TOP=10;let todo=false;const perSel=()=>{const b=[...document.querySelectorAll("#an-per button")].findIndex(x=>x.getAttribute("aria-pressed")==="true");return[1,2,7,30][b<0?1:b]};
+ function pintarEnt(){const per=perSel(),h=$("a-ent");h.textContent="";const tot={};
+  Object.values(MED).forEach(v=>Object.entries((v.p[per]||{}).en||{}).forEach(([e,z])=>{const t=tot[e]||(tot[e]=[0,0]);t[0]+=z[0];t[1]+=z[1]}));
+  const ents=Object.entries(tot).filter(([e,z])=>z[0]>=8).sort((a,b)=>b[1][0]-a[1][0]).slice(0,7).map(x=>x[0]);
+  const vis=new Set([...document.querySelectorAll("#a-sent .dvr")].map(e=>e.dataset.m));const orden=[...(window.LISTA_AN||Object.keys(MED))];
+  const L=orden.filter(m=>ents.some(e=>(((MED[m].p[per]||{}).en||{})[e]||[0])[0]>=3));
+  if(!ents.length||!L.length){h.appendChild(mk("p","note","Todavía no hay suficientes menciones para comparar."));$("a-ent-more").hidden=true;return}
+  const V=todo?L:L.slice(0,TOP);h.className="hmx";h.style.gridTemplateColumns="9rem repeat("+ents.length+",minmax(4.4rem,1fr))";
+  h.appendChild(mk("div","lab hd",""));ents.forEach(e=>{const c=mk("div","hd",e);c.title=e+": ≈"+pc(tot[e][1]/tot[e][0])+" negativas en promedio ("+tot[e][0]+" notas)";h.appendChild(c)});
+  V.forEach(m=>{const lab=mk("div","lab");lab.appendChild(lkM(m));h.appendChild(lab);
+   ents.forEach(e=>{const z=(((MED[m].p[per]||{}).en||{})[e])||[0,0],c=mk("div");if(z[0]<3){c.textContent="·";c.style.color="var(--mute)";h.appendChild(c);return}
+    const pn=z[1]/z[0],avg=tot[e][1]/tot[e][0],d=pn-avg,k=Math.min(1,Math.abs(d)/.3);c.textContent=Math.round(pn*100)+"% ("+z[0]+")";
+    c.style.background=Math.abs(d)<.03?"transparent":"color-mix(in srgb, "+(d>0?"var(--neg)":"var(--pos)")+" "+Math.round(15+k*55)+"%, transparent)";
+    c.title=m+" sobre "+e+": ≈"+pc(pn)+" negativas en "+z[0]+" notas; el promedio de los medios es ≈"+pc(avg);h.appendChild(c)})});
+  if(window.marcarRed)marcarRed(new Set(orden));
+  const b=$("a-ent-more");b.hidden=L.length<=TOP;b.textContent=todo?"Mostrar solo los primeros "+TOP:"Ver los "+L.length+" medios";b.onclick=()=>{todo=!todo;pintarEnt()};void vis}
+ window.pintarEnt=pintarEnt;pintarEnt();document.getElementById("an-f").addEventListener("click",()=>setTimeout(pintarEnt,0));document.getElementById("an-f").addEventListener("input",()=>setTimeout(pintarEnt,0))}
+/* mapa de medios: grafo de historias compartidas, comunidades por propagacion de etiquetas, disposicion por fuerzas */
+{const svg=$("a-red"),NS="http://www.w3.org/2000/svg",W=800,H=520,quieto=matchMedia("(prefers-reduced-motion: reduce)").matches;
+ const st={},par={};GR.forEach(g=>{const ms=[...new Set(g.map(x=>x.m))].sort();ms.forEach(m=>st[m]=(st[m]||0)+1);
+  for(let i=0;i<ms.length;i++)for(let j=i+1;j<ms.length;j++){const k=ms[i]+"\t"+ms[j];par[k]=(par[k]||0)+1}});
+ const asoc=Object.entries(par).map(([k,w])=>{const[a,b]=k.split("\t");return{a,b,w,s:w/Math.min(st[a],st[b])}}).filter(e=>e.w>=2);
+ const keep=new Map();Object.keys(st).forEach(m=>asoc.filter(e=>e.a===m||e.b===m).sort((x,y)=>y.s-x.s).slice(0,3).forEach(e=>keep.set(e.a+"\t"+e.b,e)));
+ const E=[...keep.values()],N=[...new Set(E.flatMap(e=>[e.a,e.b]))].sort();
+ if(N.length<3){$("a-red-com").appendChild(mk("p","note","Todavía no hay suficientes historias compartidas para armar el mapa."));svg.style.display="none"}else{
+  const vec={};N.forEach(m=>vec[m]=[]);E.forEach(e=>{vec[e.a].push([e.b,e.s]);vec[e.b].push([e.a,e.s])});
+  const lab={};N.forEach((m,i)=>lab[m]=i);for(let it=0;it<30;it++){let cambio=false;N.forEach(m=>{const sc={};vec[m].forEach(([o,w])=>sc[lab[o]]=(sc[lab[o]]||0)+w);
+   const best=Object.entries(sc).sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0];if(best&&+best[0]!==lab[m]&&best[1]>(sc[lab[m]]||0)){lab[m]=+best[0];cambio=true}});if(!cambio)break}
+  const grupos={};N.forEach(m=>(grupos[lab[m]]=grupos[lab[m]]||[]).push(m));const G=Object.values(grupos).sort((a,b)=>b.length-a.length);
+  const col={};G.forEach((g,i)=>g.forEach(m=>col[m]=i<3&&g.length>=3?"var(--c"+(i+1)+")":"var(--neu)"));
+  const P={};N.forEach((m,i)=>{const a=i/N.length*2*Math.PI;P[m]={x:W/2+200*Math.cos(a),y:H/2+170*Math.sin(a),vx:0,vy:0}});
+  const R=m=>4+Math.sqrt(st[m])*1.6,k=Math.sqrt(W*H/N.length)*.42;
+  function paso(temp){N.forEach(a=>{let fx=0,fy=0;N.forEach(b=>{if(a===b)return;const dx=P[a].x-P[b].x,dy=P[a].y-P[b].y,d=Math.max(1,Math.hypot(dx,dy));fx+=dx/d*k*k/d;fy+=dy/d*k*k/d});P[a].vx=fx;P[a].vy=fy});
+   E.forEach(e=>{const dx=P[e.a].x-P[e.b].x,dy=P[e.a].y-P[e.b].y,d=Math.max(1,Math.hypot(dx,dy)),f=d*d/k*(.3+e.s);P[e.a].vx-=dx/d*f;P[e.a].vy-=dy/d*f;P[e.b].vx+=dx/d*f;P[e.b].vy+=dy/d*f});
+   N.forEach(m=>{const p=P[m];p.vx+=(W/2-p.x)*.12;p.vy+=(H/2-p.y)*.14;const v=Math.hypot(p.vx,p.vy)||1,mv=Math.min(v,temp);p.x=Math.min(W-60,Math.max(60,p.x+p.vx/v*mv));p.y=Math.min(H-30,Math.max(36,p.y+p.vy/v*mv))})}
+  const gE=document.createElementNS(NS,"g"),gN=document.createElementNS(NS,"g");svg.append(gE,gN);
+  const lin=E.map(e=>{const l=document.createElementNS(NS,"line");l.setAttribute("class","ed");l.setAttribute("stroke-width",(.6+e.s*3).toFixed(1));gE.appendChild(l);return l});
+  const deg={};E.forEach(e=>{deg[e.a]=(deg[e.a]||0)+1;deg[e.b]=(deg[e.b]||0)+1});const conEtiqueta=new Set(N.slice().sort((a,b)=>st[b]-st[a]).slice(0,22));
+  const tip=$("a-red-tip"),box=$("a-red-box");
+  const nodos=N.map(m=>{const g=document.createElementNS(NS,"g"),c=document.createElementNS(NS,"circle");c.setAttribute("r",R(m).toFixed(1));c.setAttribute("class","nd");c.style.fill=col[m];
+   c.setAttribute("tabindex","0");c.setAttribute("aria-label",m);const t=document.createElementNS(NS,"text");t.textContent=m;t.setAttribute("dy","-"+(R(m)+4).toFixed(0));t.setAttribute("text-anchor","middle");if(!conEtiqueta.has(m))t.style.display="none";g.append(c,t);gN.appendChild(g);
+   const vec2=vec[m].slice().sort((a,b)=>b[1]-a[1]);
+   const on=()=>{const vs=new Set([m,...vec[m].map(x=>x[0])]);nodos.forEach(n=>{n.g.classList.toggle("dim",!vs.has(n.m));if(vs.has(n.m))n.t.style.display=""});E.forEach((e,i)=>lin[i].classList.toggle("on",e.a===m||e.b===m));
+    tip.textContent="";tip.append(mk("b","",m),document.createTextNode(st[m]+" historias compartidas · más cerca de "+vec2.slice(0,3).map(([o,w])=>o+" ("+Math.round(w*100)+"%)").join(", ")));tip.hidden=false;
+    const br=box.getBoundingClientRect(),cr=c.getBoundingClientRect();tip.style.left=Math.min(Math.max(cr.left-br.left-tip.offsetWidth/2,0),br.width-tip.offsetWidth)+"px";tip.style.top=(cr.top-br.top-tip.offsetHeight-8)+"px"};
+   const off=()=>{nodos.forEach(n=>{n.g.classList.remove("dim");n.t.style.display=visibles.has(n.m)?"":"none"});lin.forEach(l=>l.classList.remove("on"));tip.hidden=true};
+   c.addEventListener("pointerenter",on);c.addEventListener("pointerleave",off);c.addEventListener("focus",on);c.addEventListener("blur",off);c.addEventListener("click",()=>window.ficha&&ficha(m));
+   return{m,g,c,t}});
+  let visibles=new Set(conEtiqueta);
+  function acomodar(){const cajas=[];visibles=new Set();N.slice().sort((a,b)=>st[b]-st[a]).forEach(m=>{if(!conEtiqueta.has(m))return;const w=m.length*6.1,x=P[m].x-w/2,y=P[m].y-R(m)-16,c={x,y,w,h:13};
+    if(cajas.some(o=>c.x<o.x+o.w+4&&o.x<c.x+c.w+4&&c.y<o.y+o.h&&o.y<c.y+c.h)||N.some(o=>o!==m&&Math.hypot(P[o].x-P[m].x,P[o].y-(y+6))<R(o)))return;cajas.push(c);visibles.add(m)});
+   nodos.forEach(n=>n.t.style.display=visibles.has(n.m)?"":"none")}
+  function dibujar(){E.forEach((e,i)=>{lin[i].setAttribute("x1",P[e.a].x.toFixed(1));lin[i].setAttribute("y1",P[e.a].y.toFixed(1));lin[i].setAttribute("x2",P[e.b].x.toFixed(1));lin[i].setAttribute("y2",P[e.b].y.toFixed(1))});
+   nodos.forEach(n=>n.g.setAttribute("transform","translate("+P[n.m].x.toFixed(1)+","+P[n.m].y.toFixed(1)+")"))}
+  /* la disposicion final se calcula de una vez; la animacion solo interpola desde el circulo inicial */
+  const INI={};N.forEach(m=>INI[m]={x:P[m].x,y:P[m].y});for(let i=0;i<300;i++)paso(30*(1-i/300)+1);const FIN={};N.forEach(m=>FIN[m]={x:P[m].x,y:P[m].y});
+  dibujar();acomodar();
+  if(!quieto){N.forEach(m=>{P[m].x=INI[m].x;P[m].y=INI[m].y});dibujar();
+   const anim=t0=>{const u=Math.min(1,(performance.now()-t0)/1400),e=1-Math.pow(1-u,3);N.forEach(m=>{P[m].x=INI[m].x+(FIN[m].x-INI[m].x)*e;P[m].y=INI[m].y+(FIN[m].y-INI[m].y)*e});dibujar();if(u<1)requestAnimationFrame(()=>anim(t0))};
+   new IntersectionObserver((en,ob)=>{if(en[0].isIntersecting){ob.disconnect();const t0=performance.now();requestAnimationFrame(()=>anim(t0))}}).observe(svg);
+   setTimeout(()=>{N.forEach(m=>{P[m].x=FIN[m].x;P[m].y=FIN[m].y});dibujar()},5000)}   // por si la animacion no corre (pestaña en segundo plano)
+  window.marcarRed=vis=>nodos.forEach(n=>n.c.classList.toggle("off",!!vis&&!vis.has(n.m)));
+  const hc=$("a-red-com");G.forEach((g,i)=>{if(i>=3||g.length<3)return;const r=mk("div","com"),d=mk("i");d.style.background="var(--c"+(i+1)+")";r.append(d,mk("span","","Comunidad "+(i+1)+": "+g.join(", ")));hc.appendChild(r)});
+  const resto=G.filter((g,i)=>i>=3||g.length<3).flat();if(resto.length){const r=mk("div","com"),d=mk("i");d.style.background="var(--neu)";r.append(d,mk("span","","Otros medios: "+resto.join(", ")));hc.appendChild(r)}}}
+/* termometro: % de notas negativas de las ultimas 24 h, en escala 0-100, contra el promedio de los dias anteriores */
+{const hs=Object.keys(AGG.horas).sort().slice(-24);let ng=0,tt=0;hs.forEach(h=>{const v=AGG.horas[h];ng+=v[0];tt+=v[0]+v[1]+v[2]});
+ const val=tt?Math.round(ng/tt*100):0,full=Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy),prom=full.length?full.reduce((s2,d)=>s2+AGG.dneg[d]/AGG.dn[d],0)/full.length*100:null;
+ const BANDAS=[[0,25,"Calmo"],[25,40,"Moderado"],[40,55,"Tenso"],[55,100,"Muy tenso"]],banda=BANDAS.find(b=>val>=b[0]&&val<b[1])||BANDAS[3];window.TERMO={val,banda:banda[2],prom};
+ const arc=(a0,a1,r)=>{const p=a=>[100+r*Math.cos(Math.PI*(1-a/100)),100-r*Math.sin(Math.PI*(1-a/100))],[x0,y0]=p(a0),[x1,y1]=p(a1);return"M"+x0.toFixed(1)+" "+y0.toFixed(1)+" A"+r+" "+r+" 0 0 1 "+x1.toFixed(1)+" "+y1.toFixed(1)};
+ let g='<svg viewBox="0 0 200 118" role="img" aria-label="Termómetro de negatividad: '+val+' de 100, '+banda[2]+'">';
+ BANDAS.forEach((b,i)=>{g+='<path d="'+arc(b[0]+.8,b[1]-.8,80)+'" fill="none" stroke="color-mix(in srgb, var(--neg) '+[18,40,65,92][i]+'%, var(--chip))" stroke-width="16" stroke-linecap="butt"/>'});
+ const a=Math.PI*(1-Math.min(val,100)/100);g+='<line x1="'+(100+64*Math.cos(a)).toFixed(1)+'" y1="'+(100-64*Math.sin(a)).toFixed(1)+'" x2="'+(100+94*Math.cos(a)).toFixed(1)+'" y2="'+(100-94*Math.sin(a)).toFixed(1)+'" stroke="var(--fg)" stroke-width="4" stroke-linecap="round"/>';
+ g+='<text class="tv" x="100" y="92">'+val+'</text><text class="tl" x="100" y="114">'+banda[2].toUpperCase()+'</text></svg>';
+ const h=$("r-termo");h.innerHTML=g;h.appendChild(mk("p","",prom==null?"% de notas negativas, últimas 24 h":(val>=prom?"↑ ":"↓ ")+Math.abs(Math.round(val-prom))+" pts vs. el promedio de "+full.length+" día(s)"));h.title="Termómetro de negatividad: porcentaje estimado de notas con tono negativo en las últimas 24 horas (0 a 100)"}
+/* resumen del dia armado con plantillas a partir de los datos */
+(()=>{const desde=Date.now()-24*3600*1000,R=D.filter(x=>x.ts>=desde),out=$("r-resumen");if(!R.length){out.textContent="Sin notas en las últimas 24 horas.";return}
+ const frag=[],B=t=>mk("b","",t),T=t=>document.createTextNode(t);
+ const nmed=new Set(R.map(x=>x.m)).size,tc={};R.forEach(x=>x.tg.forEach(t=>{if(t!=="Otros")tc[t]=(tc[t]||0)+1}));const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]);
+ frag.push(T("En las últimas 24 horas, "),B(nmed+" medios"),T(" publicaron "),B(R.length.toLocaleString("es-AR")+" notas"),T(". "));
+ if(top[0]){frag.push(T("El tema más cubierto fue "),B(top[0][0]),T(" ("+pc(top[0][1]/R.length)+" de las notas)"));const full=Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy),hist=AGG.tema[top[0][0]]||{};
+  if(full.length>=3){const m=full.reduce((s2,d)=>s2+(hist[d]||0),0)/full.length;if(m>0)frag.push(T(", "+(top[0][1]/m).toFixed(1).replace(".",",")+" veces su promedio diario"))}frag.push(T(top[1]?", seguido por "+top[1][0]+". ":". "))}
+ if(CR[0]){const g=CR[0],ms=new Set(g.map(x=>x.m)).size,f=unoPorMedio(g)[0];frag.push(T("La noticia que más medios cubrieron fue «"),B(g[0].t),T("» ("+ms+" medios; la publicó primero "+f.m+"). "))}
+ const ec={};R.forEach(x=>(x.e||[]).forEach(e=>(ec[e]=ec[e]||[]).push(x)));const e0=Object.entries(ec).sort((a,b)=>b[1].length-a[1].length)[0];
+ if(e0){const A=adj(e0[1]);frag.push(T("La figura más mencionada fue "),B(e0[0]),T(" ("+e0[1].length+" notas, ≈"+pc(A.e[0]/e0[1].length)+" con tono negativo). "))}
+ const M1=Object.entries(AGG.med||{}).map(([m,v])=>[m,v.p[1]]).filter(([m,p2])=>p2&&p2.n>=15);
+ if(M1.length>=2){const neg=M1.slice().sort((a,b)=>b[1].t[0]/b[1].n-a[1].t[0]/a[1].n);frag.push(T("El medio más negativo fue "),B(neg[0][0]),T(" (≈"+pc(neg[0][1].t[0]/neg[0][1].n)+") y el menos negativo, "),B(neg[neg.length-1][0]),T(" (≈"+pc(neg[neg.length-1][1].t[0]/neg[neg.length-1][1].n)+"). "))}
+ if(window.PRIM&&PRIM[0])frag.push(T("El que más veces llegó primero a una historia compartida fue "),B(PRIM[0][0]),T(" ("+PRIM[0][1]+" veces). "));
+ if(window.TERMO)frag.push(T("El termómetro de negatividad marca "),B(TERMO.val+" ("+TERMO.banda.toLowerCase()+")"),T("."));
+ out.append(...frag)})()}
 
 function tab(k){document.querySelectorAll("#tabs button").forEach(c=>c.setAttribute("aria-pressed",c.dataset.t===k));["res","tit","tema","mon","an","sens","tend","sal"].forEach(t=>$("p-"+t).hidden=t!==k)}
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.t));

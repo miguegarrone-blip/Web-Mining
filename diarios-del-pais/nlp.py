@@ -83,3 +83,9 @@ _CEBO = {
 def cebo(title):
     n = norm(title)
     return sum(1 for rx in _CEBO.values() if rx.search(n if rx.pattern[0] != "[" else title))
+_NOMBRE_CEBO = {"pregunta": "pregunta", "exclamacion": "exclamación", "exagera": "adjetivo exagerado", "intriga": "intriga",
+                "segunda_persona": "segunda persona", "lista": "lista"}
+def cebo_rasgos(title):
+    """nombres de los rasgos de cebo presentes en el titulo (para mostrarlos en el tablero)"""
+    n = norm(title)
+    return [_NOMBRE_CEBO[k] for k, rx in _CEBO.items() if rx.search(n if rx.pattern[0] != "[" else title)]

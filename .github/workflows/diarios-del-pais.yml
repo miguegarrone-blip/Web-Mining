@@ -85,6 +85,8 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE/datos"
           gzip -kf historico.db
+          TAM=$(stat -c %s historico.db.gz); echo "base comprimida: $((TAM/1024/1024)) MB"
+          if [ "$TAM" -gt 94371840 ]; then echo "::error::La base comprimida supera 90 MB (limite de GitHub: 100 MB). Bajar RETENCION_DIAS en build.py."; exit 1; fi
           rm -rf .git && git init -q && git checkout -q -b "$DATA_BRANCH"
           git config user.name "monitor-bot"
           git config user.email "monitor-bot@users.noreply.github.com"
