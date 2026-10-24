@@ -5,10 +5,11 @@ import concurrent.futures as cf
 from datetime import datetime, timezone, timedelta
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL
+from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL, norm
 from nlp import tone, cebo, cebo_rasgos, ents as get_ents
 from enriquecer import enriquecer, depurar_bajada
 import bert
+import ner
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.environ.get("DATA_DIR", BASE)   # donde viven historico.db y historico.csv
@@ -20,6 +21,8 @@ VENTANA_HORAS = 48      # "notas analizadas" = notas publicadas en las ultimas 4
 POR_MEDIO_PAGINA = 100  # tope por medio dentro de esa ventana
 RETENCION_DIAS = 30     # la base y el CSV guardan solo los ultimos 30 dias (la base comprimida debe quedar bajo el limite de 100 MB de GitHub)
 TOPE_BERT = 4000        # textos por corrida que pasan por XLM-RoBERTa (titulos y bajadas por separado)
+TOPE_NER = 1500         # notas por corrida que pasan por spaCy (titulo + bajada; ~10-30 ms por nota en CPU)
+SEG_NER = 45            # y a lo sumo ~45 s de NER por corrida: lo que falte queda para la corrida siguiente
 H = {"User-Agent": "Mozilla/5.0 (monitor-de-medios; uso personal)"}
 AR = timedelta(hours=-3)
 
@@ -127,7 +130,7 @@ CREATE TABLE IF NOT EXISTS scraping(run TEXT, medio TEXT, intentos INTEGER, ok I
 cols = {r[1] for r in DB.execute("PRAGMA table_info(items)")}
 for c, tipo in (("url_real", "TEXT"), ("bajada", "TEXT"), ("enr", "INTEGER DEFAULT 0"), ("tema_fuente", "TEXT DEFAULT 'reglas'"),
                 ("ld", "INTEGER"), ("autor", "TEXT"), ("firmada", "INTEGER"), ("seccion", "TEXT"), ("mod_ms", "INTEGER"), ("claves", "TEXT"), ("largo", "INTEGER"),
-                ("tono_bajada", "TEXT"), ("cebo", "INTEGER"), ("bert_t", "TEXT"), ("bert_b", "TEXT")):
+                ("tono_bajada", "TEXT"), ("cebo", "INTEGER"), ("bert_t", "TEXT"), ("bert_b", "TEXT"), ("ner", "TEXT")):
     if c not in cols: DB.execute("ALTER TABLE items ADD COLUMN %s %s" % (c, tipo))
 COLS = "h,th,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,visto"
 # migracion unica desde el CSV anterior
@@ -225,6 +228,24 @@ if bert.disponible():
         print(f"BERT {txt}: {len(pend)} textos")
     DB.execute("UPDATE items SET bert_b=NULL WHERE bajada IS NULL OR bajada=''")
     DB.commit(); print(f"BERT: {time.time() - t0:.0f}s")
+# entidades con spaCy (ver ner.py): personas e instituciones, tambien las que no estan en el diccionario de nlp.ENT.
+# Solo las notas sin calcular (o con bajada nueva), las mas recientes primero y con tope por corrida.
+# Si cambia ner.py (filtros, alias) se recalcula todo, de a TOPE_NER por corrida
+if ner.disponible():
+    t0 = time.time()
+    huella_n = hashlib.sha1(open(os.path.join(BASE, "ner.py"), "rb").read()).hexdigest()
+    if (DB.execute("SELECT v FROM meta WHERE k='ner'").fetchone() or [""])[0] != huella_n:
+        DB.execute("UPDATE items SET ner=NULL"); DB.execute("INSERT OR REPLACE INTO meta VALUES('ner',?)", (huella_n,))
+    DB.executemany("UPDATE items SET ner=NULL WHERE h=?", [(h_,) for h_ in hechos])
+    pend = DB.execute("SELECT h,titulo,bajada FROM items WHERE ner IS NULL ORDER BY pub_ms DESC LIMIT ?", (TOPE_NER,)).fetchall()
+    n_ = 0
+    for i in range(0, len(pend), 250):                       # de a 250 notas, cortando por tiempo
+        lote = pend[i:i + 250]
+        res_ = ner.extraer([(t_ + (". " + b_ if b_ else ""))[:300] for _, t_, b_ in lote], excluir=F)
+        DB.executemany("UPDATE items SET ner=? WHERE h=?", [("|".join(e_), h_) for (h_, _, _), e_ in zip(lote, res_)])
+        n_ += len(lote)
+        if time.time() - t0 > SEG_NER: break
+    DB.commit(); print(f"NER: {n_} notas en {time.time() - t0:.1f}s ({len(pend) - n_} pendientes del tope)")
 def retono(h_, t_, b_, bt, bb):
     DB.execute("UPDATE items SET tono_auto=?, tono_bajada=?, cebo=? WHERE h=?", (tone(t_, bert.de_texto(bt)), tone(b_, bert.de_texto(bb)) if b_ else None, cebo(t_), h_))
 # si cambio el modelo de tono, re-clasifica todo lo guardado; si no, solo lo tocado en esta corrida. Siempre aplica las etiquetas manuales
@@ -249,8 +270,8 @@ for x in items:
 HC = os.path.join(DATA, "historico.csv")
 with open(HC, "w", encoding="utf-8", newline="") as f:
     w = csv.writer(f)
-    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada", "tono_bajada", "cebo", "autor", "firmada", "seccion", "largo", "bert_titulo", "bert_bajada"])
-    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada,tono_bajada,cebo,autor,firmada,seccion,largo,bert_t,bert_b FROM items ORDER BY visto, pub_ms"): w.writerow(r)
+    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada", "tono_bajada", "cebo", "autor", "firmada", "seccion", "largo", "bert_titulo", "bert_bajada", "ner"])
+    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada,tono_bajada,cebo,autor,firmada,seccion,largo,bert_t,bert_b,ner FROM items ORDER BY visto, pub_ms"): w.writerow(r)
 
 # ---------- pagina: notas de las ultimas VENTANA_HORAS, con tope por medio ----------
 items.sort(key=lambda x: x["ts"], reverse=True)
@@ -295,6 +316,46 @@ dneg = {d: round(v, 2) for d, v in dneg.items()}
 horas = {h_: [round(x, 2) for x in v] for h_, v in horas.items()}
 horasT = {t: {h_: [round(x, 2) for x in v] for h_, v in hs.items()} for t, hs in horasT.items()}
 AGG = {"dn": dn, "dneg": dneg, "tema": tema, "ent": ent, "horas": horas, "horasT": horasT, "hoy": dia(ahora_ms)}
+
+# ---------- figuras detectadas por NER (pestaña Monitor: "Nuevas en la agenda") ----------
+# Por figura: notas y medios en las ultimas 24 h y 48 h, notas en los 7 dias anteriores a las ultimas 24 h (prev),
+# si esta en el diccionario nlp.ENT (dic), si en el 60% o mas de sus notas el tema principal es deportes (dep) y hasta 3 titulares de ejemplo de medios distintos.
+# Regla de "nueva": fuera del diccionario, >= NER_MIN_N notas en las ultimas 24 h en >= NER_MIN_MED medios y a lo sumo
+# NER_MAX_PREV notas en los 7 dias anteriores. Solo se evalua si hay historia: >= 200 notas en esos 7 dias y >= 80% con NER calculado.
+NER_MIN_N, NER_MIN_MED, NER_MAX_PREV = 4, 3, 1
+def agg_ner():
+    h24, h48, d8 = ahora_ms - 86400000, ahora_ms - 2 * 86400000, ahora_ms - 8 * 86400000
+    R = DB.execute("SELECT ner,medio,pub_ms,titulo,COALESCE(url_real,url),temas FROM items WHERE ner!='' AND pub_ms BETWEEN ? AND ? ORDER BY pub_ms DESC", (d8, ahora_ms)).fetchall()
+    tot_prev, con_ner = DB.execute("SELECT COUNT(*), SUM(ner IS NOT NULL) FROM items WHERE pub_ms>=? AND pub_ms<?", (d8, h24)).fetchone()
+    hist = tot_prev >= 200 and (con_ner or 0) >= 0.8 * tot_prev
+    cnt = {}
+    for en_, *_ in R:
+        for e in en_.split("|"): cnt[e] = cnt.get(e, 0) + 1
+    U = ner.unificar(cnt); var = {}
+    for e, u_ in U.items(): var.setdefault(u_, set()).add(e)
+    fig = {}
+    for en_, m, ms, t_, u_, tg in R:
+        for e in {U[x] for x in en_.split("|")}:
+            f = fig.setdefault(e, {"n24": 0, "n48": 0, "prev": 0, "m24": set(), "m48": set(), "ej": [], "dep": 0})
+            if ms >= h48: f["n48"] += 1; f["m48"].add(m); f["dep"] += merge_tema((tg or "").split("|")[0]) in ("Fútbol", "Otros deportes")
+            if ms >= h24:
+                f["n24"] += 1; f["m24"].add(m)
+                # ejemplo: un titular por medio, preferentemente con la figura en el titulo (no solo en la bajada)
+                if len(f["ej"]) < 3 and m not in {z[1] for z in f["ej"]} and any(norm(v) in norm(t_) for v in var[e]): f["ej"].append([t_, m, u_])
+            else: f["prev"] += 1
+    out = []
+    for e, f in fig.items():
+        if f["n48"] < 2: continue
+        dic = ner.en_diccionario(e)
+        nueva = hist and not dic and f["n24"] >= NER_MIN_N and len(f["m24"]) >= NER_MIN_MED and f["prev"] <= NER_MAX_PREV
+        # texto para el buscador del monitor: el apellido o la forma final mas corta ("Colapinto"), que encuentra mas titulares
+        q = min((v for v in var[e] if len(v) >= 4 and norm(e).endswith(norm(v))), key=len, default=e)
+        out.append({"n": e, "q": q, "n24": f["n24"], "n48": f["n48"], "m24": len(f["m24"]), "m48": len(f["m48"]), "prev": f["prev"], "dic": int(dic), "nueva": int(nueva), "dep": int(f["dep"] >= 0.6 * f["n48"]), "ej": f["ej"]})
+    out.sort(key=lambda z: (-z["nueva"], -z["n24"], -z["n48"]))
+    out = [z for i, z in enumerate(out) if i < 80 or z["nueva"]]
+    return {"fig": out, "hist": int(hist), "regla": [NER_MIN_N, NER_MIN_MED, NER_MAX_PREV], "notas": len(R)}
+if ner.disponible() or DB.execute("SELECT 1 FROM items WHERE ner IS NOT NULL LIMIT 1").fetchone():
+    AGG["ner"] = agg_ner()
 
 # ---------- por medio y periodo (pestaña Analisis: filtros de periodo, agenda y tono por medio) ----------
 # MED[medio] = {r: alcance, tp: tipo, p: {dias: {n, t: [neg, neu, pos] esperados, tg: {tema: notas}}}}

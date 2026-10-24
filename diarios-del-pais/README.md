@@ -7,13 +7,16 @@ los clasifica (tema, tono, entidades), los acumula en SQLite y publica un tabler
 - `enriquecer.py`: entra a cada nota (resuelve las URLs de Google News) y extrae la bajada y el JSON-LD
   `NewsArticle` (autor, seccion, palabras clave, largo). Respeta robots.txt y limita pedidos por dominio.
 - `nlp.py`: tono (regresion logistica), entidades y puntaje de "cebo" (clickbait) de cada titulo.
+- `ner.py`: reconocimiento de entidades con spaCy (`es_core_news_md`, opcional): personas e instituciones en titulo + bajada,
+  tambien las que no estan en el diccionario de `nlp.py`; alimenta "Nuevas en la agenda" en la pestaña Monitor.
 - `tono_entrenar.py`: entrena y evalua el modelo de tono con las notas etiquetadas a mano.
 - Local: `Actualizar.bat` o `python archivar.py` (deja `historico.db`, `historico.csv` y `rosario.html` en esta carpeta).
 
 ## Tablas de la base (`historico.db`)
 
 - `items`: una fila por nota. Ademas de titulo, medio, fecha, temas, entidades y tono: `url_real`, `bajada`,
-  `tono_bajada`, `cebo`, `autor`, `firmada`, `seccion`, `claves`, `largo`, `tema_fuente` (reglas o modelo).
+  `tono_bajada`, `cebo`, `autor`, `firmada`, `seccion`, `claves`, `largo`, `tema_fuente` (reglas o modelo),
+  `bert_t`/`bert_b` (probabilidades de XLM-RoBERTa) y `ner` (entidades detectadas por spaCy, "A|B").
 - `salud`: estado de cada feed en cada corrida. `scraping`: resultado del scraping de notas por medio.
 - `cuarentena`: notas descartadas por validacion (7 dias). `meta`: huellas de los modelos vigentes.
 
