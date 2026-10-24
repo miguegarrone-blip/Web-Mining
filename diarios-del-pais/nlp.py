@@ -50,10 +50,21 @@ def feats(t):
     for a, b in zip(ws, ws[1:]): f["%s_%s" % (a, b)] = 1.0
     f["__dict_" + tone_dict(t)] = 1.0
     return f
-def tone(title):
-    m = _modelo()
+_MB = None
+def _modelo_bert():
+    global _MB
+    if _MB is None:
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelo_tono_bert.json")
+        try: _MB = json.load(open(p, encoding="utf-8"))
+        except Exception: _MB = False
+    return _MB
+def tone(title, pb=None):
+    """tono n/0/p. Con pb (probabilidades [neg, neu, pos] de XLM-RoBERTa, ver bert.py) usa el modelo combinado;
+    sin pb, la regresion logistica solo con palabras"""
+    m = _modelo_bert() if pb else _modelo()
     if not m: return tone_dict(title)
     f = feats(title)
+    if pb: f.update({"__bert_n": 3 * pb[0], "__bert_0": 3 * pb[1], "__bert_p": 3 * pb[2]})
     z = {c: m["B"][c] + sum(m["W"][c].get(k, 0.0) * v for k, v in f.items()) for c in ("n", "0", "p")}
     return max(z, key=z.get)
 

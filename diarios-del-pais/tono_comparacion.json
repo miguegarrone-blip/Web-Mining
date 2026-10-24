@@ -1,0 +1,194 @@
+[
+ {
+  "modelo": "1. regresion logistica actual (CV)",
+  "acierto": 0.703,
+  "acierto_ponderado": 0.696,
+  "f1_macro": 0.684,
+  "recall_neg": 0.653,
+  "confusion": [
+   [
+    77,
+    39,
+    2
+   ],
+   [
+    17,
+    127,
+    17
+   ],
+   [
+    2,
+    24,
+    35
+   ]
+  ]
+ },
+ {
+  "modelo": "2. pysentimiento (sin entrenar)",
+  "acierto": 0.644,
+  "acierto_ponderado": 0.664,
+  "f1_macro": 0.618,
+  "recall_neg": 0.661,
+  "confusion": [
+   [
+    78,
+    40,
+    0
+   ],
+   [
+    20,
+    112,
+    29
+   ],
+   [
+    3,
+    29,
+    29
+   ]
+  ]
+ },
+ {
+  "modelo": "3. XLM-RoBERTa sentimiento (sin entrenar)",
+  "acierto": 0.741,
+  "acierto_ponderado": 0.759,
+  "f1_macro": 0.718,
+  "recall_neg": 0.771,
+  "confusion": [
+   [
+    91,
+    23,
+    4
+   ],
+   [
+    19,
+    125,
+    17
+   ],
+   [
+    2,
+    23,
+    36
+   ]
+  ]
+ },
+ {
+  "modelo": "4. embeddings RoBERTuito + reg. logistica (CV)",
+  "acierto": 0.724,
+  "acierto_ponderado": 0.725,
+  "f1_macro": 0.707,
+  "recall_neg": 0.797,
+  "confusion": [
+   [
+    94,
+    22,
+    2
+   ],
+   [
+    23,
+    113,
+    25
+   ],
+   [
+    3,
+    19,
+    39
+   ]
+  ]
+ },
+ {
+  "modelo": "5. combinado: actual + probas pysentimiento (CV)",
+  "acierto": 0.75,
+  "acierto_ponderado": 0.758,
+  "f1_macro": 0.725,
+  "recall_neg": 0.881,
+  "confusion": [
+   [
+    104,
+    14,
+    0
+   ],
+   [
+    28,
+    117,
+    16
+   ],
+   [
+    3,
+    24,
+    34
+   ]
+  ]
+ },
+ {
+  "modelo": "6. combinado: actual + probas XLM-R (CV)",
+  "acierto": 0.768,
+  "acierto_ponderado": 0.783,
+  "f1_macro": 0.748,
+  "recall_neg": 0.839,
+  "confusion": [
+   [
+    99,
+    18,
+    1
+   ],
+   [
+    20,
+    124,
+    17
+   ],
+   [
+    2,
+    21,
+    38
+   ]
+  ]
+ },
+ {
+  "modelo": "7. combinado: actual + ambos BERT (CV)",
+  "acierto": 0.753,
+  "acierto_ponderado": 0.763,
+  "f1_macro": 0.734,
+  "recall_neg": 0.847,
+  "confusion": [
+   [
+    100,
+    17,
+    1
+   ],
+   [
+    23,
+    118,
+    20
+   ],
+   [
+    1,
+    22,
+    38
+   ]
+  ]
+ },
+ {
+  "modelo": "8. solo probas de ambos BERT (CV)",
+  "acierto": 0.724,
+  "acierto_ponderado": 0.735,
+  "f1_macro": 0.713,
+  "recall_neg": 0.805,
+  "confusion": [
+   [
+    95,
+    20,
+    3
+   ],
+   [
+    24,
+    107,
+    30
+   ],
+   [
+    3,
+    14,
+    44
+   ]
+  ]
+ }
+]

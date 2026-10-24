@@ -8,6 +8,7 @@ from urllib3.util.retry import Retry
 from topics import tag, merge_tema, entrenar_nb, predecir_nb, UMBRAL
 from nlp import tone, cebo, ents as get_ents
 from enriquecer import enriquecer, depurar_bajada
+import bert
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.environ.get("DATA_DIR", BASE)   # donde viven historico.db y historico.csv
@@ -18,6 +19,7 @@ TOPE = 100          # notas maximas por feed que se leen
 VENTANA_HORAS = 48      # "notas analizadas" = notas publicadas en las ultimas 48 h
 POR_MEDIO_PAGINA = 100  # tope por medio dentro de esa ventana
 RETENCION_DIAS = 90     # la base y el CSV guardan solo los ultimos 90 dias
+TOPE_BERT = 4000        # textos por corrida que pasan por XLM-RoBERTa (titulos y bajadas por separado)
 H = {"User-Agent": "Mozilla/5.0 (monitor-de-medios; uso personal)"}
 AR = timedelta(hours=-3)
 
@@ -125,7 +127,7 @@ CREATE TABLE IF NOT EXISTS scraping(run TEXT, medio TEXT, intentos INTEGER, ok I
 cols = {r[1] for r in DB.execute("PRAGMA table_info(items)")}
 for c, tipo in (("url_real", "TEXT"), ("bajada", "TEXT"), ("enr", "INTEGER DEFAULT 0"), ("tema_fuente", "TEXT DEFAULT 'reglas'"),
                 ("ld", "INTEGER"), ("autor", "TEXT"), ("firmada", "INTEGER"), ("seccion", "TEXT"), ("mod_ms", "INTEGER"), ("claves", "TEXT"), ("largo", "INTEGER"),
-                ("tono_bajada", "TEXT"), ("cebo", "INTEGER")):
+                ("tono_bajada", "TEXT"), ("cebo", "INTEGER"), ("bert_t", "TEXT"), ("bert_b", "TEXT")):
     if c not in cols: DB.execute("ALTER TABLE items ADD COLUMN %s %s" % (c, tipo))
 COLS = "h,th,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,visto"
 # migracion unica desde el CSV anterior
@@ -212,23 +214,43 @@ for x in items:
         if b_: x["b"] = b_
         if tg: x["tg"] = [merge_tema(z) for z in tg.split("|")]
 
-# si cambio el modelo de tono, re-clasifica todo lo guardado; siempre aplica las etiquetas manuales
+# tono con BERT: probabilidades de XLM-RoBERTa para los titulos y bajadas que todavia no las tienen (ver bert.py)
+tocadas = set(hechos)                       # notas cuyo tono hay que recalcular: bajada nueva o probas nuevas
+if bert.disponible():
+    t0 = time.time()
+    for col, txt in (("bert_t", "titulo"), ("bert_b", "bajada")):
+        pend = DB.execute(f"SELECT h,{txt} FROM items WHERE {col} IS NULL AND {txt}!='' ORDER BY pub_ms DESC LIMIT ?", (TOPE_BERT,)).fetchall()
+        for (h_, _), pb in zip(pend, bert.probas([t_ for _, t_ in pend])):
+            DB.execute(f"UPDATE items SET {col}=? WHERE h=?", (bert.a_texto(pb), h_)); tocadas.add(h_)
+        print(f"BERT {txt}: {len(pend)} textos")
+    DB.execute("UPDATE items SET bert_b=NULL WHERE bajada IS NULL OR bajada=''")
+    DB.commit(); print(f"BERT: {time.time() - t0:.0f}s")
+def retono(h_, t_, b_, bt, bb):
+    DB.execute("UPDATE items SET tono_auto=?, tono_bajada=?, cebo=? WHERE h=?", (tone(t_, bert.de_texto(bt)), tone(b_, bert.de_texto(bb)) if b_ else None, cebo(t_), h_))
+# si cambio el modelo de tono, re-clasifica todo lo guardado; si no, solo lo tocado en esta corrida. Siempre aplica las etiquetas manuales
 DB.execute("CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT)")
-huella = hashlib.sha1(b"".join(open(os.path.join(BASE, f), "rb").read() for f in ("nlp.py", "modelo_tono.json"))).hexdigest()
+huella = hashlib.sha1(b"".join(open(os.path.join(BASE, f), "rb").read() for f in ("nlp.py", "modelo_tono.json", "modelo_tono_bert.json"))).hexdigest()
+SEL = "SELECT h,titulo,bajada,bert_t,bert_b FROM items"
 if (DB.execute("SELECT v FROM meta WHERE k='modelo_tono'").fetchone() or [""])[0] != huella:
-    for h_, t_, b_ in DB.execute("SELECT h,titulo,bajada FROM items").fetchall():
-        DB.execute("UPDATE items SET tono_auto=?, tono_bajada=?, cebo=? WHERE h=?", (tone(t_), tone(b_) if b_ else None, cebo(t_), h_))
+    for r_ in DB.execute(SEL).fetchall(): retono(*r_)
     DB.execute("INSERT OR REPLACE INTO meta VALUES('modelo_tono',?)", (huella,))
+else:
+    for h_ in tocadas:
+        r_ = DB.execute(SEL + " WHERE h=?", (h_,)).fetchone()
+        if r_: retono(*r_)
 for u_, (k_, s_) in LB.items():
     DB.execute("UPDATE items SET tono_manual=? WHERE url=?", (s_, u_))
 DB.commit()
+TON = dict(DB.execute("SELECT h,tono_auto FROM items WHERE pub_ms>=?", (ahora_ms - VENTANA_HORAS * 3600 * 1000,)).fetchall())
+for x in items:
+    if x["h"] in TON: x["sa"] = TON[x["h"]]
 
 # CSV exportable (Power BI / Excel): se regenera desde la base, solo con la ventana de retencion
 HC = os.path.join(DATA, "historico.csv")
 with open(HC, "w", encoding="utf-8", newline="") as f:
     w = csv.writer(f)
-    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada", "tono_bajada", "cebo", "autor", "firmada", "seccion", "largo"])
-    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada,tono_bajada,cebo,autor,firmada,seccion,largo FROM items ORDER BY visto, pub_ms"): w.writerow(r)
+    w.writerow(["capturado", "medio", "alcance", "tipo", "titulo", "url", "publicado_ms", "temas", "entidades", "tono_auto", "tono_manual", "url_real", "bajada", "tono_bajada", "cebo", "autor", "firmada", "seccion", "largo", "bert_titulo", "bert_bajada"])
+    for r in DB.execute("SELECT visto,medio,alcance,tipo,titulo,url,pub_ms,temas,entidades,tono_auto,tono_manual,url_real,bajada,tono_bajada,cebo,autor,firmada,seccion,largo,bert_t,bert_b FROM items ORDER BY visto, pub_ms"): w.writerow(r)
 
 # ---------- pagina: notas de las ultimas VENTANA_HORAS, con tope por medio ----------
 items.sort(key=lambda x: x["ts"], reverse=True)
@@ -309,7 +331,7 @@ AG = round(100 * CAL["acierto_cv"]) if CAL else 0
 now = datetime.now(timezone.utc).astimezone().strftime("%d/%m/%Y %H:%M")
 tpl = open(os.path.join(BASE, "tpl2.html"), encoding="utf-8").read()
 js = lambda o: json.dumps(o, ensure_ascii=False)
-out = tpl.replace("__DATA__", js(pag)).replace("__AGG__", js(AGG)).replace("__HEALTH__", js(HEALTH)).replace("__NOW__", now).replace("__AGREE__", str(AG)).replace("__CAL__", js(CAL["cal"] if CAL else None)).replace("__VENTANA__", str(VENTANA_HORAS)).replace("__RETENCION__", str(RETENCION_DIAS))
+out = tpl.replace("__DATA__", js(pag)).replace("__AGG__", js(AGG)).replace("__HEALTH__", js(HEALTH)).replace("__NOW__", now).replace("__AGREE__", str(AG)).replace("__MUESTRA__", str(CAL["muestra"]) if CAL else "").replace("__CAL__", js(CAL["cal"] if CAL else None)).replace("__VENTANA__", str(VENTANA_HORAS)).replace("__RETENCION__", str(RETENCION_DIAS))
 open(os.path.join(OUT, "rosario.html"), "w", encoding="utf-8").write(out)
 DB.execute("VACUUM")   # devuelve el espacio de lo borrado por la retencion
 print("corrida", run, "| validas", len(items), "| nuevas", len(nuevos), "| duplicadas", dups, "| cuarentena", cuarentena, "| acuerdo tono", AG)
