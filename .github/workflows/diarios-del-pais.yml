@@ -1,7 +1,11 @@
 name: Diarios del país - monitor de medios
 
-# Corre cada hora: baja los medios, actualiza la base y publica el tablero en GitHub Pages.
+# Corre cada 30 minutos: baja los medios, actualiza la base y publica el tablero en GitHub Pages.
 # La base vive en la rama "data-diarios" (comprimida), para no mezclar datos con código en main.
+#
+# Cada 30 minutos por AUTODISPARO: al terminar, el trabajo "encadenar" espera hasta completar 30 minutos desde el
+# inicio de la corrida y relanza el workflow (workflow_dispatch). El cron de GitHub resulto muy irregular en este
+# repo (ayer corrio 1 de cada 8 veces): queda solo como respaldo, para rearrancar la cadena si se corta.
 on:
   schedule:
     # Dos veces por hora y lejos de la hora en punto: GitHub demora y a veces descarta las corridas
@@ -19,10 +23,7 @@ permissions:
   contents: write    # para guardar la base en la rama data-diarios
   pages: write       # para publicar el tablero
   id-token: write
-
-concurrency:
-  group: diarios-del-pais
-  cancel-in-progress: false
+  actions: write     # para que la corrida lance la siguiente (autodisparo)
 
 env:
   TZ: America/Argentina/Buenos_Aires
@@ -32,6 +33,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    # una sola corrida del pipeline a la vez (la concurrencia va aca y no en todo el workflow, para que la
+    # espera del trabajo "encadenar" no frene a un push o a una corrida manual)
+    concurrency:
+      group: diarios-build
+      cancel-in-progress: false
     defaults:
       run:
         working-directory: diarios-del-pais
@@ -118,9 +124,43 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    concurrency:
+      group: diarios-deploy
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Autodisparo: espera hasta completar 30 minutos desde el inicio de esta corrida y lanza la siguiente.
+  # - Corre aunque el pipeline haya fallado (always), asi la cadena no se corta por un error puntual.
+  # - Una sola cadena: la corrida mas nueva es la duena. Si mientras se espera aparecio otra (push, cron o manual),
+  #   esta no lanza nada y la cadena sigue desde la nueva.
+  # - Solo en main. Si la cadena se corta (p. ej. una caida de GitHub), el cron o el proximo push la rearrancan.
+  encadenar:
+    needs: [build, deploy]
+    if: ${{ always() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Esperar y lanzar la proxima corrida
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          PERIODO: "1800"
+        run: |
+          creada=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq .created_at)
+          espera=$(( PERIODO - ($(date +%s) - $(date -d "$creada" +%s)) ))
+          [ "$espera" -lt 60 ] && espera=60
+          echo "corrida creada $creada; espero $espera s para completar $((PERIODO/60)) minutos"
+          sleep "$espera"
+          nuevas=$(gh api "repos/$REPO/actions/workflows/diarios-del-pais.yml/runs?per_page=30"                    --jq "[.workflow_runs[] | select(.id != $RUN_ID and .created_at > \"$creada\")] | length")
+          if [ "$nuevas" -gt 0 ]; then
+            echo "hay $nuevas corrida(s) mas nuevas: la cadena sigue desde ellas"
+            exit 0
+          fi
+          gh workflow run diarios-del-pais.yml --repo "$REPO" --ref main
+          echo "proxima corrida lanzada"
