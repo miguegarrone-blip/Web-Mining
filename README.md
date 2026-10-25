@@ -1,6 +1,6 @@
 # Monitor de medios argentinos
 
-**¿Cómo nos cuentan las noticias?** Un sistema automático que cada hora lee los titulares de
+**¿Cómo nos cuentan las noticias?** Un sistema automático que cada 30 minutos lee los titulares de
 46 medios argentinos, entra a cada nota, clasifica de qué habla y con qué tono, y mide **cómo
 titula cada medio**: cuánto exagera, cuánto busca el clic y cuánto firma lo que publica.
 
@@ -53,7 +53,7 @@ flowchart LR
 5. **Almacenamiento.** SQLite con 30 días de histórico y exportación a CSV.
 6. **Publicación.** Genera el tablero y lo publica junto con la base en GitHub Pages.
 
-Todo corre solo cada hora en **GitHub Actions**. La base se guarda comprimida en la rama `data-diarios`, así el repositorio no crece con los datos.
+Todo corre solo cada 30 minutos en **GitHub Actions** (cada corrida programa la siguiente) y unas pruebas automáticas vigilan las funciones de extracción. La base se guarda comprimida en la rama `data-diarios`, así el repositorio no crece con los datos.
 
 ## Qué mide
 
@@ -72,6 +72,7 @@ Todo corre solo cada hora en **GitHub Actions**. La base se guarda comprimida en
 | **Exageración** | Títulos negativos cuya bajada, escrita por el mismo medio, no lo es. |
 | **Cebo** | Títulos con preguntas, exclamaciones, adjetivos exagerados, intriga, segunda persona o listas. |
 | **Transparencia** | Porcentaje de notas firmadas por un periodista. |
+| **Clima mediático y dólar** | % de notas negativas por día junto al dólar blue, con su correlación cuando hay suficientes días. |
 | **Salud de las fuentes** | Estado de cada feed y tasa de éxito del scraping por medio. |
 
 ## Algunos hallazgos

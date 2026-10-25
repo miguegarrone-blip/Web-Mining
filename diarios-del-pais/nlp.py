@@ -33,7 +33,7 @@ def ents(title):
     return out
 
 
-# ---------- modelo entrenado (regresion logistica, ver tono_entrenar.py) ----------
+# ---------- modelo de respaldo: regresion logistica solo con palabras (modelo_tono.json), si BERT no esta disponible ----------
 import json, os
 _M = None
 def _modelo():

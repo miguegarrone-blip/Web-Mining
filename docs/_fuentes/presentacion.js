@@ -118,15 +118,15 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   });
   tarjeta(s, 8.4, 2.15, 4.33, 4.3, "dato");
   T(s, "≈3.000", { x: 8.75, y: 2.6, w: 3.7, h: 1.1, fontSize: 66, bold: true, fontFace: "Cambria", color: HEX.rojo });
-  T(s, "titulares por corrida, de 46 medios, cada hora", { x: 8.75, y: 3.75, w: 3.7, h: 0.9, fontSize: 17, color: HEX.tinta });
+  T(s, "titulares por corrida, de 46 medios, cada media hora", { x: 8.75, y: 3.75, w: 3.7, h: 0.9, fontSize: 17, color: HEX.tinta });
   T(s, "Leerlos a mano es inviable: hay que extraerlos, estructurarlos y medirlos de forma automática.", { x: 8.75, y: 4.8, w: 3.7, h: 1.3, fontSize: 14, color: HEX.gris });
 
   // ===== 3. Que construimos =====
-  s = contenido("Problema", "LA SOLUCIÓN", "Un monitor que corre solo, cada hora, y publica todo",
+  s = contenido("Problema", "LA SOLUCIÓN", "Un monitor que corre solo, cada 30 minutos, y publica todo",
     "Tres números para fijar la escala. Todo corre en GitHub Actions sin intervención; el tablero y la base son públicos.");
   stat(s, M, 2.4, 3.7, "46", "medios: diarios, portales, TV, radios y fuentes oficiales");
   stat(s, M + 4.2, 2.4, 3.7, `${D.tot[0].toLocaleString("es-AR")}`, "notas en la base, con tema, tono, entidades y estilo de título");
-  stat(s, M + 8.4, 2.4, 3.7, "24/7", "GitHub Actions cada hora; tablero y base SQL publicados en GitHub Pages");
+  stat(s, M + 8.4, 2.4, 3.7, "24/7", "GitHub Actions cada 30 minutos; tablero y base SQL publicados en GitHub Pages");
   tarjeta(s, M, 5.1, W - 2 * M, 1.4, "frase");
   T(s, [{ text: "Web mining de punta a punta: ", options: { bold: true } }, { text: "crawling de feeds, scraping de cada nota, procesamiento de lenguaje con BERT, base de datos histórica e indicadores comparables entre medios." }],
     { x: M + 0.35, y: 5.35, w: W - 2 * M - 0.7, h: 0.9, fontSize: 18, valign: "middle" });
@@ -147,7 +147,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     T(s, d, { x: x + 0.2, y: 3.85, w: bw - 0.35, h: 1.2, fontSize: 13, color: i === 2 ? HEX.papel : HEX.gris });
     if (i < 5) s.addImage({ data: ic.arrow, x: x + bw + gap / 2 - 0.12, y: 3.68, w: 0.24, h: 0.24 });
   });
-  T(s, [{ text: "Automatización: ", options: { bold: true } }, { text: "GitHub Actions corre el pipeline cada hora, guarda la base en una rama de datos y publica el tablero en GitHub Pages. La primera corrida con BERT tarda 10 minutos; las siguientes, 2." }],
+  T(s, [{ text: "Automatización: ", options: { bold: true } }, { text: "GitHub Actions corre el pipeline cada 30 minutos, guarda la base en una rama de datos y publica el tablero en GitHub Pages. La primera corrida con BERT tarda 10 minutos; las siguientes, 2." }],
     { x: M, y: 5.6, w: W - 2 * M, h: 0.9, fontSize: 16 });
 
   // ===== 5. Fuentes =====
@@ -368,7 +368,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     "Sin servidores ni costos: todo corre en GitHub. SQLite simplifica la operación y se puede abrir en el navegador.");
   const stack = [["Recolección", "requests · feedparser · googlenewsdecoder · urllib.robotparser"], ["Extracción", "expresiones regulares · JSON-LD (schema.org) · HTML"],
     ["Lenguaje", "bolsa de palabras · Naive Bayes · regresión logística · XLM-RoBERTa · MiniLM · spaCy (NER)"], ["Datos", "SQLite · CSV · Datasette Lite · notebook con pandas"],
-    ["Automatización", "GitHub Actions (cada hora) · rama de datos"], ["Visualización", "HTML, CSS y JavaScript sin frameworks · GitHub Pages"]];
+    ["Automatización", "GitHub Actions (cada 30 min, autodisparo) · pruebas automáticas"], ["Visualización", "HTML, CSS y JavaScript sin frameworks · GitHub Pages"]];
   stack.forEach(([a, b], i) => {
     const x = M + (i % 2) * 6.2, y = 2.2 + Math.floor(i / 2) * 1.45;
     tarjeta(s, x, y, 5.9, 1.25, "stack-" + i);
@@ -380,7 +380,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s = contenido("Cierre", "LO QUE SIGUE", "Limitaciones honestas y próximos pasos",
     "Ser claros con los límites: el tono es del título, 77% de acierto, 340 etiquetas de un criterio. El histórico es corto. Próximos pasos: NER con spaCy, evolución de comunidades, cruce con datos económicos y más etiquetas manuales.");
   [[ic.warn, "Limitaciones", ["Tono del título y la bajada, no de la nota completa", "77% de acierto con 340 etiquetas de un solo criterio", "Pocos días de histórico: los rankings se estabilizan con semanas", "Temas y entidades por diccionario requieren mantenimiento"]],
-   [ic.check, "Próximos pasos", ["Completar rondas de aprendizaje activo y medir la mejora", "Evolución de las comunidades a lo largo de las semanas", "Cruzar el termómetro con el dólar y otros datos", "Más etiquetas manuales, con varios anotadores"]]].forEach(([icn, t, items], i) => {
+   [ic.check, "Próximos pasos", ["Completar rondas de aprendizaje activo y medir la mejora", "Evolución de las comunidades a lo largo de las semanas", "Con más días: ¿el tono acompaña al dólar?", "Más etiquetas manuales, con varios anotadores"]]].forEach(([icn, t, items], i) => {
     const x = M + i * 6.2;
     tarjeta(s, x, 2.2, 5.9, 4.3, "cierre-" + i);
     s.addImage({ data: icn, x: x + 0.35, y: 2.5, w: 0.45, h: 0.45 });

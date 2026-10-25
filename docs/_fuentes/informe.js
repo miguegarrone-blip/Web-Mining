@@ -92,8 +92,8 @@ const portada = [
 
 const cuerpo = [
   H1("1. Resumen"),
-  P(`El trabajo construye un **monitor de medios** que cada hora recolecta los titulares de 46 medios argentinos (diarios, portales digitales, canales de TV, radios y dos fuentes oficiales), **entra a cada nota** para extraer su bajada y sus datos estructurados, y clasifica cada pieza por **tema**, **tono** y **entidades** mencionadas. Con eso mide qué agenda tiene cada medio, con qué tono cubre cada tema y persona, y **cómo titula**: cuánto exagera el título respecto de su propia bajada, cuántos recursos de clickbait usa y qué proporción de sus notas está firmada por un periodista.`),
-  P(`Todo corre solo en **GitHub Actions**, guarda el histórico en **SQLite** y publica un **tablero web** en GitHub Pages, desde donde también se puede consultar la base con SQL en el navegador. Al ${CIFRAS.corte} la base tenía **${CIFRAS.notas} notas de ${CIFRAS.medios} medios**; el ${CIFRAS.analizadas} ya había sido enriquecido entrando a la página de la nota. El tablero suma comparaciones entre medios: el encuadre de una misma noticia, quién la publica primero, cómo trata cada medio a cada figura y un mapa de las comunidades de medios que comparten agenda.`),
+  P(`El trabajo construye un **monitor de medios** que cada 30 minutos recolecta los titulares de 46 medios argentinos (diarios, portales digitales, canales de TV, radios y dos fuentes oficiales), **entra a cada nota** para extraer su bajada y sus datos estructurados, y clasifica cada pieza por **tema**, **tono** y **entidades** mencionadas. Con eso mide qué agenda tiene cada medio, con qué tono cubre cada tema y persona, y **cómo titula**: cuánto exagera el título respecto de su propia bajada, cuántos recursos de clickbait usa y qué proporción de sus notas está firmada por un periodista.`),
+  P(`Todo corre solo cada 30 minutos en **GitHub Actions**, guarda el histórico en **SQLite** y publica un **tablero web** en GitHub Pages, desde donde también se puede consultar la base con SQL en el navegador. Al ${CIFRAS.corte} la base tenía **${CIFRAS.notas} notas de ${CIFRAS.medios} medios**; el ${CIFRAS.analizadas} ya había sido enriquecido entrando a la página de la nota. El tablero suma comparaciones entre medios: el encuadre de una misma noticia, quién la publica primero, cómo trata cada medio a cada figura y un mapa de las comunidades de medios que comparten agenda.`),
   P(`El modelo de tono combina una regresión logística sobre palabras con las probabilidades de **XLM-RoBERTa** (BERT multilingüe): sobre 340 titulares clasificados a mano llega a **77% de acierto** con validación cruzada (el modelo inicial tenía 70%) y detecta el **84% de las notas negativas** (antes, 65%).`),
 
   H1("2. Problema y motivación"),
@@ -132,7 +132,7 @@ const cuerpo = [
   NOTA("Por qué no se usa una API de noticias: NewsAPI y similares limitan la cantidad de pedidos y la cobertura de medios regionales; Google Custom Search limita las búsquedas diarias. Uno de los trabajos de 2025 terminó en NewsAPI después de que fallara el scraping directo. Combinar RSS con Google News por sitio da cobertura de 46 medios sin claves ni costo."),
 
   H1("5. Arquitectura y pipeline"),
-  P("El sistema es un pipeline por lotes que corre cada hora. Todo está en `diarios-del-pais/`; `build.py` orquesta las etapas:"),
+  P("El sistema es un pipeline por lotes que corre cada 30 minutos. Todo está en `diarios-del-pais/`; `build.py` orquesta las etapas:"),
   TABLA([
     ["Etapa", "Qué hace", "Módulo"],
     ["1. Crawling de feeds", "Descarga en paralelo los feeds RSS y de Google News de los 46 medios (10 hilos, reintentos con espera creciente).", "build.py"],
@@ -146,14 +146,16 @@ const cuerpo = [
   ], [2000, 5326, 1700]),
   ESP(),
   H2("Automatización con GitHub Actions"),
-  P("El workflow `.github/workflows/diarios-del-pais.yml` se ejecuta dos veces por hora (cron `23,53 * * * *`, lejos de la hora en punto porque GitHub demora y a veces descarta las corridas programadas en los momentos de mucha carga), a mano desde la pestaña Actions y con cada cambio de código. Cada corrida:"),
+  P("El workflow `.github/workflows/diarios-del-pais.yml` se ejecuta cada 30 minutos por autodisparo (ver más abajo), con un cron de respaldo (`23,53 * * * *`), a mano desde la pestaña Actions y con cada cambio de código. Cada corrida:"),
   ...NUEVA(),
   N("Restaura la base comprimida (`historico.db.gz`) desde la rama `data-diarios`."),
   N("Instala dependencias, incluido PyTorch para CPU, y recupera el modelo BERT de la caché."),
   N("Corre `build.py` con la zona horaria de Buenos Aires."),
   N("Guarda la base actualizada en `data-diarios` con un único commit sin historia, para que el repositorio no crezca."),
   N("Publica en GitHub Pages el tablero (`index.html`), la base (`historico.db`) y el CSV."),
-  P("La primera corrida con BERT tarda unos 10 minutos (descarga el modelo y procesa el histórico); las siguientes, unos 2 minutos."),
+  P("La primera corrida con BERT tarda unos 10 minutos (descarga el modelo y procesa el histórico); las siguientes, entre 3 y 6 minutos."),
+  P("**Autodisparo cada 30 minutos:** el cron de GitHub resultó muy irregular en este repositorio (un día corrió 1 de cada 8 veces: GitHub demora y descarta corridas programadas en momentos de carga). Por eso cada corrida, al terminar, espera hasta completar 30 minutos desde su inicio y relanza el workflow con `workflow_dispatch`, que no pasa por el programador del cron. La corrida más nueva es la dueña de la cadena (si aparece otra mientras se espera, la vieja no lanza nada), la cadena sigue aunque el pipeline falle y el cron queda como respaldo."),
+  P("**Pruebas automáticas:** `tests/` verifica las funciones de extracción y limpieza (bajadas con código, entidades HTML, caracteres mal decodificados, JSON-LD, robots.txt, firma, cebo, entidades, temas). Corren en paralelo en cada corrida y no frenan la recolección: si fallan, la corrida queda marcada para revisar el scraper."),
 
   H1("6. Cómo scrapea"),
   H2("6.1 Listados y detalle"),
@@ -248,6 +250,7 @@ const cuerpo = [
     ["salud", "Estado de cada feed en cada corrida (HTTP, notas, latencia, error)."],
     ["scraping", "Resultado del scraping de notas por medio y corrida."],
     ["cuarentena", "Notas descartadas por validación, con el motivo (7 días)."],
+    ["dolar", "Cotización diaria del dólar blue y oficial (argentinadatos.com y dolarapi.com), para cruzar con el clima mediático."],
     ["meta", "Huellas de los modelos vigentes: si cambian, se reclasifica todo el histórico."],
   ], [1600, 7426]),
   ESP(),
@@ -274,6 +277,7 @@ const cuerpo = [
     ["Cebo", "% de títulos con al menos un recurso de clickbait.", "Cómo titulan"],
     ["Transparencia", "% de notas firmadas por un periodista.", "Cómo titulan"],
     ["Largo", "Palabras promedio del cuerpo de las notas.", "Cómo titulan"],
+    ["Clima mediático y dólar", "% de notas negativas por día junto al dólar blue (dos gráficos con el mismo eje de días) y correlación de Pearson con la variación diaria del blue cuando hay al menos 8 días.", "Tendencias"],
     ["Salud de fuentes", "Estado de cada feed y tasa de éxito del scraping por medio.", "Salud de datos"],
   ], [1900, 5026, 2100]),
 
@@ -287,7 +291,7 @@ const cuerpo = [
     ["Monitor", "Figuras nuevas en la agenda y otras figuras detectadas con NER; seguimiento de una persona, institución o marca (o un texto libre): menciones, medios, tono, temas asociados y últimas menciones."],
     ["Análisis", "Filtros por alcance, tipo, período (24 h a 30 días) y orden. Agenda de cada medio (mapa de calor), tono por medio (barras divergentes con reordenamiento animado), tono por figura, mapa de medios (grafo), temas día por día (carrera de barras), comparador de encuadre, primicia y palabras más repetidas. Al tocar un medio se abre su ficha."],
     ["Cómo titulan", "Filtros por alcance, tipo y orden; mapa del sensacionalismo (cebo contra exageración, con cuadrantes), rankings, ejemplos, transparencia, periodistas y largo de las notas. Cada medio abre su ficha."],
-    ["Tendencias", "Alertas, notas por hora con detalle, notas por día con % negativo y mapa de calor de temas."],
+    ["Tendencias", "Alertas, notas por hora con detalle, notas por día con % negativo, mapa de calor de temas y clima mediático contra el dólar."],
     ["Salud de datos", "Estado de cada fuente, notas descartadas y scraping por medio."],
   ], [1900, 7126]),
 
@@ -341,7 +345,7 @@ const cuerpo = [
 
   H1("15. Trabajo futuro"),
   B("Seguir la evolución de las comunidades del mapa de medios a lo largo de las semanas."),
-  B("Cruzar el termómetro con datos externos (dólar, inflación, eventos) para ver si el clima mediático acompaña a la economía."),
+  B("Con semanas de datos, medir si el clima mediático acompaña al dólar y sumar otros indicadores (inflación, riesgo país)."),
   B("Resumen diario redactado con un modelo de lenguaje y enviado por correo o Telegram."),
   B("Ampliar las etiquetas manuales (con varios anotadores y acuerdo entre ellos) y ajustar un BERT en español con ellas."),
 
@@ -354,7 +358,7 @@ const cuerpo = [
     "python build.py                       # base, CSV y tablero",
     "python tono_bert_eval.py              # opcional: modelos de tono",
   ]),
-  P("En la nube no hace falta nada: el workflow corre solo cada hora y se puede lanzar a mano desde la pestaña Actions del repositorio."),
+  P("En la nube no hace falta nada: el workflow corre solo cada 30 minutos y se puede lanzar a mano desde la pestaña Actions del repositorio."),
 
   H1("Anexo: consultas SQL de ejemplo"),
   P("Se pueden ejecutar en Datasette Lite desde el botón del tablero."),

@@ -118,7 +118,7 @@ modelo = {"B": {c: float(b) for c, b in zip(fin.classes_, fin.intercept_)},
           "W": {c: {k: round(float(w), 4) for k, w in zip(nombres, fila) if abs(w) >= 0.01} for c, fila in zip(fin.classes_, fin.coef_)},
           "bert": bert.MODELO, "acierto_cv": ACC, "muestra": len(T), "activos": int((~ORIG).sum())}
 json.dump(modelo, open(os.path.join(AQUI, "modelo_tono_bert.json"), "w", encoding="utf-8"), ensure_ascii=False)
-# calibracion P(real | predicho) con las predicciones fuera de muestra, ponderadas a la poblacion (como tono_entrenar.py)
+# calibracion P(real | predicho) con las predicciones fuera de muestra, ponderadas a la poblacion 
 cal = {}
 for pc in CL:
     sel = (P6 == pc) & ORIG; tot = W[sel].sum()

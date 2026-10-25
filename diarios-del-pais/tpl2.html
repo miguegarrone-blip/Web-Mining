@@ -181,6 +181,12 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 :root{--c1:#2a78d6;--c2:#eb6834;--c3:#1baf7a}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c1:#3987e5;--c2:#d95926;--c3:#199e70}}
 :root[data-theme="dark"]{--c1:#3987e5;--c2:#d95926;--c3:#199e70}
+.dl svg{display:block;width:100%;height:auto;overflow:visible}
+.dl .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.dl .gr{stroke:var(--line);stroke-width:1}
+.dl text{font-family:var(--mono);font-size:10px;fill:var(--mute)}
+.dl .tt{font-family:var(--body);font-size:11px;fill:var(--fg)}
+.dl .cx{stroke:var(--mute);stroke-dasharray:3 3;stroke-width:1}
 .words{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}.words small{font-family:var(--mono);color:var(--mute);font-size:.7rem;margin-left:3px}
 @media(max-width:560px){li.n{grid-template-columns:1fr;gap:4px}.meta{flex-direction:row;gap:10px}.trow{grid-template-columns:1fr 4.5rem}.trow .track{display:none}.row{grid-template-columns:6rem 1fr 2.2rem}}
 </style>
@@ -229,6 +235,7 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
   <div id="t-dd" class="panel"></div></section>
  <section class="c"><h2>Notas por día y % negativo</h2><div id="t-days"></div></section>
  <section class="c"><h2>Temas por día</h2><div class="xs"><div id="t-heat"></div></div></section>
+ <section class="c"><h2>Clima mediático y dólar</h2><p class="note">¿El tono de las noticias acompaña a la economía? Arriba, el porcentaje estimado de notas negativas de cada día; abajo, el dólar blue (venta). Los dos gráficos comparten el eje de días: pasá el mouse para ver ambos valores.</p><p class="sum" id="t-dol-sum"></p><div class="chartbox" id="t-dol-box"><div id="t-dol"></div><div id="t-dol-tip" class="tip" hidden></div></div><p class="note">Dólar: argentinadatos.com y dolarapi.com.</p></section>
 </div>
 <div id="p-sens" hidden>
  <p class="note">Se compara el título de cada nota con su bajada (el resumen que publica el propio medio, obtenido entrando a la nota). Un título <b>exagera</b> cuando tiene tono negativo y la bajada no. Un título usa <b>recursos de cebo</b> (clickbait) cuando tiene preguntas, exclamaciones, adjetivos exagerados, frases de intriga ("lo que nadie…", "el truco"), segunda persona o listas. Datos de todo el histórico; solo medios con suficientes notas.</p>
@@ -387,6 +394,38 @@ const tp=Object.entries(AGG.tema).filter(([k])=>k!=="Otros").map(([k,o])=>[k,Obj
 const hm=$("t-heat");hm.className="hm";hm.style.gridTemplateColumns="9.5rem repeat("+sh.length+",1fr)";
 hm.appendChild(mk("div","lab hd",""));sh.forEach(d=>hm.appendChild(mk("div","hd",d.slice(5))));
 tp.forEach(k=>{hm.appendChild(mk("div","lab",k));const mm=Math.max(1,...sh.map(d=>AGG.tema[k][d]||0));sh.forEach(d=>{const v=AGG.tema[k][d]||0,c=mk("div","",v);c.style.background="color-mix(in srgb, var(--accent) "+Math.round(v/mm*70)+"%, transparent)";hm.appendChild(c)})})}
+
+/* ---- Clima mediatico y dolar: dos graficos con el mismo eje de dias (nunca dos escalas en un mismo grafico) ---- */
+{const DOL=AGG.dolar||{},host=$("t-dol"),sum=$("t-dol-sum");
+ const full=Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy).sort();
+ const dias=Object.keys(DOL).filter(d=>DOL[d].blue).sort().slice(-30);   // ultimos 30 dias con cotizacion
+ if(!dias.length){host.appendChild(mk("p","note","Sin datos del dólar todavía."))}else{
+  const NS="http://www.w3.org/2000/svg",W=760,L=44,R=12,H1=110,H2=110,G=34,H=H1+G+H2+22,x=i=>L+(dias.length<2?0:i/(dias.length-1)*(W-L-R));
+  const neg=dias.map(d=>full.includes(d)?AGG.dneg[d]/AGG.dn[d]*100:null),blue=dias.map(d=>DOL[d].blue);
+  const svg=document.createElementNS(NS,"svg");svg.setAttribute("viewBox","0 0 "+W+" "+H);svg.setAttribute("role","img");svg.setAttribute("aria-label","Porcentaje de notas negativas y dólar blue por día");
+  const el=(t,a,txt)=>{const e=document.createElementNS(NS,t);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));if(txt!=null)e.textContent=txt;svg.appendChild(e);return e};
+  function panel(vals,y0,h,color,fmtv,titulo){const ok=vals.filter(v=>v!=null);if(!ok.length){el("text",{x:L,y:y0+h/2},"Sin días completos de notas todavía");return null}
+   let lo=Math.min(...ok),hi=Math.max(...ok);const pad=(hi-lo)*.15||Math.max(1,hi*.02);lo-=pad;hi+=pad;const y=v=>y0+h-(v-lo)/(hi-lo)*h;
+   [lo+pad,(lo+hi)/2,hi-pad].forEach(v=>{el("line",{class:"gr",x1:L,x2:W-R,y1:y(v),y2:y(v)});el("text",{x:L-6,y:y(v)+3,"text-anchor":"end"},fmtv(v))});
+   el("text",{class:"tt",x:L,y:y0-8},titulo);
+   let dd="",prev=false;vals.forEach((v,i)=>{if(v==null){prev=false;return}dd+=(prev?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1);prev=true});
+   el("path",{class:"ln",d:dd,stroke:color});vals.forEach((v,i)=>{if(v!=null&&(ok.length<12||i===vals.length-1))el("circle",{cx:x(i),cy:y(v),r:3.5,fill:color,stroke:"var(--bg)","stroke-width":2})});return y}
+  const yN=panel(neg,14,H1,"var(--neg)",v=>Math.round(v)+"%","% de notas negativas"),yB=panel(blue,14+H1+G,H2,"var(--accent)",v=>"$"+Math.round(v).toLocaleString("es-AR"),"Dólar blue (venta)");
+  const k=dias.length<=10?1:dias.length<=20?3:5;dias.forEach((d,i)=>{if(i%k===0||i===dias.length-1)el("text",{x:x(i),y:H-4,"text-anchor":"middle"},+d.slice(8,10)+"/"+(+d.slice(5,7)))});
+  const cx=el("line",{class:"cx",x1:0,x2:0,y1:8,y2:H-16,visibility:"hidden"});host.className="dl";host.appendChild(svg);
+  const tip=$("t-dol-tip"),box=$("t-dol-box");
+  svg.addEventListener("pointermove",e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W;let i=Math.round((px-L)/((W-L-R)/Math.max(1,dias.length-1)));i=Math.max(0,Math.min(dias.length-1,i));
+   cx.setAttribute("x1",x(i));cx.setAttribute("x2",x(i));cx.setAttribute("visibility","visible");tip.textContent="";
+   tip.append(mk("b","",new Date(dias[i]+"T12:00:00Z").toLocaleDateString("es-AR",{weekday:"short",day:"numeric",month:"short"})),document.createTextNode((neg[i]!=null?"≈"+Math.round(neg[i])+"% negativas · ":"sin notas suficientes · ")+"blue $"+Math.round(blue[i]).toLocaleString("es-AR")+(DOL[dias[i]].oficial?" · oficial $"+Math.round(DOL[dias[i]].oficial).toLocaleString("es-AR"):"")));
+   tip.hidden=false;const br=box.getBoundingClientRect();tip.style.left=Math.min(Math.max(e.clientX-br.left-tip.offsetWidth/2,0),br.width-tip.offsetWidth)+"px";tip.style.top="-8px"});
+  svg.addEventListener("pointerleave",()=>{tip.hidden=true;cx.setAttribute("visibility","hidden")});
+  /* correlacion entre el % negativo del dia y la variacion diaria del blue (solo dias con ambos datos) */
+  const pares=[];for(let i=1;i<dias.length;i++)if(neg[i]!=null&&blue[i-1])pares.push([neg[i],(blue[i]/blue[i-1]-1)*100]);
+  const v0=blue[0],v1=blue[blue.length-1],varp=(v1/v0-1)*100;
+  sum.append(document.createTextNode("En el período, el blue pasó de $"+Math.round(v0).toLocaleString("es-AR")+" a "),mk("b","","$"+Math.round(v1).toLocaleString("es-AR")),document.createTextNode(" ("+(varp>=0?"+":"")+varp.toFixed(1).replace(".",",")+"%). "));
+  if(pares.length>=8){const n=pares.length,ma=pares.reduce((s,p)=>s+p[0],0)/n,mb=pares.reduce((s,p)=>s+p[1],0)/n,cov=pares.reduce((s,p)=>s+(p[0]-ma)*(p[1]-mb),0),va=pares.reduce((s,p)=>s+(p[0]-ma)**2,0),vb=pares.reduce((s,p)=>s+(p[1]-mb)**2,0),r=cov/Math.sqrt(va*vb||1);
+   sum.append(document.createTextNode("Correlación entre el % de notas negativas y la variación diaria del blue: "),mk("b","","r = "+r.toFixed(2).replace(".",",")),document.createTextNode(" ("+n+" días; "+(Math.abs(r)<.3?"sin relación clara":Math.abs(r)<.6?"relación moderada":"relación fuerte")+", y correlación no implica causalidad)."))}
+  else sum.append(document.createTextNode("Para medir si el clima mediático acompaña al dólar hacen falta al menos 8 días completos de notas (hoy hay "+pares.length+")."))}}
 
 /* ---- Gráfico por hora ---- */
 {let rng=48,tema="",selH=null,tono=false;

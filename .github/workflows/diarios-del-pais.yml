@@ -30,6 +30,24 @@ env:
   DATA_BRANCH: data-diarios
 
 jobs:
+  # Pruebas de las funciones de extraccion (tests/): corren en paralelo y no frenan la recoleccion de datos;
+  # si fallan, la corrida queda marcada en rojo en Actions para revisar el scraper.
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: diarios-del-pais
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: diarios-del-pais/requirements.txt
+      - run: pip install -r requirements.txt pytest
+      - run: python -m pytest -q tests
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -43,7 +61,7 @@ jobs:
         working-directory: diarios-del-pais
     steps:
       - name: Codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Traer la base desde la rama de datos
         run: |
@@ -55,7 +73,7 @@ jobs:
           [ -f historico.db.gz ] && gunzip -f historico.db.gz || echo "primera corrida: base nueva"
           ls -la
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -83,7 +101,7 @@ jobs:
       # Cache de los modelos de Hugging Face: XLM-RoBERTa (tono) + MiniLM multilingue (notas parecidas, ver semantica.py).
       # La clave nombra los dos modelos: si se agrega o cambia un modelo, cambiar la clave para que se guarde una cache nueva.
       - name: Cache de los modelos (BERT y embeddings)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/huggingface
           key: hf-xlmr-sentiment-minilm-multi-v2
@@ -117,7 +135,7 @@ jobs:
           git commit -q -m "datos $(date +%Y-%m-%dT%H:%M%z)"
           git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "$DATA_BRANCH"
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: sitio
 
@@ -132,7 +150,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   # Autodisparo: espera hasta completar 30 minutos desde el inicio de esta corrida y lanza la siguiente.
   # - Corre aunque el pipeline haya fallado (always), asi la cadena no se corta por un error puntual.

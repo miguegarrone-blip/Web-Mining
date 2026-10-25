@@ -9,10 +9,10 @@ los clasifica (tema, tono, entidades), los acumula en SQLite y publica un tabler
 - `nlp.py`: tono (regresion logistica), entidades y puntaje de "cebo" (clickbait) de cada titulo.
 - `ner.py`: reconocimiento de entidades con spaCy (`es_core_news_md`, opcional): personas e instituciones en titulo + bajada,
   tambien las que no estan en el diccionario de `nlp.py`; alimenta "Nuevas en la agenda" en la pestaña Monitor.
-- `tono_entrenar.py`: entrena y evalua el modelo de tono con las notas etiquetadas a mano.
 - `tono_bert_eval.py`: compara modelos de tono y exporta el combinado (rasgos + XLM-RoBERTa) a `modelo_tono_bert.json`.
 - `tono_activo.py`: aprendizaje activo (elige los titulares mas dudosos para etiquetar y suma las etiquetas a `labels_activo.json`).
-- Local: `Actualizar.bat` o `python archivar.py` (deja `historico.db`, `historico.csv` y `rosario.html` en esta carpeta).
+- `tests/`: pruebas de extraccion y limpieza (`python -m pytest -q tests`); corren en cada corrida de Actions.
+- Local: `python build.py` (deja `historico.db`, `historico.csv` y `rosario.html` en esta carpeta).
 
 ## Aprendizaje activo del tono
 
@@ -36,11 +36,12 @@ En vez de etiquetar titulares al azar, se etiquetan los que el modelo combinado 
   `tono_bajada`, `cebo`, `autor`, `firmada`, `seccion`, `claves`, `largo`, `tema_fuente` (reglas o modelo),
   `bert_t`/`bert_b` (probabilidades de XLM-RoBERTa) y `ner` (entidades detectadas por spaCy, "A|B").
 - `salud`: estado de cada feed en cada corrida. `scraping`: resultado del scraping de notas por medio.
+- `dolar`: cotizacion diaria del dolar blue y oficial (argentinadatos.com y dolarapi.com), para cruzar con el tono.
 - `cuarentena`: notas descartadas por validacion (7 dias). `meta`: huellas de los modelos vigentes.
 
 ## En la nube (GitHub Actions + GitHub Pages)
 
-El workflow `.github/workflows/diarios-del-pais.yml` (en la raiz del repo) corre cada hora:
+El workflow `.github/workflows/diarios-del-pais.yml` (en la raiz del repo) corre cada 30 minutos (cada corrida programa la siguiente; el cron queda de respaldo):
 
 1. Trae la base `historico.db.gz` de la rama `data-diarios`.
 2. Corre `build.py` (agrega las notas nuevas, recalcula agregados).

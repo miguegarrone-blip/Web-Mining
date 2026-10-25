@@ -318,7 +318,7 @@ if semantica.disponible():
     print(f"embeddings: {len(pend)} nuevos en {t1 - t0:.0f}s | notas parecidas: {sum('sim' in x for x in pag)} de {len(pag)} notas tienen vecinos ({time.time() - t1:.1f}s)")
 DB.commit()
 
-# ---------- calibracion del tono (ver tono_entrenar.py) ----------
+# ---------- calibracion del tono (ver tono_bert_eval.py) ----------
 CALP = os.path.join(BASE, "calibracion.json")
 CAL = json.load(open(CALP, encoding="utf-8")) if os.path.exists(CALP) else None
 _ONE = {"n": [1, 0, 0], "0": [0, 1, 0], "p": [0, 0, 1]}
@@ -412,6 +412,30 @@ for m in MED:
         MED[m]["p"][d]["t"] = [round(x, 1) for x in MED[m]["p"][d]["t"]]
         MED[m]["p"][d]["en"] = {e: [z[0], round(z[1], 1)] for e, z in MED[m]["p"][d]["en"].items()}
 AGG["med"] = MED
+
+# ---------- dolar: cotizacion diaria (blue y oficial) para cruzar con el clima mediatico ----------
+# historico diario de argentinadatos.com (se recarga en cada corrida: es liviano y corrige valores del dia);
+# el valor de hoy, si falta, de dolarapi.com. Si las APIs fallan, se sigue con lo que ya hay en la base.
+DB.execute("CREATE TABLE IF NOT EXISTS dolar(fecha TEXT, casa TEXT, compra REAL, venta REAL, PRIMARY KEY(fecha, casa))")
+lim_dol = (datetime.now() - timedelta(days=RETENCION_DIAS + 15)).strftime("%Y-%m-%d")
+try:
+    for casa in ("blue", "oficial"):
+        serie = SES.get("https://api.argentinadatos.com/v1/cotizaciones/dolares/" + casa, headers=H, timeout=(6, 20)).json()
+        for z in serie:
+            if z.get("fecha", "") >= lim_dol and z.get("venta"):
+                DB.execute("INSERT OR REPLACE INTO dolar VALUES(?,?,?,?)", (z["fecha"], casa, z.get("compra"), z["venta"]))
+    hoy_ = dia(ahora_ms)
+    for z in SES.get("https://dolarapi.com/v1/dolares", headers=H, timeout=(6, 15)).json():
+        if z.get("casa") in ("blue", "oficial") and z.get("venta") and not DB.execute("SELECT 1 FROM dolar WHERE fecha=? AND casa=?", (hoy_, z["casa"])).fetchone():
+            DB.execute("INSERT INTO dolar VALUES(?,?,?,?)", (hoy_, z["casa"], z.get("compra"), z["venta"]))
+except Exception as e:
+    print("dolar: no se pudo actualizar (", str(e)[:80], ")")
+DB.execute("DELETE FROM dolar WHERE fecha < ?", (lim_dol,))
+DB.commit()
+DOL = {}
+for f_, c_, v_ in DB.execute("SELECT fecha, casa, venta FROM dolar WHERE fecha >= ? ORDER BY fecha", ((datetime.now() - timedelta(days=RETENCION_DIAS)).strftime("%Y-%m-%d"),)):
+    DOL.setdefault(f_, {})[c_] = v_
+AGG["dolar"] = DOL
 
 # ---------- como titula cada medio (todo el historico) ----------
 # alarma: de los titulos negativos con bajada, cuantos tienen una bajada que NO es negativa (el titulo exagera el hecho)

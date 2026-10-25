@@ -93,7 +93,7 @@ def seleccionar(n=60, por_medio=4):
     planilla(sel, os.path.join(AQUI, "muestra_activa.xlsx"))
 
 def planilla(sel, salida):
-    """mismo estilo que crear_planilla_validacion.py. La prediccion del modelo NO va en la planilla (solo en el json):
+    """La prediccion del modelo NO va en la planilla (solo en el json):
     verla ancla al que etiqueta, y en los casos dudosos es justo donde mas sesgaria"""
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
