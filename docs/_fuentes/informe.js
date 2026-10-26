@@ -17,7 +17,8 @@ const CIFRAS = {
   tono: { n: "39%", z: "49%", p: "13%" },
 };
 const AZUL = "1F5F8B", GRIS = "667069", TINTA = "1C2421";
-const ANCHO = 9026; // A4 con margenes de 1 pulgada (en DXA)
+const MARGEN = 1134;                 // 2 cm (en DXA)
+const ANCHO = 11906 - 2 * MARGEN;    // ancho util de A4 (en DXA)
 
 // ---------- ayudas ----------
 // texto con **negrita** y `codigo`
@@ -31,15 +32,15 @@ function runs(txt, extra = {}) {
   });
   return out;
 }
-const P = (t, o = {}) => new Paragraph({ children: runs(t), spacing: { after: 120, line: 300 }, ...o });
-const H1 = (t) => new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(t)], spacing: { before: 360, after: 200 }, keepNext: true });
+const P = (t, o = {}) => new Paragraph({ children: runs(t), spacing: { after: 100, line: 276 }, ...o });
+const H1 = (t) => new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(t)], spacing: { before: 300, after: 140 }, keepNext: true });
 const H1c = (t) => new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(t)] });
 const H2 = (t) => new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(t)], keepNext: true });
 const H3 = (t) => new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(t)], keepNext: true });
-const B = (t, nivel = 0) => new Paragraph({ numbering: { reference: "viñetas", level: nivel }, children: runs(t), spacing: { after: 60, line: 288 } });
+const B = (t, nivel = 0) => new Paragraph({ numbering: { reference: "viñetas", level: nivel }, children: runs(t), spacing: { after: 40, line: 264 } });
 let LISTA = 0;
 const NUEVA = () => { LISTA++; return []; };   // ...NUEVA() antes de cada lista numerada para reiniciar en 1
-const N = (t) => new Paragraph({ numbering: { reference: "numeros", level: 0, instance: LISTA }, children: runs(t), spacing: { after: 60, line: 288 } });
+const N = (t) => new Paragraph({ numbering: { reference: "numeros", level: 0, instance: LISTA }, children: runs(t), spacing: { after: 40, line: 264 } });
 const CODE = (lineas) => lineas.map((l, i) => new Paragraph({
   children: [new TextRun({ text: l || " ", font: "Consolas", size: 18 })],
   shading: { type: ShadingType.CLEAR, fill: "F1F3EF" },
@@ -50,11 +51,13 @@ const NOTA = (t) => new Paragraph({
   children: runs(t, { color: TINTA, size: 20 }),
   shading: { type: ShadingType.CLEAR, fill: "E8F0F6" },
   border: { left: { style: BorderStyle.SINGLE, size: 18, color: AZUL, space: 8 } },
-  spacing: { before: 120, after: 160, line: 288 }, indent: { left: 200, right: 200 },
+  spacing: { before: 100, after: 140, line: 264 }, indent: { left: 200, right: 200 },
 });
 const borde = { style: BorderStyle.SINGLE, size: 4, color: "D9DCD5" };
-function TABLA(filas, anchos) {
-  const tot = anchos.reduce((a, b) => a + b, 0);
+function TABLA(filas, anchos0) {
+  const f = ANCHO / anchos0.reduce((a, b) => a + b, 0), anchos = anchos0.map((a) => Math.round(a * f));
+  anchos[anchos.length - 1] += ANCHO - anchos.reduce((a, b) => a + b, 0);
+  const tot = ANCHO;
   return new Table({
     width: { size: tot, type: WidthType.DXA }, columnWidths: anchos,
     rows: filas.map((f, i) => new TableRow({
@@ -74,7 +77,7 @@ const LINK = (texto, url) => new Paragraph({ children: [new ExternalHyperlink({ 
 
 // ---------- contenido ----------
 const portada = [
-  new Paragraph({ children: [], spacing: { before: 2400 } }),
+  new Paragraph({ children: [], spacing: { before: 1800 } }),
   new Paragraph({ children: [new TextRun({ text: "MAESTRÍA EN CIENCIA DE DATOS · WEB MINING", color: GRIS, size: 20 })], spacing: { after: 240 } }),
   new Paragraph({ children: [new TextRun({ text: "Monitor de medios argentinos", bold: true, size: 56, color: TINTA })], spacing: { after: 120 } }),
   new Paragraph({ children: [new TextRun({ text: "Web mining, análisis de sentimiento y estilo de titulación en 46 medios", size: 30, color: AZUL })], spacing: { after: 600 } }),
@@ -396,9 +399,9 @@ const doc = new Document({
     default: { document: { run: { font: "Calibri", size: 22, color: TINTA } } },
     paragraphStyles: [
       { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { size: 34, bold: true, color: AZUL, font: "Calibri" }, paragraph: { spacing: { before: 120, after: 200 }, outlineLevel: 0 } },
+        run: { size: 34, bold: true, color: AZUL, font: "Calibri" }, paragraph: { spacing: { before: 120, after: 140 }, outlineLevel: 0 } },
       { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
-        run: { size: 26, bold: true, color: TINTA, font: "Calibri" }, paragraph: { spacing: { before: 240, after: 120 }, outlineLevel: 1 } },
+        run: { size: 26, bold: true, color: TINTA, font: "Calibri" }, paragraph: { spacing: { before: 200, after: 80 }, outlineLevel: 1 } },
       { id: "Heading3", name: "Heading 3", basedOn: "Normal", next: "Normal", quickFormat: true,
         run: { size: 22, bold: true, color: AZUL, font: "Calibri" }, paragraph: { spacing: { before: 180, after: 80 }, outlineLevel: 2 } },
     ],
@@ -411,7 +414,7 @@ const doc = new Document({
       { level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] },
   ] },
   sections: [{
-    properties: { page: { margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } } },
+    properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: MARGEN, bottom: MARGEN, left: MARGEN, right: MARGEN, footer: 500 } } },
     footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [
       new TextRun({ text: "Monitor de medios argentinos · ", color: GRIS, size: 18 }),
       new TextRun({ children: [PageNumber.CURRENT], color: GRIS, size: 18 })] })] }) },
