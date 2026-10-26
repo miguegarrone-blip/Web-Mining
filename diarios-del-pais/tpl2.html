@@ -363,7 +363,7 @@ drawTemas();
 /* ---- Análisis ---- */
 const rowBar=(host,label,parts,total,scale,val,title)=>{const r=mk("div","row");const w=mk("div");w.style.minWidth="0";const tr=mk("div","track");tr.style.width=(total/scale*100)+"%";
 tr.innerHTML=parts.map(([c,n])=>'<span class="'+c+'" style="width:'+(n/total*100)+'%"></span>').join("");w.appendChild(tr);r.append(mk("span","",label),w,mk("span","v",val));if(title)r.title=title;host.appendChild(r)};
-{const SW2=new Set("de la el en y a los las un una por con para que del al se su sus es lo como mas sobre tras ante este esta ya no si le les o u e entre hasta desde sin que como cuando dias dia ano anos sera ser fue hoy vs hace va ha han fin semana nueva nuevo primer primera dos tres cinco uno rosario argentina javier torneo clausura horario posibles formaciones canal vivo tambien cada todo todos esta este estos esas ese eso lunes martes miercoles jueves viernes sabado domingo enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre 2025 2026 ahora minuto ultimas noticias ultima ultimo hora horas tras segun ademas puede pueden podria hacer hizo luego antes despues mientras donde quien quienes cual cuales porque".split(" "));
+{const SW2=new Set("contra pero video videos quedo asi aca alla hasta tambien sigue siguen de la el en y a los las un una por con para que del al se su sus es lo como mas sobre tras ante este esta ya no si le les o u e entre hasta desde sin que como cuando dias dia ano anos sera ser fue hoy vs hace va ha han fin semana nueva nuevo primer primera dos tres cinco uno rosario argentina javier torneo clausura horario posibles formaciones canal vivo tambien cada todo todos esta este estos esas ese eso lunes martes miercoles jueves viernes sabado domingo enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre 2025 2026 ahora minuto ultimas noticias ultima ultimo hora horas tras segun ademas puede pueden podria hacer hizo luego antes despues mientras donde quien quienes cual cuales porque".split(" "));
 const tk=x=>new Set(norm(x.t).replace(/[^a-z0-9 ]/g," ").split(/ +/).filter(w=>w.length>3&&!SW2.has(w)));
 const T=D.map(tk);
 /* Agrupado de notas que cuentan lo mismo: TF-IDF + coseno contra la nota "semilla" de cada grupo (sin encadenar) */
@@ -383,7 +383,9 @@ const vistos=new Set();const uno=g.filter(x=>!vistos.has(x.m)&&vistos.add(x.m));
 uno.slice(0,6).forEach(x=>{const r=mk("div","cr");r.appendChild(mk("em","",x.m));const a=mk("a","",x.t);a.href=x.u;a.target="_blank";a.rel="noopener";r.appendChild(a);d.appendChild(r)});
 if(uno.length>6)d.appendChild(mk("p","note","Y "+(uno.length-6)+" medios más."));h.appendChild(d)});
 const f={};D.forEach((x,i)=>T[i].forEach(w=>f[w]=(f[w]||0)+1));
-Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,28).forEach(([w,n])=>{const e=mk("span","",w);e.style.fontSize=(0.85+Math.min(n,14)*0.06)+"rem";e.appendChild(mk("small","",n));$("a-words").appendChild(e)})}
+/* tamaño proporcional a la raiz de las apariciones, entre la menos y la mas frecuente del top (0,85 a 2,6 rem) */
+{const top=Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,28),r=v=>Math.sqrt(v),lo=r(top.length?top[top.length-1][1]:1),hi=r(top.length?top[0][1]:1);
+ top.forEach(([w,n])=>{const k=hi>lo?(r(n)-lo)/(hi-lo):1,e=mk("span","",w);e.style.fontSize=(0.85+k*1.75).toFixed(2)+"rem";e.style.opacity=(0.7+k*0.3).toFixed(2);e.title=w+": "+n+" apariciones";e.appendChild(mk("small","",n));$("a-words").appendChild(e)})}}
 
 /* ---- Tendencias ---- */
 {const dias=Object.keys(AGG.dn).sort(),full=dias.filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy);
