@@ -305,9 +305,12 @@ chipTopics();
 $("nofut").onclick=e=>{nofut=!nofut;e.currentTarget.setAttribute("aria-pressed",nofut);draw()};
 $("q").oninput=e=>{q=norm(e.target.value);draw()};
 function draw(){const ul=$("list");ul.textContent="";
-const r=D.filter(x=>(!medio||x.m===medio)&&(!alc||x.r===alc)&&(!tpo||x.tp===tpo)&&(!topic||x.tg.includes(topic))&&(!nofut||!x.tg.includes("Fútbol"))&&(SQ?SQ.get(x)>=SEMU:!q||norm(x.t+" "+(x.b||"")).includes(q)));
-if(SQ)r.sort((a,b)=>SQ.get(b)-SQ.get(a));
-$("cnt").textContent=r.length+(SQ?" notas por significado":" notas");
+const r=D.filter(x=>(!medio||x.m===medio)&&(!alc||x.r===alc)&&(!tpo||x.tp===tpo)&&(!topic||x.tg.includes(topic))&&(!nofut||!x.tg.includes("Fútbol"))&&(SQ?true:!q||norm(x.t+" "+(x.b||"")).includes(q)));
+/* por significado: las que pasan el umbral; si son menos de 10 (consulta de una palabra o tema ausente) se muestran
+   igual las 30 mas cercanas, avisando que el parecido es bajo, para que la lista nunca quede vacia */
+let semBajo=false;if(SQ){r.sort((a,b)=>SQ.get(b)-SQ.get(a));const k=r.filter(x=>SQ.get(x)>=SEMU).length;if(k<10){semBajo=r.length>0;r.length=Math.min(r.length,30)}else r.length=k}
+$("cnt").textContent=r.length+(SQ?(semBajo?" notas más cercanas (parecido bajo)":" notas por significado"):" notas");
+if(semBajo)ul.appendChild(mk("li","empty","Ninguna nota es muy parecida a la búsqueda; estas son las más cercanas. Probá con una frase más completa (por ejemplo, «criptomonedas y estafas»)."));
 if(!r.length){ul.appendChild(mk("li","empty","No hay titulares con ese filtro."));return}
 r.slice(0,300).forEach(x=>{const li=mk("li","n");const mt=mk("div","meta");mt.append(mk("b","",x.m),mk("span","",x.tp+" · "+fmt(x.ts)));if(SQ)mt.appendChild(mk("span","","similitud "+SQ.get(x).toFixed(2).replace(".",",")));
 const d=mk("div");const a=mk("a","",x.t);a.href=x.u;a.target="_blank";a.rel="noopener";const tg=mk("div","tg");x.tg.forEach(t=>tg.appendChild(mk("span","",t)));d.append(a);if(x.b)d.appendChild(mk("p","bj",x.b));d.appendChild(tg);if(x.sim)d.appendChild(simBox(x));li.append(mt,d);ul.appendChild(li)})}
@@ -321,8 +324,14 @@ function simBox(x){const w=mk("div","sim"),n=x.sim.length/2,b=mk("button","simb"
   const li=mk("li"),a=mk("a","",y.t);a.href=y.u;a.target="_blank";a.rel="noopener";li.append(mk("small","",y.m+" · "+fmt(y.ts)+" · similitud "+(x.sim[k+1]/100).toFixed(2).replace(".",",")),a);ul.appendChild(li)}};
  w.append(b,ul);return w}
 const semSt=t=>$("semst").textContent=t;
+/* transformers.js desde varios CDN: si uno esta bloqueado (proxy corporativo, extension, proteccion de rastreo)
+   se prueba el siguiente; los .wasm de onnxruntime se bajan del mismo CDN que funciono (por defecto salen de jsDelivr) */
+const SEMV="@xenova/transformers@2.17.2",SEMCDN=[["https://cdn.jsdelivr.net/npm/"+SEMV+"/+esm","https://cdn.jsdelivr.net/npm/"+SEMV+"/dist/"],
+ ["https://unpkg.com/"+SEMV+"/dist/transformers.min.js","https://unpkg.com/"+SEMV+"/dist/"],["https://cdn.jsdelivr.net/npm/"+SEMV+"/dist/transformers.min.js","https://cdn.jsdelivr.net/npm/"+SEMV+"/dist/"]];
+async function semLib(){const errs=[];for(const[u,wasm]of SEMCDN){try{const T=await import(u);T.env.backends.onnx.wasm.wasmPaths=wasm;return T}catch(e){errs.push(new URL(u).host+": "+e.message)}}
+ throw Error("no se pudo bajar la librería del modelo desde ningún CDN (¿la red o una extensión bloquea cdn.jsdelivr.net y unpkg.com?). "+errs.join(" | "))}
 function semCargar(){if(SEM)return SEM;semSt("Cargando modelo… la primera vez tarda unos segundos");
- SEM=Promise.all([import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2"),fetch("emb.bin?v="+encodeURIComponent(HEALTH.run)).then(r=>{if(!r.ok)throw Error("faltan los embeddings (emb.bin, HTTP "+r.status+")");return r.arrayBuffer()})]).then(async([T,buf])=>{
+ SEM=Promise.all([semLib(),fetch("emb.bin?v="+encodeURIComponent(HEALTH.run)).then(r=>{if(!r.ok)throw Error("faltan los embeddings (emb.bin, HTTP "+r.status+")");return r.arrayBuffer()})]).then(async([T,buf])=>{
   const dv=new DataView(buf);if(new TextDecoder().decode(new Uint8Array(buf,0,4))!=="EMB1")throw Error("emb.bin con formato desconocido");
   const n=dv.getUint32(4,true),dim=dv.getUint32(8,true),hb=new Uint8Array(buf,12,8*n),V=new Int8Array(buf,12+8*n,n*dim),byH=new Map(D.map(x=>[x.h,x])),R=[];
   for(let i=0;i<n;i++){let h="";for(let j=0;j<8;j++)h+=hb[8*i+j].toString(16).padStart(2,"0");const x=byH.get(h);if(!x)continue;let s=0;for(let j=i*dim;j<(i+1)*dim;j++)s+=V[j]*V[j];R.push([x,i*dim,1/Math.sqrt(s||1)])}
