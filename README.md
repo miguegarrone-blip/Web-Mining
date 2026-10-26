@@ -6,7 +6,7 @@ titula cada medio**: cuánto exagera, cuánto busca el clic y cuánto firma lo q
 
 Trabajo práctico de **Web Mining** · Maestría en Ciencia de Datos.
 
-**[Abrir el tablero](https://miguegarrone-blip.github.io/Web-Mining/)** · [Informe del TP](docs/informe-tp.docx) · [Presentación](docs/presentacion-tp.pptx)
+**[Abrir el tablero](https://miguegarrone-blip.github.io/Web-Mining/)** · Informe del TP: [PDF](docs/informe-tp.pdf) / [Word](docs/informe-tp.docx) · Presentación: [PDF](docs/presentacion-tp.pdf) / [PowerPoint](docs/presentacion-tp.pptx)
 
 ![Tablero del monitor de medios](docs/_fuentes/img/tablero-resumen.png)
 
