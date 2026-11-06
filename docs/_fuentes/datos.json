@@ -1,1 +1,1957 @@
-{"tot": [5302, 45, 5298, 4613, 4803, 1276], "tono": {"0": 2583, "n": 2048, "p": 671}, "neg": [["Diario Chaco", 51.2, 127], ["La Voz", 50.3, 143], ["Eldoce", 49.6, 123], ["Aire de Santa Fe", 47.6, 82], ["Perfil", 46.9, 64], ["Misiones Online", 46.1, 165], ["Infobae", 45.5, 554], ["El Tribuno", 44.9, 118], ["Cadena 3", 44.2, 120], ["C5N", 44.1, 161], ["Rosario3", 43.3, 127], ["Clarín", 43.2, 176], ["El Destape", 42.6, 176], ["A24", 41.0, 144], ["Página/12", 39.6, 106], ["La Nación", 38.9, 149], ["El Día (La Plata)", 38.6, 70], ["Radio Mitre", 38.3, 154], ["El Trece", 37.6, 165], ["La Nueva (Bahía Blanca)", 37.2, 113], ["La Capital (Mar del Plata)", 35.8, 134], ["La Capital", 34.5, 113], ["La Gaceta", 34.3, 140], ["Los Andes", 33.8, 133], ["El Litoral", 33.3, 171], ["Infocielo", 33.1, 121], ["Diario de Cuyo", 32.4, 102], ["Canal 26", 32.3, 130], ["El Cronista", 32.2, 118], ["Elonce", 29.8, 178], ["Uno Santa Fe", 27.5, 171], ["TN", 27.4, 168], ["Río Negro", 27.0, 63], ["El Chubut", 19.1, 110]], "cebo": [["A24", 22.2, 144], ["El Destape", 19.3, 176], ["Radio Mitre", 18.8, 154], ["Eldoce", 17.9, 123], ["C5N", 16.8, 161], ["TN", 16.1, 168], ["El Trece", 15.8, 165], ["La Nación", 14.8, 149], ["Canal 26", 14.6, 130], ["La Gaceta", 13.6, 140], ["Los Andes", 12.8, 133], ["Infocielo", 12.4, 121], ["Olé", 10.5, 57], ["Página/12", 9.4, 106], ["Cadena 3", 9.2, 120], ["Noticias Argentinas", 9.1, 55], ["La Nueva (Bahía Blanca)", 8.8, 113], ["Uno Santa Fe", 8.8, 171], ["Rosario3", 8.7, 127], ["Aire de Santa Fe", 8.5, 82], ["Río Negro", 7.9, 63], ["El Cronista", 7.6, 118], ["El Tribuno", 7.6, 118], ["Diario de Cuyo", 6.9, 102], ["Clarín", 6.8, 176], ["El Litoral", 6.4, 171], ["Infobae", 6.3, 554], ["El Día (La Plata)", 5.7, 70], ["La Voz", 5.6, 143], ["Diario Chaco", 5.5, 127], ["Radio Continental", 4.7, 43], ["Municipalidad de Rosario", 4.3, 46], ["Misiones Online", 3.6, 165], ["Elonce", 3.4, 178], ["La Capital (Mar del Plata)", 3.0, 134], ["La Capital", 2.7, 113], ["Rosario Nuestro", 2.4, 42], ["El Chubut", 1.8, 110], ["Perfil", 1.6, 64]], "firm": [["Perfil", 92.2, 64], ["Misiones Online", 77.6, 165], ["El Cronista", 69.5, 118], ["TN", 64.9, 168], ["Eldoce", 63.9, 122], ["Infobae", 46.4, 554], ["Noticias Argentinas", 45.5, 55], ["Página/12", 44.8, 105], ["Los Andes", 44.4, 126], ["Canal 26", 40.8, 125], ["La Nación", 37.6, 149], ["El Trece", 36.3, 113], ["La Gaceta", 29.3, 140], ["Clarín", 29.0, 176], ["Río Negro", 23.8, 63], ["Olé", 22.8, 57], ["La Capital", 22.1, 113], ["Aire de Santa Fe", 19.5, 82], ["Diario de Cuyo", 17.9, 95], ["El Destape", 11.9, 176], ["El Litoral", 8.3, 133], ["A24", 7.6, 144], ["El Día (La Plata)", 7.1, 70], ["C5N", 6.9, 145], ["Infocielo", 4.6, 109], ["La Nueva (Bahía Blanca)", 4.5, 112], ["La Voz", 4.4, 135], ["Uno Santa Fe", 4.1, 169], ["El Chubut", 2.8, 108], ["Cadena 3", 2.6, 117], ["Elonce", 0.0, 138], ["La Capital (Mar del Plata)", 0.0, 131], ["Radio Continental", 0.0, 43], ["Radio Mitre", 0.0, 153], ["Rosario Nuestro", 0.0, 41], ["Rosario3", 0.0, 127]], "exag": [["El Cronista", 55.3, 38], ["Canal 26", 52.4, 42], ["Uno Santa Fe", 52.2, 46], ["TN", 50.0, 46], ["La Nación", 49.1, 55], ["Radio Mitre", 48.3, 58], ["Perfil", 46.7, 30], ["Noticias Argentinas", 45.8, 24], ["El Trece", 43.5, 62], ["Diario de Cuyo", 41.9, 31], ["Misiones Online", 41.3, 75], ["La Gaceta", 39.6, 48], ["La Capital", 39.5, 38], ["La Nueva (Bahía Blanca)", 39.0, 41], ["Rosario3", 38.2, 55], ["A24", 37.3, 59], ["Los Andes", 35.6, 45], ["El Diario de la República", 35.0, 20], ["El Litoral", 33.3, 57], ["Infobae", 32.1, 134], ["C5N", 31.0, 71], ["Página/12", 31.0, 42], ["Cadena 3", 30.8, 52], ["Rosario Nuestro", 30.0, 20], ["Eldoce", 29.5, 61], ["Infocielo", 27.8, 36], ["La Voz", 27.8, 72], ["El Destape", 26.5, 68], ["Clarín", 23.7, 76], ["El Día (La Plata)", 22.2, 27], ["La Capital (Mar del Plata)", 21.3, 47], ["Aire de Santa Fe", 20.5, 39], ["El Chubut", 19.0, 21], ["Elonce", 6.7, 45]], "scrap": [5548, 5046, 0], "gn": 3724, "largo": [["Ámbito", 1187], ["La Nación", 888], ["El Cronista", 712]], "ents": [["Javier Milei", 194], ["Lionel Messi", 91], ["Papa León XIV", 77], ["Policía", 65]], "corridas": 11}
+{
+ "generado": "2026-11-06 16:49",
+ "tot": {
+  "notas": 84040,
+  "medios": 46,
+  "analizadas": 84036,
+  "con_bajada": 66956,
+  "ld": 80929,
+  "firmadas": 25382,
+  "desde": "2026-10-24",
+  "hasta": "2026-11-06",
+  "corridas": 626,
+  "medios_rss": 17,
+  "medios_gn": 29,
+  "notas_gn": 29243
+ },
+ "scrap": {
+  "pedidos": 85642,
+  "ok": 82564,
+  "robots": 1
+ },
+ "tono": {
+  "0": 41862,
+  "n": 31205,
+  "p": 10973
+ },
+ "cebo": [
+  [
+   "A24",
+   24.2,
+   1013
+  ],
+  [
+   "El Trece",
+   22.0,
+   1113
+  ],
+  [
+   "Radio Mitre",
+   19.6,
+   1927
+  ],
+  [
+   "Olé",
+   18.2,
+   1395
+  ],
+  [
+   "El Destape",
+   18.0,
+   1242
+  ],
+  [
+   "C5N",
+   17.8,
+   1105
+  ],
+  [
+   "El Cronista",
+   16.2,
+   1289
+  ],
+  [
+   "TN",
+   16.2,
+   3661
+  ],
+  [
+   "Canal 26",
+   16.0,
+   1014
+  ],
+  [
+   "La Gaceta",
+   16.0,
+   1403
+  ],
+  [
+   "La Nación",
+   14.3,
+   3541
+  ],
+  [
+   "Río Negro",
+   13.9,
+   1971
+  ],
+  [
+   "Los Andes",
+   12.9,
+   1207
+  ],
+  [
+   "Infocielo",
+   12.3,
+   1126
+  ],
+  [
+   "Perfil",
+   11.3,
+   2906
+  ],
+  [
+   "La Voz",
+   10.8,
+   1069
+  ],
+  [
+   "Diario de Cuyo",
+   10.3,
+   960
+  ],
+  [
+   "Aire de Santa Fe",
+   10.2,
+   968
+  ],
+  [
+   "Eldoce",
+   10.2,
+   849
+  ],
+  [
+   "Clarín",
+   9.8,
+   4113
+  ],
+  [
+   "Ámbito",
+   9.6,
+   738
+  ],
+  [
+   "Infobae",
+   8.6,
+   26868
+  ],
+  [
+   "Rosario3",
+   8.6,
+   928
+  ],
+  [
+   "Conclusión",
+   8.4,
+   628
+  ],
+  [
+   "Cadena 3",
+   7.8,
+   2586
+  ],
+  [
+   "La Capital",
+   7.6,
+   1079
+  ],
+  [
+   "La Nueva (Bahía Blanca)",
+   7.4,
+   808
+  ],
+  [
+   "El Ciudadano",
+   6.8,
+   689
+  ],
+  [
+   "El Día (La Plata)",
+   6.6,
+   1792
+  ],
+  [
+   "Noticias Argentinas",
+   6.5,
+   1624
+  ],
+  [
+   "Uno Santa Fe",
+   6.0,
+   1045
+  ],
+  [
+   "El Tribuno",
+   5.7,
+   933
+  ],
+  [
+   "El Diario de la República",
+   5.6,
+   305
+  ],
+  [
+   "El Litoral",
+   5.5,
+   1073
+  ],
+  [
+   "Misiones Online",
+   5.4,
+   1699
+  ],
+  [
+   "Página/12",
+   4.8,
+   1348
+  ],
+  [
+   "La Capital (Mar del Plata)",
+   4.0,
+   968
+  ],
+  [
+   "Diario Chaco",
+   3.4,
+   904
+  ],
+  [
+   "Elonce",
+   3.2,
+   1828
+  ],
+  [
+   "El Chubut",
+   1.1,
+   991
+  ]
+ ],
+ "neg": [
+  [
+   "Diario Chaco",
+   50.6,
+   904
+  ],
+  [
+   "Conclusión",
+   49.0,
+   628
+  ],
+  [
+   "El Diario de la República",
+   45.6,
+   305
+  ],
+  [
+   "Aire de Santa Fe",
+   43.7,
+   968
+  ],
+  [
+   "La Voz",
+   42.9,
+   1069
+  ],
+  [
+   "El Día (La Plata)",
+   42.8,
+   1792
+  ],
+  [
+   "Misiones Online",
+   42.6,
+   1699
+  ],
+  [
+   "C5N",
+   42.0,
+   1105
+  ],
+  [
+   "Rosario3",
+   41.5,
+   928
+  ],
+  [
+   "A24",
+   41.4,
+   1013
+  ],
+  [
+   "Eldoce",
+   41.2,
+   849
+  ],
+  [
+   "El Destape",
+   40.5,
+   1242
+  ],
+  [
+   "El Ciudadano",
+   40.3,
+   689
+  ],
+  [
+   "Infobae",
+   40.3,
+   26868
+  ],
+  [
+   "El Tribuno",
+   39.9,
+   933
+  ],
+  [
+   "Noticias Argentinas",
+   39.7,
+   1624
+  ],
+  [
+   "Página/12",
+   39.5,
+   1348
+  ],
+  [
+   "El Trece",
+   38.1,
+   1113
+  ],
+  [
+   "El Litoral",
+   37.2,
+   1073
+  ],
+  [
+   "Infocielo",
+   37.1,
+   1126
+  ],
+  [
+   "La Gaceta",
+   37.1,
+   1403
+  ],
+  [
+   "La Nueva (Bahía Blanca)",
+   36.5,
+   808
+  ],
+  [
+   "Cadena 3",
+   36.4,
+   2586
+  ],
+  [
+   "Perfil",
+   36.4,
+   2906
+  ],
+  [
+   "TN",
+   35.6,
+   3661
+  ],
+  [
+   "Ámbito",
+   35.5,
+   738
+  ],
+  [
+   "Elonce",
+   35.0,
+   1828
+  ],
+  [
+   "La Capital",
+   33.8,
+   1079
+  ],
+  [
+   "Clarín",
+   33.7,
+   4113
+  ],
+  [
+   "Los Andes",
+   33.5,
+   1207
+  ],
+  [
+   "Radio Mitre",
+   33.5,
+   1927
+  ],
+  [
+   "La Nación",
+   33.3,
+   3541
+  ],
+  [
+   "La Capital (Mar del Plata)",
+   32.1,
+   968
+  ],
+  [
+   "El Cronista",
+   28.7,
+   1289
+  ],
+  [
+   "Uno Santa Fe",
+   28.0,
+   1045
+  ],
+  [
+   "Canal 26",
+   27.6,
+   1014
+  ],
+  [
+   "Diario de Cuyo",
+   27.5,
+   960
+  ],
+  [
+   "Río Negro",
+   25.9,
+   1971
+  ],
+  [
+   "Olé",
+   21.9,
+   1395
+  ],
+  [
+   "El Chubut",
+   17.9,
+   991
+  ]
+ ],
+ "firm": [
+  [
+   "TN",
+   80.2,
+   3661
+  ],
+  [
+   "Misiones Online",
+   75.2,
+   1687
+  ],
+  [
+   "Eldoce",
+   60.4,
+   833
+  ],
+  [
+   "El Cronista",
+   55.2,
+   1285
+  ],
+  [
+   "Canal 26",
+   46.0,
+   998
+  ],
+  [
+   "Los Andes",
+   45.1,
+   1172
+  ],
+  [
+   "Noticias Argentinas",
+   43.3,
+   1624
+  ],
+  [
+   "Infobae",
+   42.4,
+   26868
+  ],
+  [
+   "Página/12",
+   41.2,
+   1310
+  ],
+  [
+   "Ámbito",
+   37.4,
+   737
+  ],
+  [
+   "El Trece",
+   37.3,
+   925
+  ],
+  [
+   "La Nación",
+   36.5,
+   3540
+  ],
+  [
+   "La Gaceta",
+   28.0,
+   1400
+  ],
+  [
+   "Río Negro",
+   27.6,
+   1915
+  ],
+  [
+   "Olé",
+   27.4,
+   1395
+  ],
+  [
+   "Diario de Cuyo",
+   25.9,
+   884
+  ],
+  [
+   "La Capital",
+   24.1,
+   1079
+  ],
+  [
+   "Perfil",
+   21.7,
+   2868
+  ],
+  [
+   "Clarín",
+   21.3,
+   4100
+  ],
+  [
+   "El Destape",
+   17.5,
+   1220
+  ],
+  [
+   "Aire de Santa Fe",
+   15.6,
+   968
+  ],
+  [
+   "El Tribuno",
+   13.8,
+   688
+  ],
+  [
+   "El Ciudadano",
+   9.5,
+   687
+  ],
+  [
+   "La Nueva (Bahía Blanca)",
+   8.3,
+   806
+  ],
+  [
+   "C5N",
+   7.7,
+   1066
+  ],
+  [
+   "El Litoral",
+   7.5,
+   955
+  ],
+  [
+   "Infocielo",
+   5.0,
+   1079
+  ],
+  [
+   "A24",
+   4.8,
+   1005
+  ],
+  [
+   "El Día (La Plata)",
+   4.2,
+   1791
+  ],
+  [
+   "Uno Santa Fe",
+   3.9,
+   1016
+  ],
+  [
+   "Cadena 3",
+   3.7,
+   2543
+  ],
+  [
+   "La Voz",
+   2.5,
+   989
+  ],
+  [
+   "El Chubut",
+   2.0,
+   962
+  ],
+  [
+   "Rosario3",
+   1.1,
+   921
+  ],
+  [
+   "El Diario de la República",
+   0.8,
+   242
+  ],
+  [
+   "Radio Mitre",
+   0.6,
+   1904
+  ],
+  [
+   "Rosarioplus",
+   0.5,
+   221
+  ],
+  [
+   "Conclusión",
+   0.0,
+   628
+  ],
+  [
+   "Elonce",
+   0.0,
+   1458
+  ],
+  [
+   "La Capital (Mar del Plata)",
+   0.0,
+   897
+  ],
+  [
+   "Radio Continental",
+   0.0,
+   222
+  ],
+  [
+   "Rosario Nuestro",
+   0.0,
+   254
+  ]
+ ],
+ "exag": [
+  [
+   "El Cronista",
+   47.8,
+   370
+  ],
+  [
+   "La Nación",
+   46.0,
+   1150
+  ],
+  [
+   "Noticias Argentinas",
+   46.0,
+   644
+  ],
+  [
+   "La Nueva (Bahía Blanca)",
+   45.1,
+   293
+  ],
+  [
+   "El Trece",
+   45.0,
+   422
+  ],
+  [
+   "Uno Santa Fe",
+   42.8,
+   290
+  ],
+  [
+   "Perfil",
+   42.6,
+   1037
+  ],
+  [
+   "Infobae",
+   42.1,
+   5629
+  ],
+  [
+   "Ámbito",
+   41.8,
+   261
+  ],
+  [
+   "Olé",
+   41.6,
+   305
+  ],
+  [
+   "Canal 26",
+   41.1,
+   280
+  ],
+  [
+   "Radio Mitre",
+   40.7,
+   641
+  ],
+  [
+   "Página/12",
+   40.0,
+   522
+  ],
+  [
+   "Diario de Cuyo",
+   38.9,
+   252
+  ],
+  [
+   "El Diario de la República",
+   38.6,
+   132
+  ],
+  [
+   "TN",
+   38.3,
+   1216
+  ],
+  [
+   "El Tribuno",
+   38.0,
+   279
+  ],
+  [
+   "La Capital",
+   37.9,
+   364
+  ],
+  [
+   "C5N",
+   37.5,
+   464
+  ],
+  [
+   "El Chubut",
+   37.4,
+   174
+  ],
+  [
+   "Río Negro",
+   37.2,
+   511
+  ],
+  [
+   "A24",
+   36.9,
+   412
+  ],
+  [
+   "La Gaceta",
+   35.5,
+   519
+  ],
+  [
+   "Los Andes",
+   35.4,
+   404
+  ],
+  [
+   "Infocielo",
+   34.1,
+   408
+  ],
+  [
+   "Conclusión",
+   33.1,
+   308
+  ],
+  [
+   "Cadena 3",
+   32.6,
+   930
+  ],
+  [
+   "El Ciudadano",
+   32.4,
+   278
+  ],
+  [
+   "Rosario3",
+   31.7,
+   385
+  ],
+  [
+   "La Capital (Mar del Plata)",
+   31.5,
+   308
+  ],
+  [
+   "Clarín",
+   31.0,
+   1379
+  ],
+  [
+   "La Voz",
+   31.0,
+   458
+  ],
+  [
+   "Misiones Online",
+   30.9,
+   719
+  ],
+  [
+   "El Destape",
+   30.1,
+   458
+  ],
+  [
+   "El Día (La Plata)",
+   29.6,
+   767
+  ],
+  [
+   "Eldoce",
+   28.4,
+   349
+  ],
+  [
+   "El Litoral",
+   27.6,
+   398
+  ],
+  [
+   "Rosario Nuestro",
+   25.6,
+   129
+  ],
+  [
+   "Aire de Santa Fe",
+   24.4,
+   422
+  ],
+  [
+   "Elonce",
+   22.1,
+   533
+  ],
+  [
+   "Rosarioplus",
+   19.8,
+   126
+  ]
+ ],
+ "largo": [
+  [
+   "Ámbito",
+   859
+  ],
+  [
+   "La Nación",
+   776
+  ],
+  [
+   "El Cronista",
+   629
+  ],
+  [
+   "El Destape",
+   616
+  ],
+  [
+   "La Capital",
+   604
+  ]
+ ],
+ "ents": [
+  [
+   "Javier Milei",
+   2233
+  ],
+  [
+   "Papa León XIV",
+   2066
+  ],
+  [
+   "Donald Trump",
+   1430
+  ],
+  [
+   "Boca",
+   1241
+  ],
+  [
+   "River",
+   1163
+  ],
+  [
+   "Policía",
+   712
+  ]
+ ],
+ "modelos_tono": [
+  [
+   "Palabras + XLM-RoBERTa",
+   76.8
+  ],
+  [
+   "Palabras + ambos BERT",
+   75.3
+  ],
+  [
+   "Palabras + pysentimiento",
+   75.0
+  ],
+  [
+   "XLM-RoBERTa solo",
+   74.1
+  ],
+  [
+   "Embeddings + reg. logística",
+   72.4
+  ],
+  [
+   "Solo probas BERT",
+   72.4
+  ],
+  [
+   "Modelo inicial (palabras)",
+   70.3
+  ],
+  [
+   "pysentimiento solo",
+   64.4
+  ]
+ ],
+ "dolar_blue": [
+  [
+   "2026-10-07",
+   1550.0
+  ],
+  [
+   "2026-10-08",
+   1555.0
+  ],
+  [
+   "2026-10-09",
+   1540.0
+  ],
+  [
+   "2026-10-10",
+   1540.0
+  ],
+  [
+   "2026-10-11",
+   1540.0
+  ],
+  [
+   "2026-10-12",
+   1540.0
+  ],
+  [
+   "2026-10-13",
+   1540.0
+  ],
+  [
+   "2026-10-14",
+   1550.0
+  ],
+  [
+   "2026-10-15",
+   1550.0
+  ],
+  [
+   "2026-10-16",
+   1545.0
+  ],
+  [
+   "2026-10-17",
+   1555.0
+  ],
+  [
+   "2026-10-18",
+   1555.0
+  ],
+  [
+   "2026-10-19",
+   1555.0
+  ],
+  [
+   "2026-10-20",
+   1560.0
+  ],
+  [
+   "2026-10-21",
+   1570.0
+  ],
+  [
+   "2026-10-22",
+   1565.0
+  ],
+  [
+   "2026-10-23",
+   1565.0
+  ],
+  [
+   "2026-10-24",
+   1565.0
+  ],
+  [
+   "2026-10-25",
+   1565.0
+  ],
+  [
+   "2026-10-26",
+   1565.0
+  ],
+  [
+   "2026-10-27",
+   1575.0
+  ],
+  [
+   "2026-10-28",
+   1575.0
+  ],
+  [
+   "2026-10-29",
+   1565.0
+  ],
+  [
+   "2026-10-30",
+   1565.0
+  ],
+  [
+   "2026-10-31",
+   1565.0
+  ],
+  [
+   "2026-11-01",
+   1565.0
+  ],
+  [
+   "2026-11-02",
+   1565.0
+  ],
+  [
+   "2026-11-03",
+   1565.0
+  ],
+  [
+   "2026-11-04",
+   1570.0
+  ],
+  [
+   "2026-11-05",
+   1560.0
+  ],
+  [
+   "2026-11-06",
+   1555.0
+  ]
+ ],
+ "clima": [
+  {
+   "dia": "2026-10-22",
+   "n": 1353,
+   "neg": 43.0,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-23",
+   "n": 2309,
+   "neg": 35.9,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-24",
+   "n": 3791,
+   "neg": 37.7,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-25",
+   "n": 4475,
+   "neg": 33.2,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-26",
+   "n": 6538,
+   "neg": 34.5,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-27",
+   "n": 6732,
+   "neg": 38.9,
+   "blue": 1575.0
+  },
+  {
+   "dia": "2026-10-28",
+   "n": 6866,
+   "neg": 40.4,
+   "blue": 1575.0
+  },
+  {
+   "dia": "2026-10-29",
+   "n": 7046,
+   "neg": 39.9,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-30",
+   "n": 6174,
+   "neg": 36.8,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-10-31",
+   "n": 4517,
+   "neg": 34.9,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-11-01",
+   "n": 4411,
+   "neg": 34.1,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-11-02",
+   "n": 6000,
+   "neg": 35.3,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-11-03",
+   "n": 6828,
+   "neg": 40.1,
+   "blue": 1565.0
+  },
+  {
+   "dia": "2026-11-04",
+   "n": 6008,
+   "neg": 38.6,
+   "blue": 1570.0
+  },
+  {
+   "dia": "2026-11-05",
+   "n": 6643,
+   "neg": 37.8,
+   "blue": 1560.0
+  }
+ ],
+ "clima_r": 0.31,
+ "clima_dias": 15,
+ "termo": {
+  "val": 36,
+  "banda": "Moderado",
+  "n": 6153,
+  "prom": 36.8,
+  "dias": [
+   [
+    "2026-10-30",
+    36.8
+   ],
+   [
+    "2026-10-31",
+    34.9
+   ],
+   [
+    "2026-11-01",
+    34.1
+   ],
+   [
+    "2026-11-02",
+    35.3
+   ],
+   [
+    "2026-11-03",
+    40.1
+   ],
+   [
+    "2026-11-04",
+    38.6
+   ],
+   [
+    "2026-11-05",
+    37.8
+   ]
+  ],
+  "hasta": "2026-11-06 16:00:00"
+ },
+ "historia": {
+  "medios": 22,
+  "notas": 24,
+  "recortes": [
+   {
+    "medio": "Canal 26",
+    "titulo": "Cristiano Ronaldo anunció su retiro de la Selección de Portugal",
+    "hora": "07:50",
+    "fecha": "2026-11-05",
+    "tono": "0",
+    "cebo": 0,
+    "demora_min": 0
+   },
+   {
+    "medio": "La Gaceta",
+    "titulo": "Cristiano Ronaldo anunció su retiro de la Selección de Portugal después de 23 años",
+    "hora": "07:58",
+    "fecha": "2026-11-05",
+    "tono": "0",
+    "cebo": 0,
+    "demora_min": 8
+   },
+   {
+    "medio": "Diario Chaco",
+    "titulo": "Fin de una era: Cristiano Ronaldo anunció su retiro de la selección de Portugal después de 23 años",
+    "hora": "08:05",
+    "fecha": "2026-11-05",
+    "tono": "0",
+    "cebo": 0,
+    "demora_min": 15
+   },
+   {
+    "medio": "Olé",
+    "titulo": "Cristiano Ronaldo anuncia su retiro de la selección de Portugal",
+    "hora": "08:06",
+    "fecha": "2026-11-05",
+    "tono": "0",
+    "cebo": 0,
+    "demora_min": 16
+   },
+   {
+    "medio": "Noticias Argentinas",
+    "titulo": "Fin de una era: Cristiano Ronaldo anunció su retiro de la selección de Portugal tras 23 años",
+    "hora": "08:30",
+    "fecha": "2026-11-05",
+    "tono": "0",
+    "cebo": 0,
+    "demora_min": 40
+   },
+   {
+    "medio": "Eldoce",
+    "titulo": "Cristiano Ronaldo anunció su retiro de la selección de Portugal tras 23 años",
+    "hora": "08:35",
+    "fecha": "2026-11-05",
+    "tono": "0",
+    "cebo": 0,
+    "demora_min": 45
+   }
+  ]
+ },
+ "tapa": [
+  {
+   "medio": "Infobae",
+   "titulo": "Milei llega a Madrid para asistir a la Cumbre Iberoamericana",
+   "hora": "12:32",
+   "fecha": "2026-11-04",
+   "tono": "0",
+   "cebo": 0,
+   "demora_min": 0,
+   "medios_historia": 19
+  },
+  {
+   "medio": "C5N",
+   "titulo": "El papa León XIV recibió a Bob Dylan en el Vaticano mientras prepara su gira en Sudamérica",
+   "hora": "16:16",
+   "fecha": "2026-11-04",
+   "tono": "0",
+   "cebo": 0,
+   "demora_min": 120,
+   "medios_historia": 15
+  },
+  {
+   "medio": "Infocielo",
+   "titulo": "Murió en La Plata Elsa Pavón, cofundadora de \"Abuelas\" y la primera en recuperar a su nieta",
+   "hora": "09:47",
+   "fecha": "2026-11-05",
+   "tono": "n",
+   "cebo": 0,
+   "demora_min": 0,
+   "medios_historia": 15
+  },
+  {
+   "medio": "El Destape",
+   "titulo": "Santiago Peña quedó a un paso de la destitución por juicio político en Paraguay",
+   "hora": "10:29",
+   "fecha": "2026-11-05",
+   "tono": "n",
+   "cebo": 0,
+   "demora_min": 0,
+   "medios_historia": 13
+  }
+ ],
+ "primicia": [
+  [
+   "Infobae",
+   64
+  ],
+  [
+   "Noticias Argentinas",
+   64
+  ],
+  [
+   "TN",
+   60
+  ]
+ ],
+ "historias_compartidas": 489,
+ "cebo_ej": [
+  {
+   "medio": "Perfil",
+   "titulo": "¿Por qué los manifestantes indios tienen en el punto de mira a la Comisión Electoral?",
+   "hora": "19:14",
+   "fecha": "2026-11-05",
+   "cebo": 3,
+   "rasgos": [
+    "pregunta",
+    "intriga",
+    "segunda persona"
+   ],
+   "marcas": [
+    [
+     1,
+     8,
+     "intriga"
+    ],
+    [
+     56,
+     60,
+     "segunda_persona"
+    ],
+    [
+     84,
+     85,
+     "pregunta"
+    ]
+   ]
+  },
+  {
+   "medio": "Infobae",
+   "titulo": "Lo que debes saber sobre las amenazas de bomba contra vuelos en Europa",
+   "hora": "13:45",
+   "fecha": "2026-11-05",
+   "cebo": 3,
+   "rasgos": [
+    "adjetivo exagerado",
+    "intriga",
+    "segunda persona"
+   ],
+   "marcas": [
+    [
+     0,
+     6,
+     "intriga"
+    ],
+    [
+     7,
+     12,
+     "segunda_persona"
+    ],
+    [
+     41,
+     46,
+     "exagera"
+    ]
+   ]
+  },
+  {
+   "medio": "TN",
+   "titulo": "¿Por qué el exceso de proteínas puede dañar los riñones de tu hijo adolescente?",
+   "hora": "10:39",
+   "fecha": "2026-11-04",
+   "cebo": 3,
+   "rasgos": [
+    "pregunta",
+    "intriga",
+    "segunda persona"
+   ],
+   "marcas": [
+    [
+     1,
+     8,
+     "intriga"
+    ],
+    [
+     59,
+     61,
+     "segunda_persona"
+    ],
+    [
+     78,
+     79,
+     "pregunta"
+    ]
+   ]
+  },
+  {
+   "medio": "La Voz",
+   "titulo": "¿Lo sabías? Qué es el Mystery travel: la tendencia de viajar que cada vez se hace más popular",
+   "hora": "00:10",
+   "fecha": "2026-11-03",
+   "cebo": 3,
+   "rasgos": [
+    "pregunta",
+    "intriga",
+    "segunda persona"
+   ],
+   "marcas": [
+    [
+     4,
+     10,
+     "segunda_persona"
+    ],
+    [
+     12,
+     18,
+     "intriga"
+    ]
+   ]
+  },
+  {
+   "medio": "A24",
+   "titulo": "¡Se terminó! El insólito motivo por el que Karina Jelinek dejó de ser \"casi vegana\"",
+   "hora": "14:26",
+   "fecha": "2026-11-06",
+   "cebo": 2,
+   "rasgos": [
+    "exclamación",
+    "adjetivo exagerado"
+   ],
+   "marcas": [
+    [
+     0,
+     12,
+     "exclamacion"
+    ],
+    [
+     16,
+     24,
+     "exagera"
+    ]
+   ]
+  },
+  {
+   "medio": "Conclusión",
+   "titulo": "¿Por qué se celebra el Día del Bancario el 6 de noviembre?",
+   "hora": "13:56",
+   "fecha": "2026-11-06",
+   "cebo": 2,
+   "rasgos": [
+    "pregunta",
+    "intriga"
+   ],
+   "marcas": [
+    [
+     1,
+     8,
+     "intriga"
+    ]
+   ]
+  },
+  {
+   "medio": "Cadena 3",
+   "titulo": "\"No somos cadetes de nadie\": el cartel por las compras del Cyber Monday que se volvió viral",
+   "hora": "10:12",
+   "fecha": "2026-11-06",
+   "cebo": 2,
+   "rasgos": [
+    "adjetivo exagerado",
+    "intriga"
+   ],
+   "marcas": [
+    [
+     21,
+     26,
+     "intriga"
+    ],
+    [
+     86,
+     91,
+     "exagera"
+    ]
+   ]
+  },
+  {
+   "medio": "Río Negro",
+   "titulo": "Inés Estévez y Germán Palacios en «El hombre inesperado»: todo lo que queremos es ser felices",
+   "hora": "09:22",
+   "fecha": "2026-11-06",
+   "cebo": 2,
+   "rasgos": [
+    "adjetivo exagerado",
+    "intriga"
+   ],
+   "marcas": [
+    [
+     45,
+     55,
+     "exagera"
+    ],
+    [
+     63,
+     69,
+     "intriga"
+    ]
+   ]
+  }
+ ],
+ "exag_ej": [
+  {
+   "medio": "La Nación",
+   "titulo": "Qué hacer si un niño toma lavandina: el error que hay que evitar, según un especialista",
+   "bajada": "El especialista explicó en LN+ cómo actuar ante la ingesta accidental de un producto de limpieza y desmintió una creencia popular: la leche no neutraliza el cloro",
+   "hora": "16:00",
+   "fecha": "2026-11-06"
+  },
+  {
+   "medio": "Cadena 3",
+   "titulo": "Intento de usurpación a la Villa Suramericana: una mujer fue condenada por agresión",
+   "bajada": "La pena se cumplirá bajo la modalidad de prisión domiciliaria, debido a que la mujer es madre de una niña de dos años. La detención se produjo el viernes 30 de octubre, alrededor de las 20.",
+   "hora": "15:53",
+   "fecha": "2026-11-06"
+  },
+  {
+   "medio": "El Tribuno",
+   "titulo": "Condenaron a un docente en Tartagal por abusar sexualmente de un alumno",
+   "bajada": "El hecho ocurrió en 2021, cuando el hombre, que tiene 63 años, se desempeñaba como profesor de primer año del secundario.",
+   "hora": "15:13",
+   "fecha": "2026-11-06"
+  },
+  {
+   "medio": "Noticias Argentinas",
+   "titulo": "Defensa de Peña sostiene que juicio político es nulo y cuestiona rechazo de su renuncia",
+   "bajada": "De acuerdo con la defensa, al presentar su renuncia como presidente, Peña no puede ser juzgado en juicio político por el Senado.",
+   "hora": "14:55",
+   "fecha": "2026-11-06"
+  },
+  {
+   "medio": "Infocielo",
+   "titulo": "Una marea verde: Palmeiras agotó entradas para la final en Montevideo",
+   "bajada": "Los fanáticos brasileños adquirieron los tickets que se pusieron a la venta durante este viernes. El repaso.",
+   "hora": "14:37",
+   "fecha": "2026-11-06"
+  }
+ ],
+ "encuadre": {
+  "medios": 10,
+  "notas": 11,
+  "recortes": [
+   {
+    "medio": "Diario Chaco",
+    "titulo": "\"Beautiful morning\", el mensaje socarrón de Cristina Kirchner tras la derrota de Trump",
+    "hora": "11:41",
+    "fecha": "2026-11-04",
+    "tono": "p",
+    "cebo": 0,
+    "demora_min": 0
+   },
+   {
+    "medio": "Conclusión",
+    "titulo": "“Beautiful morning”: el mensaje de Cristina después de haber anticipado la derrota de Trump",
+    "hora": "11:48",
+    "fecha": "2026-11-04",
+    "tono": "p",
+    "cebo": 0,
+    "demora_min": 6
+   },
+   {
+    "medio": "Noticias Argentinas",
+    "titulo": "La respuesta de Bullrich a Cristina por las elecciones en EE. UU.: “Freedom is beautiful”",
+    "hora": "14:22",
+    "fecha": "2026-11-04",
+    "tono": "p",
+    "cebo": 0,
+    "demora_min": 161
+   },
+   {
+    "medio": "Infobae",
+    "titulo": "“Beautiful morning”, el mensaje de Cristina Kirchner sobre la derrota de Donald Trump",
+    "hora": "14:34",
+    "fecha": "2026-11-04",
+    "tono": "p",
+    "cebo": 0,
+    "demora_min": 173
+   },
+   {
+    "medio": "Cadena 3",
+    "titulo": "Bullrich le respondió a Cristina por las elecciones en Estados Unidos: \"Freedom is beautiful\"",
+    "hora": "15:20",
+    "fecha": "2026-11-04",
+    "tono": "p",
+    "cebo": 0,
+    "demora_min": 219
+   },
+   {
+    "medio": "El Destape",
+    "titulo": "Patricia Bullrich se burló de que Cristina Kirchner esté presa: \"Freedom is beautiful\"",
+    "hora": "15:47",
+    "fecha": "2026-11-04",
+    "tono": "n",
+    "cebo": 0,
+    "demora_min": 246
+   }
+  ],
+  "tonos": {
+   "p": 6,
+   "n": 4,
+   "0": 1
+  },
+  "cebo": 0,
+  "ultimo_min": 824
+ },
+ "ejemplo_nlp": {
+  "medio": "Infobae",
+  "titulo": "Argentina restringirá vuelos durante la visita papal y refuerza vigilancia militar",
+  "hora": "15:33",
+  "fecha": "2026-11-06",
+  "temas": [
+   "Transporte y ciudad"
+  ],
+  "entidades": [
+   "Papa León XIV"
+  ],
+  "tono": "n"
+ },
+ "firma_ej": [
+  {
+   "medio": "Infobae",
+   "titulo": "Honduras aprueba 14 de 22 indicadores de la Cuenta del Milenio",
+   "autor": "Pamela Bustillo",
+   "hora": "15:45",
+   "fecha": "2026-11-06"
+  },
+  {
+   "medio": "Perfil",
+   "titulo": "Isabel Macedo reinventó el clásico blazer con un giro fashionista",
+   "autor": "Redacción Caras",
+   "hora": "15:56",
+   "fecha": "2026-11-06"
+  }
+ ],
+ "figuras": {
+  "figuras": [
+   "Javier Milei",
+   "Papa León XIV",
+   "Donald Trump",
+   "Boca",
+   "River",
+   "Lionel Messi"
+  ],
+  "medios": [
+   "Infobae",
+   "Clarín",
+   "TN",
+   "La Nación",
+   "Perfil",
+   "Cadena 3",
+   "Río Negro"
+  ],
+  "prom": {
+   "Javier Milei": 41,
+   "Papa León XIV": 13,
+   "Donald Trump": 54,
+   "Boca": 15,
+   "River": 20,
+   "Lionel Messi": 15
+  },
+  "celdas": [
+   [
+    "Infobae",
+    "Javier Milei",
+    40,
+    161
+   ],
+   [
+    "Infobae",
+    "Papa León XIV",
+    15,
+    376
+   ],
+   [
+    "Infobae",
+    "Donald Trump",
+    53,
+    364
+   ],
+   [
+    "Infobae",
+    "Boca",
+    16,
+    92
+   ],
+   [
+    "Infobae",
+    "River",
+    23,
+    64
+   ],
+   [
+    "Infobae",
+    "Lionel Messi",
+    3,
+    61
+   ],
+   [
+    "Clarín",
+    "Javier Milei",
+    41,
+    124
+   ],
+   [
+    "Clarín",
+    "Papa León XIV",
+    12,
+    76
+   ],
+   [
+    "Clarín",
+    "Donald Trump",
+    56,
+    281
+   ],
+   [
+    "Clarín",
+    "Boca",
+    33,
+    42
+   ],
+   [
+    "Clarín",
+    "River",
+    23,
+    48
+   ],
+   [
+    "Clarín",
+    "Lionel Messi",
+    14,
+    29
+   ],
+   [
+    "TN",
+    "Javier Milei",
+    34,
+    83
+   ],
+   [
+    "TN",
+    "Papa León XIV",
+    14,
+    74
+   ],
+   [
+    "TN",
+    "Donald Trump",
+    50,
+    44
+   ],
+   [
+    "TN",
+    "Boca",
+    10,
+    101
+   ],
+   [
+    "TN",
+    "River",
+    25,
+    88
+   ],
+   [
+    "TN",
+    "Lionel Messi",
+    17,
+    53
+   ],
+   [
+    "La Nación",
+    "Javier Milei",
+    52,
+    132
+   ],
+   [
+    "La Nación",
+    "Papa León XIV",
+    14,
+    126
+   ],
+   [
+    "La Nación",
+    "Donald Trump",
+    56,
+    91
+   ],
+   [
+    "La Nación",
+    "Boca",
+    11,
+    64
+   ],
+   [
+    "La Nación",
+    "River",
+    11,
+    81
+   ],
+   [
+    "La Nación",
+    "Lionel Messi",
+    7,
+    46
+   ],
+   [
+    "Perfil",
+    "Javier Milei",
+    42,
+    240
+   ],
+   [
+    "Perfil",
+    "Papa León XIV",
+    15,
+    139
+   ],
+   [
+    "Perfil",
+    "Donald Trump",
+    63,
+    101
+   ],
+   [
+    "Perfil",
+    "Boca",
+    28,
+    46
+   ],
+   [
+    "Perfil",
+    "River",
+    23,
+    44
+   ],
+   [
+    "Perfil",
+    "Lionel Messi",
+    15,
+    33
+   ],
+   [
+    "Cadena 3",
+    "Javier Milei",
+    39,
+    62
+   ],
+   [
+    "Cadena 3",
+    "Papa León XIV",
+    9,
+    95
+   ],
+   [
+    "Cadena 3",
+    "Donald Trump",
+    39,
+    51
+   ],
+   [
+    "Cadena 3",
+    "Boca",
+    12,
+    77
+   ],
+   [
+    "Cadena 3",
+    "River",
+    15,
+    78
+   ],
+   [
+    "Cadena 3",
+    "Lionel Messi",
+    14,
+    21
+   ],
+   [
+    "Río Negro",
+    "Javier Milei",
+    27,
+    66
+   ],
+   [
+    "Río Negro",
+    "Papa León XIV",
+    15,
+    55
+   ],
+   [
+    "Río Negro",
+    "Donald Trump",
+    44,
+    36
+   ],
+   [
+    "Río Negro",
+    "Boca",
+    16,
+    38
+   ],
+   [
+    "Río Negro",
+    "River",
+    14,
+    36
+   ],
+   [
+    "Río Negro",
+    "Lionel Messi",
+    6,
+    17
+   ]
+  ]
+ },
+ "sql_demo": [
+  [
+   "A24",
+   26.6,
+   43.0
+  ],
+  [
+   "El Trece",
+   23.0,
+   40.3
+  ],
+  [
+   "C5N",
+   21.5,
+   41.0
+  ],
+  [
+   "Radio Mitre",
+   20.2,
+   34.3
+  ],
+  [
+   "El Destape",
+   20.2,
+   43.0
+  ],
+  [
+   "Canal 26",
+   17.6,
+   29.3
+  ]
+ ],
+ "explorar": {
+  "notas": 40281,
+  "desde": "2026-10-30",
+  "hasta": "2026-11-06 16:00"
+ }
+}
