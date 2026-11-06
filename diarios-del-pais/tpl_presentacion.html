@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Tapa</title>
+<meta name="description" content="La Tapa: presentación del monitor de 46 medios argentinos (Web Mining, Grupo 3), con datos que se actualizan cada 30 minutos.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:wght@700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=block">
+<style>
+/* LA TAPA: cada diapositiva es una página de diario de 1280x720 que se escala a la ventana (letterbox).
+   Papel, tinta y un solo acento (rojo de imprenta). Tono: rojo negativo, verde tinta positivo, gris neutro. */
+:root{--papel:#F3EEE3;--tinta:#141210;--gris:#5E5A54;--rojo:#C8102E;--verde:#2E6B3F;--neutro:#9A948A;--filete:#C9C0AE;--recorte:#FBF8F1;--mesa:#211E1A;
+--gotica:'UnifrakturMaguntia','Old English Text MT',serif;--titular:'Playfair Display',Georgia,serif;--texto:'Source Serif 4',Georgia,serif;--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;--s:1}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--mesa);overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#mesa{position:fixed;inset:0;touch-action:pan-y}
+#hoja{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform:translate(-50%,-50%) scale(var(--s));transform-origin:center;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.pag{position:absolute;inset:0;overflow:hidden;background:var(--papel);color:var(--tinta);font-family:var(--texto);font-size:20px;line-height:1.4;visibility:hidden;opacity:0;transition:opacity .3s ease,visibility 0s .3s;font-variant-numeric:lining-nums}
+.pag::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .22 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23f)'/%3E%3C/svg%3E")}
+.pag.activa{visibility:visible;opacity:1;transition:opacity .3s ease}
+.pag>*{position:relative}
+/* cabecera de las paginas interiores, con doble filete, y pie de pagina */
+.cab{position:absolute;left:56px;right:56px;top:16px;height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;border-bottom:3px solid var(--tinta)}
+.cab::after{content:"";position:absolute;left:0;right:0;bottom:-7px;border-bottom:1px solid var(--tinta)}
+.cab .marca{font-family:var(--gotica);font-size:36px;line-height:1;padding-bottom:3px}
+.cab .ed{font-family:var(--mono);font-size:14px;color:var(--gris);letter-spacing:.06em;padding-bottom:8px;text-align:center}
+.cab .fe{font-family:var(--mono);font-size:14px;color:var(--gris);letter-spacing:.04em;padding-bottom:8px;text-align:right}
+.pie{position:absolute;left:56px;right:56px;bottom:14px;border-top:1px solid var(--tinta);padding-top:5px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:14px;color:var(--gris);letter-spacing:.03em}
+.pie b{font-family:var(--gotica);font-weight:400;font-size:17px;color:var(--tinta);letter-spacing:0}
+.cuerpo{position:absolute;left:56px;right:56px;top:84px;bottom:50px;display:flex;flex-direction:column}
+/* tipografia de titulares */
+.vol{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--rojo);letter-spacing:.16em;text-transform:uppercase;margin:0 0 4px}
+.tit{font-family:var(--titular);font-weight:900;font-size:50px;line-height:1.03;letter-spacing:-.012em;margin:0;text-wrap:balance}
+.baj{font-family:var(--texto);font-size:22px;line-height:1.35;color:var(--gris);margin:8px 0 0;max-width:68ch;text-wrap:pretty}
+.baj b,.txt b{color:var(--tinta);font-weight:600}
+.txt{font-size:20px;line-height:1.42;margin:0;text-wrap:pretty}
+.epi{font-family:var(--mono);font-size:15px;line-height:1.4;color:var(--gris);margin:0}
+.epi b{color:var(--tinta);font-weight:500}
+.rojo{color:var(--rojo)}.verde{color:var(--verde)}.grisc{color:var(--gris)}
+.zona{flex:1;min-height:0;margin-top:20px;display:grid;column-gap:0}
+.zona>*{min-width:0}
+.zona>*+*{border-left:1px solid var(--filete);padding-left:30px}
+.zona>*:not(:last-child){padding-right:30px}
+.sub{font-family:var(--titular);font-weight:800;font-size:26px;line-height:1.1;margin:0 0 10px}
+.mini{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta);margin:0 0 8px;padding-bottom:5px;border-bottom:2px solid var(--tinta)}
+.cifra{font-family:var(--titular);font-weight:900;line-height:.9;letter-spacing:-.02em;font-variant-numeric:lining-nums tabular-nums}
+.capi::first-letter{font-family:var(--titular);font-weight:900;float:left;font-size:84px;line-height:.78;padding:6px 10px 0 0;color:var(--tinta)}
+/* recortes: titulares reales como papel recortado */
+.rec{position:relative;background:var(--recorte);padding:12px 18px 15px;box-shadow:0 1px 0 rgba(20,18,16,.08),2px 4px 9px rgba(20,18,16,.13);transform:rotate(var(--r,0deg))}
+.rec .rm{display:flex;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:15px;color:var(--gris);border-bottom:1px solid var(--filete);padding-bottom:4px;margin-bottom:7px;white-space:nowrap}
+.rec .rm b{color:var(--tinta);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.rec .rt{font-family:var(--titular);font-weight:700;font-size:23px;line-height:1.14;margin:0;letter-spacing:-.005em}
+.rec .rb{font-size:18px;line-height:1.35;color:var(--gris);margin:8px 0 0}
+.bm{white-space:nowrap}
+.trazo{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
+.trazo path{fill:none;stroke:var(--rojo);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.92;stroke-dasharray:1;stroke-dashoffset:1}
+.activa .trazo path{stroke-dashoffset:0;transition:stroke-dashoffset .7s cubic-bezier(.4,.1,.3,1) calc(.5s + var(--k,0)*.22s)}
+/* graficos en tinta */
+.barras{display:grid;grid-template-columns:max-content 1fr;column-gap:16px;row-gap:8px;align-items:center}
+.barras .et{font-size:19px;line-height:1.1;text-align:right;white-space:nowrap}
+.barras .pi{display:flex;align-items:center;gap:10px;min-width:0}
+.barras .b{height:15px;background:var(--gris);transform-origin:left center;transform:scaleX(0)}
+.barras .b.d{background:var(--rojo)}
+.barras .b.c{background:var(--neutro)}
+.barras .v{font-family:var(--mono);font-size:17px;white-space:nowrap}
+.barras .v.d{color:var(--rojo);font-weight:600}
+.barras .sep{grid-column:1/-1;border-top:1px dashed var(--filete);margin:4px 0}
+.activa .barras .b{transform:none;transition:transform .9s cubic-bezier(.2,.7,.2,1) calc(.15s + var(--i,0)*.05s)}
+.sumario{list-style:none;margin:0;padding:0}
+.sumario li{position:relative;padding:0 0 12px 22px;margin-bottom:12px;border-bottom:1px solid var(--filete);font-size:20px;line-height:1.3}
+.sumario li:last-child{border-bottom:0}
+.sumario li::before{content:"";position:absolute;left:0;top:.42em;width:10px;height:10px;background:var(--rojo)}
+a{color:inherit}
+.boton{display:inline-block;font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--papel);background:var(--tinta);padding:12px 18px;border:2px solid var(--tinta)}
+.boton.sec{background:transparent;color:var(--tinta)}
+.boton:hover{background:var(--rojo);border-color:var(--rojo);color:var(--papel)}
+:focus-visible{outline:3px solid var(--rojo);outline-offset:3px}
+svg text{font-family:var(--mono)}
+/* ---- tapa ---- */
+.p1 .orejas{position:absolute;left:56px;right:56px;top:18px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:14px;color:var(--gris);letter-spacing:.06em}
+.p1 .mancheta{position:absolute;left:56px;right:56px;top:30px;text-align:center}
+.p1 .mancheta h1{font-family:var(--gotica);font-weight:400;font-size:132px;line-height:1;margin:0;letter-spacing:.01em}
+.p1 .lema{font-style:italic;font-size:22px;color:var(--gris);margin:0}
+.p1 .fecha{position:absolute;left:56px;right:56px;top:212px;border-top:3px solid var(--tinta);border-bottom:1px solid var(--tinta);display:flex;justify-content:space-between;align-items:center;padding:7px 0 6px;font-family:var(--mono);font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.p1 .fecha::before{content:"";position:absolute;left:0;right:0;top:-7px;border-top:1px solid var(--tinta)}
+.p1 .principal{position:absolute;left:56px;right:56px;top:262px;bottom:22px;display:grid;grid-template-columns:1fr 410px}
+.p1 .principal>div+div{border-left:1px solid var(--filete);padding-left:28px}
+.p1 .principal>div:first-child{padding-right:34px;display:flex;flex-direction:column}
+.p1 h2.tit{font-size:76px;line-height:.98;letter-spacing:-.02em}
+.p1 .firma{font-family:var(--mono);font-size:15px;line-height:1.5;margin:18px 0 0;padding-top:10px;border-top:1px solid var(--filete);color:var(--gris)}
+.p1 .firma b{color:var(--tinta);font-weight:600}
+.p1 .hoy{font-family:var(--titular);font-weight:800;font-size:25px;line-height:1.1;margin:0 0 12px}
+.p1 .indice{margin-top:auto;border-top:3px solid var(--tinta);padding-top:8px;display:grid;grid-template-columns:repeat(3,1fr);font-size:17px;line-height:1.25}
+.p1 .indice span+span{border-left:1px solid var(--filete);padding-left:14px}.p1 .indice b{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--rojo);font-weight:600}
+.apila{display:flex;flex-direction:column;gap:12px}
+.apila .rec{padding:9px 15px 11px}.apila .rec .rm{font-size:14px;margin-bottom:5px}.apila .rec .rt{font-size:18.5px;line-height:1.13}
+/* collage de recortes */
+.collage{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 20px;align-content:start;padding:6px 4px}
+.collage .rec .rt{font-size:21px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+/* infografia */
+.etapas{display:grid;grid-template-columns:repeat(6,1fr);position:relative;margin-top:56px}
+.etapas::before{content:"";position:absolute;left:8%;right:8%;top:46px;border-top:2px solid var(--tinta)}
+.etapa{position:relative;text-align:center;padding:0 12px}
+.etapa .num{width:94px;height:94px;margin:0 auto 18px;border-radius:50%;border:2px solid var(--tinta);background:var(--papel);display:grid;place-items:center;font-family:var(--titular);font-weight:900;font-size:46px}
+.etapa.dest .num{background:var(--rojo);border-color:var(--rojo);color:var(--papel)}
+.etapa h3{font-family:var(--titular);font-weight:800;font-size:29px;margin:0 0 6px}
+.etapa .dato{font-family:var(--mono);font-size:15px;color:var(--rojo);margin:0 0 8px;min-height:2.6em}
+.etapa p{font-size:20px;line-height:1.32;margin:0;color:var(--tinta)}
+.etapa:not(:last-child)::after{content:"";position:absolute;right:-7px;top:40px;border:7px solid transparent;border-left:11px solid var(--tinta)}
+/* proporcion */
+.prop{display:flex;height:34px;margin:6px 0 4px}
+.prop span{display:block;height:100%;transform-origin:left;transform:scaleX(0)}
+.activa .prop span{transform:none;transition:transform .9s cubic-bezier(.2,.7,.2,1) .2s}
+/* scraping: listado -> detalle */
+.flujo{display:grid;grid-template-columns:220px 48px 1fr;align-items:center}
+.flujo>*{min-width:0}
+.listado{background:var(--recorte);padding:12px 14px;box-shadow:2px 3px 8px rgba(20,18,16,.12);font-family:var(--mono);font-size:13px;line-height:1.35;color:var(--gris)}
+.listado div{padding:6px 0;border-bottom:1px solid var(--filete)}
+.listado div b{display:block;color:var(--tinta);font-family:var(--texto);font-size:15px;font-weight:600;line-height:1.2}
+.flecha{font-family:var(--titular);font-size:44px;text-align:center;color:var(--tinta)}
+.detalle{position:relative;background:var(--recorte);padding:14px 18px;box-shadow:2px 3px 8px rgba(20,18,16,.12);margin-right:178px}
+.detalle .f{position:relative;margin:0 0 9px}
+.detalle .f::after{content:attr(data-l);position:absolute;left:calc(100% + 34px);top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:15px;font-weight:600;color:var(--rojo);white-space:nowrap}
+.detalle .f.sin::before{display:none}
+.detalle .f::before{content:"";position:absolute;left:calc(100% + 6px);width:22px;top:50%;border-top:2px solid var(--rojo)}
+.detalle .url{font-family:var(--mono);font-size:13px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--filete);padding:3px 6px}
+.detalle .sec{font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:var(--rojo);text-transform:uppercase}
+.detalle .ti{font-family:var(--titular);font-weight:800;font-size:21px;line-height:1.12}
+.detalle .bj{font-size:15px;line-height:1.3;color:var(--gris);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.detalle .au{font-family:var(--mono);font-size:13px}
+.detalle .kw span{display:inline-block;font-family:var(--mono);font-size:12px;border:1px solid var(--gris);padding:0 5px;margin-right:4px}
+.detalle .cu{height:34px;background:repeating-linear-gradient(var(--filete) 0 2px,transparent 2px 9px)}
+/* codigo de conducta */
+.codigo{border:2px solid var(--tinta);padding:18px 26px 6px;position:relative}
+.codigo::before{content:"";position:absolute;inset:4px;border:1px solid var(--tinta);pointer-events:none}
+.codigo .art{display:grid;grid-template-columns:1fr 1fr}
+.codigo .art>div{padding:22px 26px 26px 0}
+.codigo .art>div:nth-child(2n){border-left:1px solid var(--filete);padding-left:26px;padding-right:0}
+.codigo .art>div:nth-child(n+3){border-top:1px solid var(--filete)}
+.codigo h3{font-family:var(--titular);font-weight:800;font-size:30px;margin:0 0 8px}
+.codigo h3 small{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--rojo);letter-spacing:.08em;margin-right:10px;vertical-align:4px}
+.codigo p{margin:0;font-size:21px;line-height:1.38}
+/* anatomia de un titular */
+.anat{display:grid;grid-template-columns:repeat(4,1fr);margin-top:40px}
+.anat>div{padding:0 22px;border-left:1px solid var(--filete)}
+.anat>div:first-child{border-left:0;padding-left:0}
+.anat .val{font-family:var(--titular);font-weight:800;font-size:28px;line-height:1.12;margin:0 0 10px}
+.anat p{font-size:20px;line-height:1.36;margin:0}
+.ent{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+/* cita destacada */
+.cita{font-family:var(--titular);font-style:italic;font-weight:700;font-size:25px;line-height:1.2;margin:0;position:relative;padding-left:44px}
+.cita::before{content:"\201C";position:absolute;left:-4px;top:-14px;font-size:92px;line-height:1;color:var(--rojo);font-style:normal}
+/* termometro y resumen */
+.termo text{font-family:var(--mono)}
+.resumen{columns:2;column-gap:34px;column-rule:1px solid var(--filete);font-size:20px;line-height:1.42}
+.resumen b{font-weight:600}
+.dl{font-family:var(--mono);font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+/* encuadres */
+.linea{display:grid;grid-template-columns:62px 150px 1fr 104px;column-gap:14px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--filete)}
+.linea time{font-family:var(--mono);font-size:17px}
+.linea .md{font-family:var(--mono);font-size:15px;font-weight:600;line-height:1.2}
+.linea .md small{display:block;font-weight:400;color:var(--gris)}
+.linea .tt{font-family:var(--titular);font-weight:700;font-size:19px;line-height:1.16;position:relative}
+.linea .tn{font-family:var(--mono);font-size:14px;white-space:nowrap}
+.tn i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:0}
+.linea.pri time,.linea.pri .md{color:var(--rojo)}
+/* matriz */
+.matriz{display:grid;gap:3px;font-family:var(--mono);font-size:17px}
+.matriz>div{padding:5px 6px;text-align:center;font-variant-numeric:tabular-nums}
+.matriz .lab{text-align:right;font-family:var(--texto);font-size:18px;padding-right:12px;white-space:nowrap}
+.matriz .hd{font-family:var(--titular);font-weight:800;font-size:17px;line-height:1.05;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;border-bottom:2px solid var(--tinta)}
+.matriz small{font-size:13px;color:var(--gris)}
+/* grafo y dispersion */
+.red line{stroke:var(--neutro);stroke-opacity:.55}
+.red text,.disp text.lb{font-family:var(--texto);font-size:15px;fill:var(--tinta);paint-order:stroke;stroke:var(--papel);stroke-width:4px;stroke-linejoin:round}
+.com{display:grid;grid-template-columns:22px 1fr;gap:10px;font-size:17px;line-height:1.3;margin:0 0 12px}
+.disp .ax{font-size:14px;fill:var(--gris)}
+.disp .qd{font-size:14px;fill:var(--gris);letter-spacing:.12em}
+/* demo */
+.sql{background:var(--tinta);color:var(--papel);font-family:var(--mono);font-size:21px;line-height:1.45;padding:22px 26px;margin:0;white-space:pre}
+.sql .k{color:#F2A3AF}
+.url-grande{font-family:var(--titular);font-weight:900;font-size:40px;line-height:1.05;letter-spacing:-.01em;margin:6px 0 14px;overflow-wrap:anywhere}
+/* staff */
+.staff{border-top:3px solid var(--tinta);border-bottom:3px solid var(--tinta);padding:6px 0;margin-top:6px}
+.staff div{display:grid;grid-template-columns:250px 1fr;padding:17px 0;border-bottom:1px solid var(--filete);align-items:baseline}
+.staff div:last-child{border-bottom:0}
+.staff dt{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.staff dd{margin:0;font-size:24px;line-height:1.3}
+/* contratapa */
+.p23 .gracias{font-family:var(--titular);font-weight:900;font-size:220px;line-height:.85;letter-spacing:-.04em;margin:0}
+.qr{width:236px;height:236px;background:var(--recorte);padding:14px;box-shadow:2px 4px 10px rgba(20,18,16,.13);transform:rotate(1.5deg)}
+.qr svg{display:block;width:100%;height:100%;fill:var(--tinta)}
+.qr svg path{stroke:var(--tinta);stroke-width:.07}
+/* notas del orador y ayuda */
+#notas{position:fixed;left:0;right:0;bottom:0;max-height:42vh;overflow:auto;background:var(--tinta);color:var(--papel);padding:16px clamp(16px,4vw,48px) 22px;font-family:var(--texto);font-size:20px;line-height:1.45;z-index:5;border-top:4px solid var(--rojo)}
+#notas header{font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#C9C0AE;margin-bottom:6px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#notas p{margin:0;max-width:95ch}
+#ayuda{position:fixed;right:12px;bottom:10px;font-family:var(--mono);font-size:12px;color:#C9C0AE;background:rgba(20,18,16,.85);padding:5px 9px;z-index:4;transition:opacity .6s;pointer-events:none}
+#ayuda.fuera{opacity:0}
+@media (orientation:portrait) and (max-width:700px){#mesa::after{content:"Girá el teléfono para ver la página más grande · deslizá para pasar";position:absolute;left:16px;right:16px;top:16px;font-family:var(--mono);font-size:12px;line-height:1.4;color:#C9C0AE;text-align:center}}
+#prog{position:fixed;left:0;bottom:0;height:3px;background:var(--rojo);z-index:4;transition:width .3s}
+@media (prefers-reduced-motion:reduce){.pag,.pag.activa,.activa .barras .b,.activa .prop span,.activa .trazo path{transition:none!important}}
+@page{size:13.333in 7.5in;margin:0}
+@media print{
+ html,body{height:auto;overflow:visible;background:var(--papel)}
+ #mesa{position:static}
+ #hoja{position:static;transform:none;width:1280px;height:auto;box-shadow:none}
+ .pag{position:relative;visibility:visible;opacity:1;width:1280px;height:719px;break-after:page;page-break-after:always;transition:none}
+ .pag:last-child{break-after:auto;page-break-after:auto}
+ .barras .b,.prop span{transform:none!important;transition:none!important}
+ .trazo path{stroke-dashoffset:0!important;transition:none!important}
+ #notas,#ayuda,#prog,#mesa::after{display:none!important}
+ .pag::before{display:none}
+}
+</style>
+</head>
+<body>
+<div id="mesa">
+<div id="hoja">
+
+<!-- 1. Tapa -->
+<section class="pag p1" data-sec="Tapa">
+ <div class="orejas"><span id="t-nro">Año I</span><span>Edición especial · Web Mining · Grupo 3</span><span>Se actualiza cada 30 minutos</span></div>
+ <div class="mancheta"><h1>La Tapa</h1><p class="lema">El diario que lee a los diarios</p></div>
+ <div class="fecha"><span id="t-fecha">Rosario</span><span id="t-act">Datos: __NOW__</span></div>
+ <div class="principal">
+  <div>
+   <p class="vol">Universidad Austral · Maestría en Ciencia de Datos</p>
+   <h2 class="tit">¿Cómo nos cuentan las noticias?</h2>
+   <p class="baj" style="font-size:24px;margin-top:14px">Un monitor automático de 46 medios argentinos: agenda, tono y estilo de titulación.</p>
+   <p class="firma"><b>Por Grupo 3:</b> Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán<br>Docentes: Enrique Fernández · Héctor E. Giorgiutti<br>Universidad Austral · Sede Rosario · 2026</p>
+   <p class="indice"><span><b>Pág. 4</b>Cómo funciona: de los feeds al tablero</span><span><b>Pág. 11</b>Qué encontramos en 46 medios</span><span><b>Pág. 21</b>La base, en vivo y con SQL</span></p>
+  </div>
+  <div>
+   <p class="hoy" id="t-hoy"></p>
+   <div class="apila" id="t-rec"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 2. El problema -->
+<section class="pag" data-sec="El problema">
+ <div class="cuerpo">
+  <p class="vol">El problema</p>
+  <h2 class="tit">Un mismo día, contado de 46 maneras</h2>
+  <div class="zona" style="grid-template-columns:1fr 330px;margin-top:16px">
+   <div style="display:flex;flex-direction:column;gap:10px"><div class="collage" id="p2-col"></div><p class="epi" id="p2-epi" style="margin-top:auto"></p></div>
+   <div><p class="mini">Sumario: lo que queremos saber</p>
+    <ul class="sumario"><li>¿De qué se habla hoy y qué crece respecto de lo habitual?</li><li>¿Qué medios cubren un tema o una persona, y con qué tono?</li><li>¿Qué noticias cubre todo el ecosistema y cuáles son exclusivas?</li><li>¿Quién titula de forma más alarmista o con más cebo?</li><li>¿Cuánto contenido está firmado y cuánto sale como «Redacción»?</li></ul></div>
+  </div>
+ </div>
+</section>
+
+<!-- 3. La solucion en cifras -->
+<section class="pag" data-sec="La solución">
+ <div class="cuerpo">
+  <p class="vol">La solución</p>
+  <h2 class="tit">Un monitor que corre solo, cada 30 minutos, y publica todo</h2>
+  <div class="zona" style="grid-template-columns:.85fr 1.35fr .95fr .95fr;margin-top:44px;flex:none;height:270px">
+   <div><div class="cifra" style="font-size:118px">46</div><p class="txt" style="margin-top:14px">medios: diarios, portales, TV, radios y fuentes oficiales</p></div>
+   <div><div class="cifra rojo cuenta" style="font-size:100px" id="p3-n"></div><p class="txt" style="margin-top:14px" id="p3-nt">notas en la base, con tema, tono, entidades y estilo de título</p></div>
+   <div><div class="cifra" style="font-size:118px">30<span style="font-size:.6em">′</span></div><p class="txt" style="margin-top:14px">entre corrida y corrida, en GitHub Actions, sin intervención</p></div>
+   <div><div class="cifra" style="font-size:118px">0<span style="font-size:.45em;letter-spacing:0"> $</span></div><p class="txt" style="margin-top:14px">sin servidores ni claves: tablero, base SQL y código públicos</p></div>
+  </div>
+  <p class="txt capi" style="margin-top:auto;border-top:1px solid var(--tinta);padding-top:16px;font-size:22px;max-width:none" id="p3-lead"></p>
+ </div>
+</section>
+
+<!-- 4. Como funciona -->
+<section class="pag" data-sec="Cómo funciona">
+ <div class="cuerpo">
+  <p class="vol">Cómo funciona</p>
+  <h2 class="tit">Seis etapas, de los feeds al tablero</h2>
+  <div class="etapas" id="p4-et"></div>
+  <p class="txt" style="margin-top:auto;border-top:1px solid var(--tinta);padding-top:12px"><b>Automatización:</b> GitHub Actions corre el pipeline cada 30 minutos, guarda la base en una rama de datos y publica el tablero y esta presentación en GitHub Pages. Por eso las cifras de estas páginas cambian solas.</p>
+ </div>
+</section>
+
+<!-- 5. Fuentes -->
+<section class="pag" data-sec="Fuentes">
+ <div class="cuerpo">
+  <p class="vol">Fuentes</p>
+  <h2 class="tit">Dos vías para llegar a 46 medios, sin claves ni costo</h2>
+  <div style="margin-top:22px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:17px;font-weight:600"><span id="p5-l1"></span><span id="p5-l2"></span></div><div class="prop" id="p5-prop"></div></div>
+  <div class="zona" style="grid-template-columns:1fr 1fr;margin-top:14px">
+   <div><h3 class="sub">RSS propio</h3><p class="txt">El feed XML del medio: título, enlace, fecha y bajada. La vía más limpia y estable.</p><p class="epi" style="margin-top:10px;font-size:16px;line-height:1.45" id="p5-rss"></p></div>
+   <div><h3 class="sub">Google News por sitio</h3><p class="txt">Búsqueda <span style="font-family:var(--mono);font-size:18px">site:dominio</span> de las últimas 48 h. Cubre los medios sin RSS útil, pero da una URL de Google y ninguna bajada.</p><p class="epi" style="margin-top:10px;font-size:16px;line-height:1.45" id="p5-gn"></p></div>
+  </div>
+  <p class="txt" style="border-top:1px solid var(--tinta);padding-top:10px;margin-top:8px" id="p5-pie"></p>
+ </div>
+</section>
+
+<!-- 6. Scraping -->
+<section class="pag" data-sec="Scraping">
+ <div class="cuerpo">
+  <p class="vol">Scraping</p>
+  <h2 class="tit">Entramos a cada nota para leer lo que el RSS no trae</h2>
+  <div class="zona" style="grid-template-columns:1fr 250px;margin-top:22px">
+   <div>
+    <div class="flujo">
+     <div><p class="mini" style="font-size:13px">Página de listado</p><div class="listado" id="p6-lis"></div></div>
+     <div class="flecha">→</div>
+     <div><p class="mini" style="font-size:13px;margin-right:178px">Página de detalle</p><div class="detalle" id="p6-det"></div></div>
+    </div>
+    <p class="epi" style="margin-top:14px">Los feeds son páginas de listado; cada nota es una página de detalle. Del HTML se lee la meta og:description y el bloque JSON-LD NewsArticle que los diarios incrustan para los buscadores.</p>
+   </div>
+   <div id="p6-num"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 7. Etica -->
+<section class="pag" data-sec="Ética">
+ <div class="cuerpo">
+  <p class="vol">Ética desde el diseño</p>
+  <h2 class="tit">Un crawler «bien educado», como pide la teoría</h2>
+  <div class="codigo" style="margin-top:22px">
+   <p class="mini" style="text-align:center;border:0;margin:0;font-size:15px">Código de conducta del monitor</p>
+   <div class="art" id="p7-art"></div>
+  </div>
+  <p class="cita" style="margin-top:auto;font-size:24px">No guardamos el texto completo de las notas: solo título, bajada y metadatos, siempre con enlace al original.</p>
+ </div>
+</section>
+
+<!-- 8. Procesamiento de texto -->
+<section class="pag" data-sec="Lenguaje">
+ <div class="cuerpo">
+  <p class="vol">Procesamiento de texto</p>
+  <h2 class="tit">Cada nota recibe tema, entidades, tono y cebo</h2>
+  <div id="p8-rec" style="margin-top:30px"></div>
+  <div class="anat" id="p8-an"></div>
+ </div>
+</section>
+
+<!-- 9. Tono con BERT -->
+<section class="pag" data-sec="Tono con BERT">
+ <div class="cuerpo">
+  <p class="vol">Tono con BERT</p>
+  <h2 class="tit">Combinar palabras con BERT sube el acierto de 70% a 77%</h2>
+  <div class="zona" style="grid-template-columns:1fr 360px">
+   <div><p class="mini">Acierto de 8 enfoques (%)</p><div class="barras" id="p9-b"></div><p class="epi" style="margin-top:14px">340 titulares etiquetados a mano · validación cruzada de 5 pliegues · acierto sobre notas que el modelo no vio.</p></div>
+   <div style="display:flex;flex-direction:column;gap:22px;justify-content:center">
+    <div><div class="cifra rojo" style="font-size:120px">77%</div><p class="txt">de acierto con palabras + XLM-RoBERTa <span class="grisc">(antes, 70%)</span></p></div>
+    <div style="border-top:1px solid var(--filete);padding-top:18px"><div class="cifra" style="font-size:120px">84%</div><p class="txt">de las noticias negativas detectadas <span class="grisc">(antes, 65%)</span></p></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- 10. Aprende -->
+<section class="pag" data-sec="Más allá del diccionario">
+ <div class="cuerpo">
+  <p class="vol">Más allá del diccionario</p>
+  <h2 class="tit">El sistema aprende lo que no le enseñamos</h2>
+  <div class="zona" style="grid-template-columns:1fr 1fr 1fr">
+   <div><h3 class="sub">Figuras nuevas (NER)</h3><p class="txt" style="font-size:18px">spaCy detecta personas e instituciones que no están en el diccionario.</p><div id="p10-ner" style="margin-top:12px"></div></div>
+   <div><h3 class="sub">Búsqueda por significado</h3><p class="txt" style="font-size:18px">Embeddings MiniLM: la misma noticia aunque no comparta palabras.</p><div id="p10-sim" style="margin-top:14px"></div></div>
+   <div><h3 class="sub">Aprendizaje activo</h3><p class="txt" style="font-size:18px">El modelo eligió los <b>60 titulares</b> donde más dudaba; los etiquetamos a mano y reentrenamos.</p>
+    <div style="display:flex;align-items:baseline;gap:12px;margin:12px 0 4px"><span class="cifra" style="font-size:64px">76%</span><span class="cifra grisc" style="font-size:40px">→</span><span class="cifra" style="font-size:64px">76%</span></div>
+    <p class="epi" style="margin-bottom:14px">acierto antes y después · en esos 60 casos el modelo coincidía solo en el 42%</p>
+    <p class="cita" style="font-size:21px;padding-left:36px">No eran errores aprendibles: eran titulares ambiguos. La ronda delimitó la frontera del criterio.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 11. El dia en un numero -->
+<section class="pag" data-sec="El día en un número">
+ <div class="cuerpo">
+  <p class="vol">El día en un número</p>
+  <h2 class="tit">Un termómetro y un resumen que se escriben solos</h2>
+  <div class="zona" style="grid-template-columns:450px 1fr">
+   <div class="termo" id="p11-t"></div>
+   <div><p class="dl" id="p11-dl"></p><div class="resumen" id="p11-r"></div><p class="epi" style="margin-top:12px">Redactado con plantillas a partir de los datos, igual que en el tablero: sin modelo de lenguaje, reproducible.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 12. Como titula -->
+<section class="pag" data-sec="Cómo titulan">
+ <div class="cuerpo">
+  <p class="vol">Cómo titula cada medio</p>
+  <h2 class="tit">Tres indicadores para medir el estilo, no solo el contenido</h2>
+  <div id="p12" style="margin-top:14px;display:grid;grid-template-rows:repeat(3,1fr);flex:1;min-height:0"></div>
+ </div>
+</section>
+
+<!-- 13. Cebo -->
+<section class="pag" data-sec="Cebo">
+ <div class="cuerpo">
+  <p class="vol">Cebo</p>
+  <h2 class="tit" id="p13-t"></h2>
+  <div class="zona" style="grid-template-columns:1fr 380px">
+   <div><p class="mini">Títulos con al menos un recurso de cebo (%)</p><div class="barras" id="p13-b"></div></div>
+   <div id="p13-x"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 14. Mapa del sensacionalismo -->
+<section class="pag" data-sec="Sensacionalismo">
+ <div class="cuerpo">
+  <p class="vol">Sensacionalismo</p>
+  <h2 class="tit">El mapa: quién exagera y quién busca el clic</h2>
+  <div class="zona" style="grid-template-columns:1fr 330px;margin-top:12px">
+   <div id="p14-sc"></div>
+   <div id="p14-x"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 15. Tono por medio -->
+<section class="pag" data-sec="Tono">
+ <div class="cuerpo">
+  <p class="vol">Tono</p>
+  <h2 class="tit" id="p15-t"></h2>
+  <div class="zona" style="grid-template-columns:1fr 340px">
+   <div><p class="mini" id="p15-m"></p><div class="barras" id="p15-b"></div><p class="epi" style="margin-top:12px">El tono mide si el hecho es bueno o malo, no la postura del medio: quien publica más policiales tiene más notas negativas.</p></div>
+   <div id="p15-x"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 16. Transparencia -->
+<section class="pag" data-sec="Transparencia">
+ <div class="cuerpo">
+  <p class="vol">Transparencia</p>
+  <h2 class="tit" id="p16-t"></h2>
+  <div class="zona" style="grid-template-columns:1fr 360px">
+   <div><p class="mini">Notas firmadas por un periodista (%)</p><div class="barras" id="p16-b"></div><p class="epi" style="margin-top:12px">Según el autor que declara el propio medio en los datos estructurados (JSON-LD). «Redacción» o el nombre del medio no cuentan como firma.</p></div>
+   <div id="p16-x"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 17. Encuadres -->
+<section class="pag" data-sec="Encuadre">
+ <div class="cuerpo">
+  <p class="vol">Encuadre · la noticia más compartida</p>
+  <h2 class="tit" style="font-size:44px">Una noticia, muchos encuadres</h2>
+  <p class="baj" id="p17-baj" style="font-size:20px;max-width:none"></p>
+  <div class="zona" style="grid-template-columns:1fr 290px;margin-top:12px">
+   <div id="p17-l"></div>
+   <div><p class="mini">Quién llega primero</p><p class="epi" style="margin-bottom:10px">Veces que cada medio publicó primero una historia que después cubrieron otros (48 h).</p><div class="barras" id="p17-p"></div></div>
+  </div>
+ </div>
+</section>
+
+<!-- 18. Tono por figura -->
+<section class="pag" data-sec="Tono por figura">
+ <div class="cuerpo">
+  <p class="vol">Tono por figura</p>
+  <h2 class="tit">Cómo trata cada medio a cada figura</h2>
+  <p class="baj" style="font-size:20px;max-width:none">Porcentaje de notas negativas de cada medio cuando menciona a cada figura (últimos 7 días). <b class="rojo">Rojo</b>: más negativo que el promedio de los medios con esa figura; <b class="verde">verde</b>: menos.</p>
+  <div id="p18" style="margin-top:14px"></div>
+ </div>
+</section>
+
+<!-- 19. Mapa de medios -->
+<section class="pag" data-sec="Mapa de medios">
+ <div class="cuerpo">
+  <p class="vol">Minería de estructura</p>
+  <h2 class="tit" style="font-size:44px">El mapa de medios: quién comparte agenda con quién</h2>
+  <div class="zona" style="grid-template-columns:1fr 340px;margin-top:10px">
+   <div id="p19-g"></div>
+   <div id="p19-x"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 20. Clima y dolar -->
+<section class="pag" data-sec="Clima y dólar">
+ <div class="cuerpo">
+  <p class="vol">Clima mediático y dólar</p>
+  <h2 class="tit">¿El tono de las noticias acompaña a la economía?</h2>
+  <div class="zona" style="grid-template-columns:1fr 340px;margin-top:14px">
+   <div id="p20-g"></div>
+   <div id="p20-x"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 21. Tablero y demo -->
+<section class="pag" data-sec="Demo">
+ <div class="cuerpo">
+  <p class="vol">El tablero y la demo</p>
+  <h2 class="tit">Todo esto, en un tablero público que se consulta con SQL</h2>
+  <div class="zona" style="grid-template-columns:470px 1fr;margin-top:24px">
+   <div><p class="mini">El tablero, en vivo</p><p class="url-grande">miguegarrone-blip<wbr>.github.io/<wbr>Web-Mining</p>
+    <p class="txt" style="font-size:19px">Resumen, titulares con buscador por significado, monitor de figuras, análisis, cómo titulan, tendencias y salud de datos. Funciona en el celular.</p>
+    <p style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap"><a class="boton" id="p21-tab" href="https://miguegarrone-blip.github.io/Web-Mining/" target="_blank" rel="noopener">Abrir el tablero</a><a class="boton sec" id="p21-sql" target="_blank" rel="noopener">Correr la consulta</a></p></div>
+   <div><p class="mini">Demo: la base en el navegador (Datasette Lite, tabla notas)</p>
+<pre class="sql" id="p21-q"></pre>
+    <p class="epi" style="margin-top:12px">SQLite corre en el navegador con WebAssembly: no hay que instalar nada. explorar.db trae los últimos 7 días; la base completa se descarga desde el tablero.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- 22. Ficha tecnica -->
+<section class="pag" data-sec="Ficha técnica">
+ <div class="cuerpo">
+  <p class="vol">Ficha técnica</p>
+  <h2 class="tit">Staff: un stack simple, gratuito y reproducible</h2>
+  <dl class="staff" style="margin-top:20px">
+   <div><dt>Recolección</dt><dd>requests · feedparser · googlenewsdecoder · urllib.robotparser</dd></div>
+   <div><dt>Extracción</dt><dd>expresiones regulares · JSON-LD (schema.org) · HTML</dd></div>
+   <div><dt>Lenguaje</dt><dd>bolsa de palabras · Naive Bayes · regresión logística · XLM-RoBERTa · MiniLM · spaCy (NER)</dd></div>
+   <div><dt>Datos</dt><dd>SQLite · CSV · Datasette Lite · notebook con pandas</dd></div>
+   <div><dt>Automatización</dt><dd>GitHub Actions cada 30 minutos (autodisparo) · pruebas automáticas</dd></div>
+   <div><dt>Visualización</dt><dd>HTML, CSS y JavaScript sin frameworks · GitHub Pages · esta presentación</dd></div>
+  </dl>
+ </div>
+</section>
+
+<!-- 23. Cierre -->
+<section class="pag p23" data-sec="Contratapa">
+ <div class="cuerpo">
+  <p class="vol">Contratapa · Probalo ahora</p>
+  <div style="display:grid;grid-template-columns:1fr 300px;flex:1;align-items:center">
+   <div><h2 class="gracias">Gracias</h2><p class="baj" style="font-size:26px;margin-top:22px">Escaneá el código para abrir el tablero y consultar la base con SQL.</p></div>
+   <div style="justify-self:end;text-align:center"><div class="qr"><svg viewBox="0 0 33 33" role="img" aria-label="Código QR del tablero"><path d="M0 0h7v1h-7zM8 0h2v1h-2zM11 0h1v1h-1zM13 0h4v1h-4zM18 0h1v1h-1zM21 0h1v1h-1zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM13 1h2v1h-2zM18 1h2v1h-2zM21 1h2v1h-2zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM10 2h1v1h-1zM12 2h1v1h-1zM14 2h2v1h-2zM17 2h2v1h-2zM20 2h5v1h-5zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h5v1h-5zM15 3h3v1h-3zM19 3h1v1h-1zM23 3h1v1h-1zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h4v1h-4zM16 4h1v1h-1zM19 4h1v1h-1zM23 4h1v1h-1zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h2v1h-2zM11 5h5v1h-5zM17 5h2v1h-2zM20 5h3v1h-3zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h1v1h-1zM17 7h1v1h-1zM19 7h3v1h-3zM23 7h1v1h-1zM0 8h1v1h-1zM4 8h1v1h-1zM6 8h4v1h-4zM12 8h1v1h-1zM15 8h3v1h-3zM20 8h10v1h-10zM32 8h1v1h-1zM0 9h1v1h-1zM2 9h1v1h-1zM4 9h2v1h-2zM7 9h1v1h-1zM9 9h1v1h-1zM15 9h4v1h-4zM20 9h1v1h-1zM23 9h1v1h-1zM25 9h1v1h-1zM29 9h3v1h-3zM0 10h1v1h-1zM3 10h2v1h-2zM6 10h4v1h-4zM11 10h1v1h-1zM13 10h3v1h-3zM18 10h1v1h-1zM20 10h1v1h-1zM23 10h2v1h-2zM29 10h1v1h-1zM31 10h1v1h-1zM4 11h2v1h-2zM7 11h5v1h-5zM13 11h1v1h-1zM15 11h2v1h-2zM20 11h2v1h-2zM23 11h2v1h-2zM26 11h1v1h-1zM32 11h1v1h-1zM5 12h3v1h-3zM9 12h1v1h-1zM11 12h1v1h-1zM13 12h1v1h-1zM15 12h2v1h-2zM19 12h1v1h-1zM21 12h1v1h-1zM24 12h3v1h-3zM28 12h2v1h-2zM1 13h1v1h-1zM3 13h1v1h-1zM9 13h1v1h-1zM12 13h1v1h-1zM14 13h1v1h-1zM17 13h4v1h-4zM23 13h1v1h-1zM25 13h1v1h-1zM27 13h1v1h-1zM0 14h1v1h-1zM3 14h4v1h-4zM8 14h2v1h-2zM11 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM17 14h2v1h-2zM20 14h4v1h-4zM25 14h2v1h-2zM28 14h1v1h-1zM31 14h1v1h-1zM0 15h1v1h-1zM2 15h3v1h-3zM7 15h3v1h-3zM12 15h1v1h-1zM14 15h4v1h-4zM21 15h1v1h-1zM24 15h3v1h-3zM28 15h1v1h-1zM1 16h1v1h-1zM5 16h3v1h-3zM10 16h2v1h-2zM17 16h1v1h-1zM19 16h5v1h-5zM26 16h1v1h-1zM28 16h1v1h-1zM31 16h1v1h-1zM0 17h1v1h-1zM2 17h1v1h-1zM4 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM14 17h3v1h-3zM18 17h1v1h-1zM21 17h3v1h-3zM25 17h1v1h-1zM29 17h3v1h-3zM1 18h2v1h-2zM4 18h1v1h-1zM6 18h2v1h-2zM9 18h7v1h-7zM17 18h1v1h-1zM23 18h5v1h-5zM29 18h1v1h-1zM1 19h1v1h-1zM3 19h1v1h-1zM7 19h1v1h-1zM11 19h2v1h-2zM14 19h1v1h-1zM17 19h5v1h-5zM24 19h2v1h-2zM27 19h1v1h-1zM32 19h1v1h-1zM1 20h2v1h-2zM4 20h6v1h-6zM11 20h1v1h-1zM13 20h2v1h-2zM18 20h1v1h-1zM20 20h1v1h-1zM24 20h1v1h-1zM26 20h1v1h-1zM28 20h2v1h-2zM31 20h2v1h-2zM0 21h3v1h-3zM5 21h1v1h-1zM7 21h1v1h-1zM10 21h2v1h-2zM13 21h1v1h-1zM16 21h2v1h-2zM19 21h1v1h-1zM23 21h1v1h-1zM25 21h3v1h-3zM29 21h1v1h-1zM31 21h1v1h-1zM2 22h2v1h-2zM5 22h4v1h-4zM13 22h1v1h-1zM16 22h2v1h-2zM19 22h1v1h-1zM22 22h5v1h-5zM30 22h2v1h-2zM3 23h1v1h-1zM7 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM17 23h7v1h-7zM25 23h1v1h-1zM28 23h2v1h-2zM31 23h2v1h-2zM0 24h3v1h-3zM5 24h2v1h-2zM8 24h1v1h-1zM11 24h2v1h-2zM15 24h1v1h-1zM17 24h1v1h-1zM20 24h9v1h-9zM8 25h2v1h-2zM11 25h1v1h-1zM15 25h3v1h-3zM21 25h2v1h-2zM24 25h1v1h-1zM28 25h1v1h-1zM30 25h2v1h-2zM0 26h7v1h-7zM8 26h2v1h-2zM12 26h5v1h-5zM18 26h1v1h-1zM20 26h1v1h-1zM24 26h1v1h-1zM26 26h1v1h-1zM28 26h2v1h-2zM31 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM11 27h1v1h-1zM14 27h1v1h-1zM19 27h2v1h-2zM22 27h1v1h-1zM24 27h1v1h-1zM28 27h1v1h-1zM31 27h1v1h-1zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h4v1h-4zM13 28h4v1h-4zM22 28h1v1h-1zM24 28h6v1h-6zM32 28h1v1h-1zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM10 29h1v1h-1zM14 29h1v1h-1zM18 29h3v1h-3zM23 29h2v1h-2zM26 29h4v1h-4zM31 29h1v1h-1zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM9 30h1v1h-1zM11 30h3v1h-3zM15 30h1v1h-1zM17 30h1v1h-1zM20 30h1v1h-1zM22 30h3v1h-3zM26 30h3v1h-3zM30 30h1v1h-1zM0 31h1v1h-1zM6 31h1v1h-1zM10 31h2v1h-2zM13 31h5v1h-5zM21 31h6v1h-6zM0 32h7v1h-7zM8 32h2v1h-2zM11 32h1v1h-1zM17 32h8v1h-8zM26 32h1v1h-1zM29 32h2v1h-2zM32 32h1v1h-1z"/></svg></div><p class="epi" style="margin-top:16px;color:var(--tinta);white-space:nowrap">miguegarrone-blip.github.io/Web-Mining</p></div>
+  </div>
+  <div style="border-top:3px solid var(--tinta);padding-top:10px;display:flex;justify-content:space-between;gap:24px;align-items:baseline">
+   <p class="txt"><b>Grupo 3:</b> Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán</p>
+   <p class="epi" style="color:var(--tinta)">Código: <a href="https://github.com/miguegarrone-blip/Web-Mining" target="_blank" rel="noopener">github.com/miguegarrone-blip/Web-Mining</a></p>
+  </div>
+ </div>
+</section>
+
+</div>
+</div>
+<aside id="notas" hidden aria-live="polite"><header><span id="n-h"></span><span id="n-s"></span></header><p id="n-t"></p></aside>
+<div id="ayuda">← → pasar · N notas · F pantalla completa</div>
+<div id="prog"></div>
+<script>
+const P=__PRES__;
+const AGG=P.agg,CAL=P.cal,MEDS=P.medios;
+const D=P.D.map(a=>{const x={m:MEDS[a[0]],t:a[1],ts:a[2]*60000,sa:a[3],cr:a[5].map(i=>P.rasgos[i]),tg:a[6].map(i=>P.temas[i]),e:a[7].map(i=>P.ents[i])};if(a[4])x.s=a[4];return x});
+D.sort((a,b)=>b.ts-a.ts);
+const $=id=>document.getElementById(id);
+const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=t=>t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+const nf=n=>Math.round(n).toLocaleString("es-AR");
+const pc=v=>Math.round(v*100)+"%";
+const TZ="America/Argentina/Buenos_Aires";
+const hhmm=ts=>new Date(ts).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:TZ});
+const dur=ms=>{const m=Math.round(ms/6e4);return m<60?m+" min":Math.floor(m/60)+" h "+String(m%60).padStart(2,"0")+" min"};
+const tn=x=>x.s||x.sa;
+const TONO={n:"negativo","0":"neutro",p:"positivo"},COLT={n:"var(--rojo)","0":"var(--neutro)",p:"var(--verde)"};
+const QUIETO=matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* Reparto de tono estimado (igual que el tablero): etiqueta manual si existe; si no, el tono automatico corregido con la calibracion */
+const adj=items=>{const N=items.length||1,e=[0,0,0],nc={n:0,"0":0,p:0};items.forEach(x=>{if(x.s)e[x.s==="n"?0:x.s==="0"?1:2]++;else nc[x.sa]++});
+ if(!CAL){["n","0","p"].forEach((c,i)=>e[i]+=nc[c]);return{e,N}}["n","0","p"].forEach(c=>{const p=CAL[c].p,k=nc[c];e[0]+=k*p.n;e[1]+=k*p["0"];e[2]+=k*p.p});return{e,N}};
+const unoPorMedio=g=>{const v=new Map();g.slice().sort((a,b)=>(a.ts||9e15)-(b.ts||9e15)).forEach(x=>{if(!v.has(x.m))v.set(x.m,x)});return[...v.values()]};
+const fraccion=v=>{const k=Math.max(2,Math.round(1/Math.max(v,.01)));return(v<1/k-.004?"casi ":"")+"1 de cada "+k};
+
+/* ---- historias compartidas: el mismo agrupado del tablero (TF-IDF + coseno contra la semilla de cada grupo) ---- */
+{const SW2=new Set("contra pero video videos quedo asi aca alla hasta tambien sigue siguen de la el en y a los las un una por con para que del al se su sus es lo como mas sobre tras ante este esta ya no si le les o u e entre hasta desde sin que como cuando dias dia ano anos sera ser fue hoy vs hace va ha han fin semana nueva nuevo primer primera dos tres cinco uno rosario argentina javier torneo clausura horario posibles formaciones canal vivo tambien cada todo todos esta este estos esas ese eso lunes martes miercoles jueves viernes sabado domingo enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre 2025 2026 ahora minuto ultimas noticias ultima ultimo hora horas tras segun ademas puede pueden podria hacer hizo luego antes despues mientras donde quien quienes cual cuales porque".split(" "));
+ const tk=x=>new Set(norm(x.t).replace(/[^a-z0-9 ]/g," ").split(/ +/).filter(w=>w.length>3&&!SW2.has(w)));
+ const T=D.map(tk),df={};T.forEach(st=>st.forEach(w=>df[w]=(df[w]||0)+1));
+ const idf=w=>Math.log(1+D.length/(df[w]||1));
+ const V=T.map(st=>{const v=new Map();let q=0;st.forEach(w=>{const x=idf(w);v.set(w,x);q+=x*x});return{v,n:Math.sqrt(q)||1}});
+ const cosv=(a,b)=>{let d=0,c=0;const[sm,lg]=a.v.size<b.v.size?[a,b]:[b,a];sm.v.forEach((x,w)=>{const y=lg.v.get(w);if(y){d+=x*y;c++}});return c>=2?d/(a.n*b.n):0};
+ const grupos=[],post=new Map();
+ D.map((_,i)=>i).sort((a,b)=>D[b].ts-D[a].ts).forEach(i=>{const cand=new Set();T[i].forEach(w=>(post.get(w)||[]).forEach(k=>cand.add(k)));
+  let best=-1,bs=0.5;cand.forEach(k=>{const c=cosv(V[i],V[grupos[k].seed]);if(c>bs){bs=c;best=k}});
+  if(best>=0)grupos[best].it.push(i);else{grupos.push({seed:i,it:[i]});T[i].forEach(w=>{if(!post.has(w))post.set(w,[]);post.get(w).push(grupos.length-1)})}});
+ const nm=g=>new Set(g.map(x=>x.m)).size;
+ window.CR=grupos.map(g=>g.it.map(i=>D[i])).filter(g=>nm(g)>=2).sort((a,b)=>nm(b)-nm(a)||b.length-a.length).slice(0,25);
+ window.GR=grupos.map(g=>g.it.map(i=>D[i])).filter(g=>nm(g)>=2)}
+/* primicia: quien publica primero las historias compartidas (igual que el tablero) */
+{const pr={},cub={};GR.forEach(g=>{const its=unoPorMedio(g).filter(x=>x.ts);if(its.length<2)return;pr[its[0].m]=(pr[its[0].m]||0)+1;its.forEach(x=>cub[x.m]=(cub[x.m]||0)+1)});
+ window.PRIM=Object.entries(pr).filter(([m])=>cub[m]>=3).sort((a,b)=>b[1]-a[1]).slice(0,10)}
+
+/* ---- birome roja: rasgos de cebo marcados sobre las palabras (mismas reglas que nlp.cebo) ---- */
+const RX=[["c",/\b(?:impactante|insolito|increible|bomba|escandalo|escandaloso|furia|brutal|picante|tremend[oa]|terrible|dramatic[oa]|polemic[oa]|explosiv[oa]|estallo|exploto|durisim[oa]|lapidari[oa]|contundente|sin filtro|filtr(?:o|aron)|destapo|desopilante|letal|alarmante|shock|viral|furor|bochorn\w*|escandal\w*|bombazo|inesperad[oa]|sorpresiv[oa])\b/g],
+ ["c",/(?:^|[\s:.,"“])((?:lo que|la razon|el motivo|el truco|el secreto|la verdad|nadie|esto es|asi (?:es|fue|quedo|son|luce)|que es|por que|quien es|quienes son|cual es|cuales son|como (?:es|hacer|saber|evitar)|el dato|la clave))\b/g,1],
+ ["s",/\b(?:tenes|podes|debes|sabias|mira|descubri|enterate|conoce|evita|hace esto|tu|vos)\b/g],
+ ["c",/^(?:las?|los)?\s*\d{1,2}\s+(?:claves|cosas|razones|consejos|trucos|errores|alimentos|senales|pasos|formas|motivos|datos|lugares|frases|preguntas|beneficios|habitos)\b/g],
+ ["c",/[¿?¡!]/g]];
+function marcar(t,ents){const n=t.split("").map(c=>{const z=c.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();return z.length===1?z:c}).join(""),R=[];
+ RX.forEach(([k,rx,g])=>{rx.lastIndex=0;let m;while((m=rx.exec(n))){let a=m.index,s=m[0];if(g){a+=m[0].indexOf(m[g]);s=m[g]}R.push([a,a+s.length,k]);if(!m[0].length)rx.lastIndex++}});
+ (ents||[]).forEach(e=>{let z=norm(e),i=n.indexOf(z);if(i<0){z=z.split(" ").pop();i=z.length>=4?n.indexOf(z):-1}if(i>=0)R.push([i,i+z.length,"e"])});
+ R.sort((a,b)=>a[0]-b[0]||b[1]-a[1]);let out="",p=0;
+ R.forEach(([a,b,k])=>{if(a<p)return;out+=esc(t.slice(p,a))+(k==="e"?'<span class="ent">':'<span class="bm" data-k="'+k+'">')+esc(t.slice(a,b))+"</span>";p=b});
+ return out+esc(t.slice(p))}
+function circulo(x,y,w,h,s){const cx=x+w/2,cy=y+h/2+1,rx=w/2+Math.min(13,5+w*.08),ry=h/2+4,a0=-2.75+(s%5)*.12;let d="";
+ for(let i=0;i<=44;i++){const u=i/44,a=a0+u*Math.PI*2.16,j=1+.03*Math.sin(a*3+s)+(u-.5)*.07;d+=(i?"L":"M")+(cx+rx*j*Math.cos(a)).toFixed(1)+" "+(cy+ry*j*Math.sin(a)-u*2).toFixed(1)}return d}
+const subrayado=(x,y,w,h)=>{const b=y+h+1;return"M"+(x-4)+" "+(b+2)+"C"+(x+w*.3)+" "+(b-2)+","+(x+w*.65)+" "+(b+4)+","+(x+w+5)+" "+b+"M"+(x+w*.1)+" "+(b+6)+"C"+(x+w*.4)+" "+(b+3)+","+(x+w*.7)+" "+(b+8)+","+(x+w+1)+" "+(b+5)};
+const tachado=(x,y,w,h)=>"M"+(x-6)+" "+(y+h*.62)+"C"+(x+w*.35)+" "+(y+h*.45)+","+(x+w*.7)+" "+(y+h*.6)+","+(x+w+8)+" "+(y+h*.38);
+function biromes(){document.querySelectorAll(".rec,.linea .tt").forEach(r=>{r.querySelectorAll(":scope>svg.trazo").forEach(s=>s.remove());const sp=r.querySelectorAll(".bm");if(!sp.length)return;
+ const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("class","trazo");svg.setAttribute("aria-hidden","true");let k=0;
+ sp.forEach(e=>{let x=0,y=0,el=e;while(el&&el!==r){x+=el.offsetLeft;y+=el.offsetTop;el=el.offsetParent}if(el!==r)return;
+  const w=e.offsetWidth,h=e.offsetHeight,p=document.createElementNS("http://www.w3.org/2000/svg","path"),t=e.dataset.k;
+  p.setAttribute("d",t==="s"?subrayado(x,y,w,h):t==="x"?tachado(x,y,w,h):circulo(x,y,w,h,k+x%7));p.setAttribute("pathLength","1");p.style.setProperty("--k",k++);svg.appendChild(p)});
+ r.appendChild(svg)})}
+/* recorte de un titular real: medio + hora en mono, levemente girado */
+function recorte(x,o={}){const f=mk("figure","rec");f.style.margin="0";f.style.setProperty("--r",(o.r||0)+"deg");
+ const m=mk("figcaption","rm");m.appendChild(mk("b","",x.m));m.appendChild(mk("span","",o.meta!=null?o.meta:(x.ts?hhmm(x.ts):"")));f.appendChild(m);
+ const t=mk("p","rt");t.innerHTML=marcar(x.t,o.ents);if(o.tam)t.style.fontSize=o.tam+"px";f.appendChild(t);if(o.baj){const b=mk("p","rb");b.innerHTML=o.baj;f.appendChild(b)}return f}
+/* barras horizontales en tinta: filas [etiqueta, valor, destacada, texto del valor] */
+function barras(host,filas,o={}){const mx=o.max||Math.max(...filas.filter(Array.isArray).map(f=>f[1]))||1;filas.forEach((f,i)=>{if(f==="sep"){host.appendChild(mk("div","sep"));return}
+ host.appendChild(mk("span","et",f[0]));const pi=mk("div","pi"),b=mk("div","b"+(f[2]===1?" d":f[2]===2?" c":""));b.style.width=(f[1]/mx*(o.ancho||84))+"%";b.style.setProperty("--i",i);
+ pi.append(b,mk("span","v"+(f[2]===1?" d":""),f[3]!=null?f[3]:f[1]));host.appendChild(pi)})}
+const NS="http://www.w3.org/2000/svg";
+function svgEl(p,t,a,txt){const e=document.createElementNS(NS,t);Object.entries(a||{}).forEach(([k,v])=>e.setAttribute(k,v));if(txt!=null)e.textContent=txt;if(p)p.appendChild(e);return e}
+
+/* "ahora" es el momento de los datos (la nota mas reciente), no el del reloj: si la pagina se abre horas despues, las cifras de 24 h siguen teniendo sentido */
+const ahora=Math.min(Date.now(),D.length?D[0].ts+36e5:Date.now()),D24=D.filter(x=>x.ts>=ahora-864e5&&x.ts<=ahora+36e5),CR=window.CR,OFI=m=>((AGG.med||{})[m]||{}).tp==="Oficial",S=(AGG.sens||[]).filter(r=>r.n>=40&&!OFI(r.m));
+
+/* ===== 1. Tapa ===== */
+{$("t-nro").textContent="Año I · N.º "+nf(P.corridas);
+ const f=new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:TZ});$("t-fecha").textContent="Rosario, "+f;
+ const R=D24.length?D24:D,nm=new Set(R.map(x=>x.m)).size;$("t-hoy").innerHTML='Hoy: <span class="rojo">'+nf(R.length)+'</span> titulares de '+nm+' medios';
+ const el=[],usados=new Set(),add=x=>{if(x&&!usados.has(x.t)&&el.length<3){usados.add(x.t);el.push(x)}};
+ if(CR[0])add(unoPorMedio(CR[0])[0]);
+ const cb=(AGG.ej_cb||[]).find(r=>r[1].length<95);if(cb)add(D.find(x=>x.t===cb[1])||{m:cb[0],t:cb[1]});
+ add(D.find(x=>x.r!=="x"&&/^(La Capital|Rosario3|El Ciudadano|Rosarioplus)$/.test(x.m)&&x.t.length<90&&!x.tg.includes("Otros")));
+ D.slice(0,40).forEach(add);
+ [-1.4,1.1,-.6].forEach((r,i)=>{if(el[i])$("t-rec").appendChild(recorte(el[i],{r}))})}
+
+/* ===== 2. El problema ===== */
+{const g=CR[0]?unoPorMedio(CR[0]).filter(x=>x.t.length<130).slice(0,6):[],rot=[-1.6,1.2,-.5,1.5,-1.1,.7],h=$("p2-col");
+ g.forEach((x,i)=>{const r=recorte(x,{r:rot[i]});h.appendChild(r)});
+ if(CR[0]){const nmed=new Set(CR[0].map(x=>x.m)).size;$("p2-epi").innerHTML="Recortes reales: la historia que más medios cubrieron en las últimas 48 h (<b>"+nmed+" medios</b>), cada una con su hora de publicación. Agrupadas automáticamente por similitud de palabras."}}
+
+/* ===== 3. Cifras ===== */
+{const e=$("p3-n");e.dataset.v=P.total_db;e.textContent=nf(P.total_db);
+ $("p3-lead").innerHTML="Web mining de punta a punta: crawling de feeds, scraping de cada nota, procesamiento de lenguaje con BERT, una base histórica de <b>"+Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50).length+" días</b> e indicadores comparables entre medios. Esta edición sale de la corrida N.º "+nf(P.corridas)+" de las últimas tres semanas, del "+esc(P.now)+"."}
+
+/* ===== 4. Etapas ===== */
+{const pr=AGG.prog&&AGG.prog[1]?AGG.prog[0]/AGG.prog[1]:null;
+ const E=[["Feeds","RSS y Google News de 46 medios, en paralelo","63 feeds"],["Validación","Descarta no-notas, fechas imposibles y duplicados","reglas + cuarentena"],["Scraping","Entra a cada nota: bajada y datos JSON-LD",pr!=null?pc(pr)+" de las notas":"página de cada nota"],
+  ["Lenguaje","Tema, entidades, tono con BERT y cebo","4 modelos"],["SQLite","Histórico de 21 días y CSV exportable",nf(P.total_db)+" notas"],["Tablero","8 pestañas y SQL en el navegador","GitHub Pages"]];
+ E.forEach(([t,d,x],i)=>{const e=mk("div","etapa"+(i===2?" dest":""));e.innerHTML='<div class="num">'+(i+1)+'</div><h3>'+t+'</h3><p class="dato">'+esc(x)+'</p><p>'+d+'</p>';$("p4-et").appendChild(e)})}
+
+/* ===== 5. Fuentes ===== */
+{const F=P.fuentes,a=F.rss.length,b=F.gn.length,t=a+b;$("p5-l1").textContent="RSS propio · "+a+" medios";$("p5-l2").textContent="Google News por sitio · "+b+" medios";
+ const p=$("p5-prop"),s1=mk("span"),s2=mk("span");s1.style.cssText="width:"+(a/t*100)+"%;background:var(--tinta)";s2.style.cssText="width:"+(b/t*100)+"%;background:var(--neutro);border-left:3px solid var(--papel)";p.append(s1,s2);
+ $("p5-rss").textContent=F.rss.join(" · ");$("p5-gn").textContent=F.gn.join(" · ");
+ $("p5-pie").innerHTML='<b class="rojo" style="font-family:var(--titular);font-size:30px">'+nf(F.n_gn)+'</b> de '+nf(P.total_db)+' notas de la base llegaron por Google News: sin el paso siguiente, de esas solo tendríamos el título.'}
+
+/* ===== 6. Scraping ===== */
+{const ej=(AGG.ej_al||[])[0]||(AGG.ej_cb||[])[0],x=D.find(z=>ej&&z.t===ej[1])||D[0];
+ const lis=$("p6-lis");D.filter(z=>z.m===x.m).slice(0,4).forEach(z=>{const d=mk("div");d.appendChild(mk("b","",z.t.length>52?z.t.slice(0,50)+"…":z.t));d.appendChild(document.createTextNode(hhmm(z.ts)));lis.appendChild(d)});
+ const det=$("p6-det"),f=(c,l,h)=>{const e=mk("div","f"),i=mk("div",c);if(l)e.dataset.l=l;else e.classList.add("sin");i.innerHTML=h;e.appendChild(i);det.appendChild(e)};
+ f("url","URL real","https://"+esc((x.m||"medio").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g,""))+".com.ar/"+esc(norm(x.t).replace(/[^a-z0-9]+/g,"-").slice(0,60)));
+ f("sec","Sección",esc(x.tg[0]||"Política"));f("ti","",esc(x.t));
+ f("bj","Bajada",esc(ej&&ej[2]?ej[2]:"El resumen que escribe el propio medio, en og:description."));
+ f("au","Autor y firma","Por <b>persona</b> o «Redacción» · "+esc(hhmm(x.ts)));
+ f("kw","Palabras clave",(x.e.length?x.e:x.tg).slice(0,3).map(k=>"<span>"+esc(k)+"</span>").join(""));
+ f("cu","Largo del cuerpo","");
+ const sc=(AGG.scr||[]).reduce((a,r)=>{a[0]+=r[2];a[1]+=r[3];a[2]+=r[4];return a},[0,0,0]),pr=AGG.prog&&AGG.prog[1]?AGG.prog[0]/AGG.prog[1]:null;
+ const fil=[[pr!=null?pc(pr):"–","de las notas de la base, analizadas entrando a su página",1],[sc[0]?pc(sc[1]/sc[0]):"–","con bajada, en las notas leídas en las últimas 24 h"],[sc[0]?pc(sc[2]/sc[0]):"–","con datos JSON-LD (autor, sección, palabras clave)"]];
+ fil.forEach(([v,l,r],i)=>{const d=mk("div");if(i)d.style.cssText="border-top:1px solid var(--filete);padding-top:14px;margin-top:14px";d.innerHTML='<div class="cifra'+(r?" rojo":"")+'" style="font-size:64px">'+v+'</div><p class="txt" style="font-size:18px;margin-top:6px;line-height:1.3">'+l+'</p>';$("p6-num").appendChild(d)})}
+
+/* ===== 7. Etica ===== */
+{const s=P.scraping,A=[["Art. 1","robots.txt","Se lee por dominio antes de pedir una nota. <b>"+nf(s.robots)+(s.robots===1?" bloqueo":" bloqueos")+"</b> en "+nf(s.intentos)+" pedidos de las últimas tres semanas."],
+  ["Art. 2","Nos identificamos","User-Agent propio que enlaza al proyecto: <span style=\"font-family:var(--mono);font-size:17px\">monitor-de-medios/1.0</span>."],
+  ["Art. 3","Carga acotada","Como máximo <b>2 pedidos a la vez por sitio</b>, con topes de notas y de tiempo por corrida."],
+  ["Art. 4","Sin insistir","Reintentos con espera creciente; una nota que falla dos veces no se vuelve a pedir."]];
+ A.forEach(([n,t,d])=>{const e=mk("div");e.innerHTML="<h3><small>"+n+"</small>"+t+"</h3><p>"+d+"</p>";$("p7-art").appendChild(e)})}
+
+/* ===== 8. Anatomia de un titular ===== */
+{const cand=D24.length?D24:D,x=cand.find(z=>z.e.length&&z.cr.length&&!z.tg.includes("Otros")&&z.t.length>=55&&z.t.length<=115&&z.sa==="n")||cand.find(z=>z.e.length&&z.cr.length&&z.t.length<=120)||cand.find(z=>z.e.length)||cand[0];
+ const r=recorte(x,{r:-.4,tam:36,ents:x.e,meta:(x.ts?hhmm(x.ts)+" · ":"")+"nota real de las últimas horas"});r.style.padding="16px 26px 20px";$("p8-rec").appendChild(r);
+ const t=tn(x),C=[["Tema",x.tg.join(" · "),"Reglas sobre título y bajada, y un Naive Bayes que aprende de lo que las reglas ya clasificaron (supervisión débil)."],
+  ["Entidades",x.e.join(" · ")||"–","Diccionario de 35 figuras con alias y desambiguación («Banco Central» no es Rosario Central), más spaCy."],
+  ["Tono",'<span style="color:'+COLT[t]+'">'+TONO[t]+"</span>","Si el hecho es bueno o malo para los involucrados: palabras + probabilidades de XLM-RoBERTa."],
+  ["Cebo",x.cr.length?'<span class="rojo">'+x.cr.join(" · ")+"</span>":"sin recursos","Preguntas, exclamaciones, adjetivos exagerados, intriga, segunda persona o listas. Marcados en rojo."]];
+ C.forEach(([k,v,d])=>{const e=mk("div");e.innerHTML='<p class="mini">'+k+'</p><p class="val">'+v+"</p><p>"+d+"</p>";$("p8-an").appendChild(e)})}
+
+/* ===== 9. Modelos ===== */
+barras($("p9-b"),P.modelos.map((r,i)=>[r[0],r[1],i===0?1:0,String(r[1]).replace(".",",")]),{max:80});
+
+/* ===== 10. NER y parecidas ===== */
+{const N=(AGG.ner||{}).fig||[],h=$("p10-ner");if(!N.length)h.appendChild(mk("p","epi","Todavía sin figuras detectadas."));
+ N.slice(0,5).forEach(f=>{const d=mk("div");d.style.cssText="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--filete)";
+  d.innerHTML='<span style="font-family:var(--titular);font-weight:700;font-size:21px;line-height:1.1">'+esc(f.n)+(f.nueva&&!f.dep?' <span class="vol" style="font-size:12px;display:inline">nueva</span>':"")+'</span><span class="epi" style="white-space:nowrap">'+f.n24+" notas · "+f.m24+" medios</span>";h.appendChild(d)});
+ const S2=P.parecidas,h2=$("p10-sim");
+ const par=S2?[S2.a,S2.b]:[["Eldoce","Murió una joven embarazada tras ser atacada por su pareja"],["La Voz","Murió una joven embarazada que había sido quemada por su pareja en Santa Fe"]],sim=S2?S2.s/100:.85;
+ par.forEach(([m,t],i)=>{const r=recorte({m,t},{r:i?.8:-.8,tam:18,meta:""});r.style.marginBottom="10px";h2.appendChild(r)});
+ h2.appendChild(mk("p","epi","similitud coseno entre los dos embeddings: "+sim.toFixed(2).replace(".",",")))}
+
+/* ===== 11. Termometro y resumen ===== */
+{const hs=Object.keys(AGG.horas).sort().slice(-24);let ng=0,tt=0;hs.forEach(h=>{const v=AGG.horas[h];ng+=v[0];tt+=v[0]+v[1]+v[2]});
+ const val=tt?Math.round(ng/tt*100):0,full=Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy),prom=full.length?full.reduce((s2,d)=>s2+AGG.dneg[d]/AGG.dn[d],0)/full.length*100:null;
+ const B=[[0,25,"Calmo"],[25,40,"Moderado"],[40,55,"Tenso"],[55,100,"Muy tenso"]],banda=B.find(b=>val>=b[0]&&val<b[1])||B[3];window.TERMO={val,banda:banda[2],prom};
+ const W=450,cx=225,cy=236,R=170,pt=(v,r)=>{const a=Math.PI*(1-v/100);return[cx+r*Math.cos(a),cy-r*Math.sin(a)]};
+ const svg=svgEl(null,"svg",{viewBox:"0 0 "+W+" 400",role:"img","aria-label":"Termómetro de negatividad: "+val+" de 100, "+banda[2]});svg.style.cssText="width:100%;display:block";
+ const tonos=["#E4DCCB","#C9C0AE","#958D80","#5E5A54"];
+ B.forEach((b,i)=>{const[x0,y0]=pt(b[0]+.5,R-16),[x1,y1]=pt(b[1]-.5,R-16);svgEl(svg,"path",{d:"M"+x0+" "+y0+" A"+(R-16)+" "+(R-16)+" 0 0 1 "+x1+" "+y1,fill:"none",stroke:tonos[i],"stroke-width":22});
+  const mid=(b[0]+b[1])/2,[lx,ly]=pt(mid,R+14);svgEl(svg,"text",{x:lx,y:ly+(mid>30&&mid<70?-2:4),"text-anchor":mid<30?"end":mid>70?"start":"middle","font-size":13,fill:"#5E5A54","letter-spacing":"1.5"},b[2].toUpperCase())});
+ svgEl(svg,"path",{d:"M"+(cx-R)+" "+cy+" A"+R+" "+R+" 0 0 1 "+(cx+R)+" "+cy,fill:"none",stroke:"#141210","stroke-width":1.5});
+ for(let v=0;v<=100;v+=5){const big=v%25===0||v===40||v===55,[a,b]=pt(v,R),[c,d]=pt(v,R-(big?14:7));svgEl(svg,"line",{x1:a,y1:b,x2:c,y2:d,stroke:"#141210","stroke-width":big?2:1})}
+ [0,25,40,55,100].forEach(v=>{const[x,y]=pt(v,R-36);svgEl(svg,"text",{x,y:y+5,"text-anchor":"middle","font-size":14,fill:"#141210"},v)});
+ if(prom!=null){const[a,b]=pt(prom,R+2),[c,d]=pt(prom,R-30);svgEl(svg,"line",{x1:a,y1:b,x2:c,y2:d,stroke:"#141210","stroke-width":2,"stroke-dasharray":"3 3"})}
+ const[nx,ny]=pt(val,R-24),ag=svgEl(svg,"g",{class:"aguja"});svgEl(ag,"line",{x1:cx,y1:cy,x2:nx,y2:ny,stroke:"#C8102E","stroke-width":5,"stroke-linecap":"round"});svgEl(ag,"circle",{cx,cy,r:11,fill:"#141210"});
+ svgEl(svg,"text",{x:cx,y:cy+108,"text-anchor":"middle","font-family":"Playfair Display, Georgia, serif","font-weight":900,"font-size":110,fill:"#141210",style:"font-family:var(--titular)"},val);
+ svgEl(svg,"text",{x:cx,y:cy+150,"text-anchor":"middle","font-size":17,fill:"#C8102E","font-weight":600,"letter-spacing":"3"},banda[2].toUpperCase());
+ $("p11-t").appendChild(svg);
+ $("p11-t").appendChild(mk("p","epi","% estimado de notas negativas, últimas 24 h, de 0 a 100"+(prom!=null?" · línea punteada: promedio de "+full.length+" días ("+Math.round(prom)+")":"")));
+ $("p11-t").lastChild.style.textAlign="center";
+ $("p11-dl").innerHTML='<b>Rosario,</b> '+new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",timeZone:TZ})+" —"}
+/* resumen del dia: las mismas plantillas del tablero */
+(()=>{const R=D24,out=$("p11-r");if(!R.length){out.textContent="Sin notas en las últimas 24 horas.";return}
+ const fr=[],Bb=t=>"<b>"+esc(t)+"</b>",T=t=>esc(t);
+ const nmed=new Set(R.map(x=>x.m)).size,tc={};R.forEach(x=>x.tg.forEach(t=>{if(t!=="Otros")tc[t]=(tc[t]||0)+1}));const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]);
+ fr.push("En las últimas 24 horas, "+Bb(nmed+" medios")+" publicaron "+Bb(nf(R.length)+" notas")+". ");
+ if(top[0]){fr.push("El tema más cubierto fue "+Bb(top[0][0])+T(" ("+pc(top[0][1]/R.length)+" de las notas)"));const full=Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy),hist=AGG.tema[top[0][0]]||{};
+  if(full.length>=3){const m=full.reduce((s2,d)=>s2+(hist[d]||0),0)/full.length;if(m>0)fr.push(T(", "+(top[0][1]/m).toFixed(1).replace(".",",")+" veces su promedio diario"))}fr.push(T(top[1]?", seguido por "+top[1][0]+". ":". "))}
+ if(CR[0]){const g=CR[0],ms=new Set(g.map(x=>x.m)).size,f=unoPorMedio(g)[0];fr.push("La noticia que más medios cubrieron fue «"+Bb(g[0].t)+"» "+T("("+ms+" medios; la publicó primero "+f.m+"). "))}
+ const ec={};R.forEach(x=>(x.e||[]).forEach(e=>(ec[e]=ec[e]||[]).push(x)));const e0=Object.entries(ec).sort((a,b)=>b[1].length-a[1].length)[0];
+ if(e0){const A=adj(e0[1]);fr.push("La figura más mencionada fue "+Bb(e0[0])+T(" ("+e0[1].length+" notas, ≈"+pc(A.e[0]/e0[1].length)+" con tono negativo). "))}
+ const M1=Object.entries(AGG.med||{}).map(([m,v])=>[m,v.p["1"]]).filter(([m,p2])=>p2&&p2.n>=15);
+ if(M1.length>=2){const neg=M1.slice().sort((a,b)=>b[1].t[0]/b[1].n-a[1].t[0]/a[1].n);fr.push("El medio más negativo fue "+Bb(neg[0][0])+T(" (≈"+pc(neg[0][1].t[0]/neg[0][1].n)+") y el menos negativo, ")+Bb(neg[neg.length-1][0])+T(" (≈"+pc(neg[neg.length-1][1].t[0]/neg[neg.length-1][1].n)+"). "))}
+ if(PRIM[0])fr.push("El que más veces llegó primero a una historia compartida fue "+Bb(PRIM[0][0])+T(" ("+PRIM[0][1]+" veces). "));
+ fr.push("El termómetro de negatividad marca "+Bb(TERMO.val+" ("+TERMO.banda.toLowerCase()+")")+".");
+ out.innerHTML='<p class="capi" style="margin:0">'+fr.join("")+"</p>"})();
+
+/* ===== 12. Como titula: tres indicadores con un ejemplo real cada uno ===== */
+{const h=$("p12"),fila=(nom,def,ej)=>{const d=mk("div");d.style.cssText="display:grid;grid-template-columns:330px 1fr;column-gap:34px;align-items:center;border-top:1px solid var(--filete);padding:8px 0";
+  const a=mk("div");a.innerHTML='<h3 class="sub" style="margin-bottom:4px">'+nom+'</h3><p class="txt" style="font-size:18px;line-height:1.3">'+def+"</p>";d.append(a,ej);h.appendChild(d)};
+ const al=(AGG.ej_al||[]).find(r=>r[1].length<100&&r[2]&&r[2].length<170)||(AGG.ej_al||[])[0];
+ const r1=al?recorte({m:al[0],t:al[1]},{r:-.5,tam:21,meta:"título negativo",baj:'<span class="grisc" style="font-family:var(--mono);font-size:14px">BAJADA NEUTRA · </span>'+esc(al[2].length>170?al[2].slice(0,168)+"…":al[2])}):mk("p","epi","Sin ejemplos en las últimas 48 h.");
+ if(al)r1.querySelector(".rm span").className="rojo";
+ fila("Exageración","El título es negativo y la bajada del propio medio no lo es.",r1);
+ const cb=(AGG.ej_cb||[]).find(r=>r[1].length<110)||(AGG.ej_cb||[])[0];
+ fila("Cebo (clickbait)","Preguntas, exclamaciones, adjetivos exagerados, intriga, segunda persona, listas.",cb?recorte({m:cb[0],t:cb[1]},{r:.6,tam:23,meta:cb[2]+" recursos de cebo"}):mk("p","epi","Sin ejemplos en las últimas 48 h."));
+ const au=(AGG.aut||[])[0],w=mk("div");w.style.cssText="display:flex;gap:26px;align-items:center";
+ const f1=recorte({m:au?au[1]:"Medio",t:"Por "+(au?au[0]:"un periodista")},{r:-.6,tam:22,meta:"firmada"});f1.querySelector(".rm span").className="verde";
+ const f2=recorte({m:"Otro medio",t:"Por Redacción"},{r:.9,tam:22,meta:"no cuenta"});f2.querySelector(".rt").innerHTML='Por <span class="bm" data-k="x">Redacción</span>';
+ w.append(f1,f2);if(au)w.appendChild(mk("p","epi",au[0]+": "+nf(au[2])+" notas firmadas en "+au[1]+", el autor con más notas de la base."));w.lastChild.style.maxWidth="260px";
+ fila("Transparencia","Notas firmadas por un periodista, según los datos estructurados de la nota.",w)}
+
+/* ===== 13. Cebo ===== */
+{const C=S.slice().sort((a,b)=>b.cebo_pct-a.cebo_pct);if(C.length>=4){const[c1,c2]=C;
+ $("p13-t").textContent=c1.m+" y "+c2.m+" usan recursos de cebo en "+fraccion((c1.cebo_pct+c2.cebo_pct)/2)+" títulos";
+ barras($("p13-b"),C.slice(0,10).map((r,i)=>[r.m,r.cebo_pct*100,i<2?1:0,(r.cebo_pct*100).toFixed(1).replace(".",",")]));
+ const x=$("p13-x");x.innerHTML='<p class="mini">En el otro extremo</p>';const lo=C.slice(-4).reverse(),bx=mk("div","barras");x.appendChild(bx);barras(bx,lo.map(r=>[r.m,r.cebo_pct*100,2,(r.cebo_pct*100).toFixed(1).replace(".",",")]),{max:C[0].cebo_pct*100});
+ const cb=(AGG.ej_cb||[]).find(r=>r[0]===c1.m||r[0]===c2.m)||(AGG.ej_cb||[])[0];if(cb){const r=recorte({m:cb[0],t:cb[1]},{r:-1,tam:20,meta:"últimas 48 h"});r.style.marginTop="26px";x.appendChild(r)}
+ x.appendChild(mk("p","epi","Todo el histórico; medios con 40 notas o más."));x.lastChild.style.marginTop="16px"}}
+
+/* ===== 14. Mapa del sensacionalismo ===== */
+{const AL=(AGG.sens||[]).filter(r=>r.n>=30&&r.tneg>=10&&!OFI(r.m)).map(r=>({...r,ar:r.alarma/r.tneg})),h=$("p14-sc");
+ if(AL.length>=3){const W=780,H=478,L=58,Rr=16,T=14,Bm=52,mxX=Math.max(...AL.map(r=>r.cebo_pct))*1.08,mxY=Math.max(...AL.map(r=>r.ar))*1.08,X=v=>L+v/mxX*(W-L-Rr),Y=v=>H-Bm-v/mxY*(H-Bm-T);
+  const med=v=>{const a=v.slice().sort((x,y)=>x-y),k=a.length>>1;return a.length%2?a[k]:(a[k-1]+a[k])/2},mx=med(AL.map(r=>r.cebo_pct)),my=med(AL.map(r=>r.ar));
+  const svg=svgEl(null,"svg",{viewBox:"0 0 "+W+" "+H,class:"disp",role:"img","aria-label":"Mapa del sensacionalismo: cebo contra exageración por medio"});svg.style.cssText="width:100%;display:block";
+  svgEl(svg,"line",{x1:L,y1:H-Bm,x2:W-Rr,y2:H-Bm,stroke:"#141210"});svgEl(svg,"line",{x1:L,y1:T,x2:L,y2:H-Bm,stroke:"#141210"});
+  [0,.5,1].forEach(f=>{svgEl(svg,"text",{class:"ax",x:X(f*mxX/1.08),y:H-Bm+22,"text-anchor":"middle"},pc(f*mxX/1.08));svgEl(svg,"text",{class:"ax",x:L-8,y:Y(f*mxY/1.08)+5,"text-anchor":"end"},pc(f*mxY/1.08))});
+  svgEl(svg,"text",{class:"ax",x:W-Rr,y:H-6,"text-anchor":"end"},"títulos con recursos de cebo →");svgEl(svg,"text",{class:"ax",x:L+8,y:T+12},"↑ títulos que exageran respecto de su bajada");
+  svgEl(svg,"line",{x1:X(mx),y1:T,x2:X(mx),y2:H-Bm,stroke:"#5E5A54","stroke-dasharray":"4 4"});svgEl(svg,"line",{x1:L,y1:Y(my),x2:W-Rr,y2:Y(my),stroke:"#5E5A54","stroke-dasharray":"4 4"});
+  [["ALARMISTAS",L+10,T+38,"start"],["SENSACIONALISTAS",W-Rr-6,T+38,"end"],["SOBRIOS",L+10,H-Bm-12,"start"],["CLICKBAIT",W-Rr-6,H-Bm-12,"end"]].forEach(([t,x,y,a])=>svgEl(svg,"text",{class:"qd",x,y,"text-anchor":a},t));
+  const q=r=>r.cebo_pct>=mx&&r.ar>=my?"s":r.cebo_pct<mx&&r.ar<my?"o":"m";
+  AL.forEach(r=>{const c=q(r)==="s";svgEl(svg,"circle",{cx:X(r.cebo_pct),cy:Y(r.ar),r:7,fill:c?"#C8102E":"#141210",stroke:"#F3EEE3","stroke-width":2})});
+  /* etiquetas: los mas extremos en cada direccion, sin pisarse */
+  const ext=AL.slice().sort((a,b)=>(b.cebo_pct/mxX+b.ar/mxY)-(a.cebo_pct/mxX+a.ar/mxY)),lab=[...ext.slice(0,7),...ext.slice(-3),...AL.slice().sort((a,b)=>b.ar-a.ar).slice(0,2),...AL.slice().sort((a,b)=>b.cebo_pct-a.cebo_pct).slice(0,2)],caj=[];
+  [...new Set(lab)].forEach(r=>{const x=X(r.cebo_pct),y=Y(r.ar),w=r.m.length*7.6+4;for(const[dx,an]of[[11,"start"],[-11,"end"]])for(const dy of[5,-9,19]){const x0=an==="start"?x+dx:x+dx-w,b={x:x0,y:y+dy-13,w,h:16};
+   if(x0<L+2||x0+w>W-2||b.y<T||caj.some(o=>b.x<o.x+o.w&&o.x<b.x+b.w&&b.y<o.y+o.h&&o.y<b.y+b.h)||AL.some(o=>{const px=X(o.cebo_pct),py=Y(o.ar);return o!==r&&px>b.x-5&&px<b.x+b.w+5&&py>b.y-4&&py<b.y+b.h+4}))continue;
+   caj.push(b);svgEl(svg,"text",{class:"lb",x:x+dx,y:y+dy,"text-anchor":an},r.m);return}});
+  h.appendChild(svg);
+  const sen=AL.filter(r=>q(r)==="s").sort((a,b)=>(b.cebo_pct/mx+b.ar/my)-(a.cebo_pct/mx+a.ar/my)).map(r=>r.m),sob=AL.filter(r=>q(r)==="o").sort((a,b)=>(a.cebo_pct/mx+a.ar/my)-(b.cebo_pct/mx+b.ar/my)).map(r=>r.m);
+  $("p14-x").innerHTML='<p class="mini">Cómo leerlo</p><p class="txt" style="font-size:19px">Cada punto es un medio. Las líneas punteadas son las medianas y dividen el mapa en cuatro estilos.</p>'+
+   '<p class="txt" style="font-size:19px;margin-top:14px"><b class="rojo">Sensacionalistas</b> (cebo y exageración): '+esc(sen.slice(0,5).join(", "))+".</p>"+
+   '<p class="txt" style="font-size:19px;margin-top:10px"><b>Sobrios</b>: '+esc(sob.slice(0,5).join(", "))+'.</p><p class="epi" style="margin-top:14px">Medición automática con error conocido: sirve para comparar medios, no para juzgar a uno. Todo el histórico.</p>'}
+ else h.appendChild(mk("p","epi","Faltan datos para el mapa."))}
+
+/* ===== 15. Tono por medio (30 dias, reparto calibrado) ===== */
+{const L=Object.entries(AGG.med||{}).map(([m,v])=>[m,v.p["30"]]).filter(([m,p])=>p&&p.n>=60&&!OFI(m)).map(([m,p])=>[m,p.t[0]/p.n,p.n]).sort((a,b)=>b[1]-a[1]);
+ if(L.length>=10){const a=L[0],z=L[L.length-1];$("p15-t").textContent="En "+a[0]+", "+fraccion(a[1])+" notas es negativa; en "+z[0]+", "+fraccion(z[1]);
+  $("p15-m").textContent="Notas con tono negativo (≈ %), los 5 más y los 5 menos negativos";
+  barras($("p15-b"),[...L.slice(0,5).map(r=>[r[0],r[1]*100,1,"≈"+Math.round(r[1]*100)]),"sep",...L.slice(-5).map(r=>[r[0],r[1]*100,0,"≈"+Math.round(r[1]*100)])])}
+ const T=P.tono||{},tt=(T.n||0)+(T["0"]||0)+(T.p||0)||1,x=$("p15-x");
+ x.innerHTML='<p class="mini">En toda la base</p>'+[["n","Negativo","rojo"],["0","Neutro","grisc"],["p","Positivo","verde"]].map(([k,l,c])=>'<div style="display:flex;align-items:baseline;gap:16px;padding:8px 0;border-bottom:1px solid var(--filete)"><span class="cifra '+c+'" style="font-size:66px;min-width:150px">'+pc((T[k]||0)/tt)+'</span><span class="txt">'+l+"</span></div>").join("")+
+  '<p class="epi" style="margin-top:12px">'+nf(tt)+" notas; tono asignado por el modelo combinado, con las etiquetas manuales cuando existen. Barras: medios con 60 notas o más en 30 días, reparto corregido por calibración.</p>"}
+
+/* ===== 16. Transparencia ===== */
+{const L=S.filter(r=>r.nld>=40).map(r=>[r.m,r.firm/r.nld,r.nld]).sort((a,b)=>b[1]-a[1]);if(L.length){
+ const cero=L.filter(r=>r[1]===0).map(r=>r[0]),con=L.filter(r=>r[1]>0);
+ $("p16-t").textContent=L[0][0]+" firma el "+pc(L[0][1])+" de sus notas"+(cero.length?"; "+(cero.length>1?cero.slice(0,2).join(" y "):cero[0])+", ninguna":"");
+ barras($("p16-b"),con.slice(0,10).map((r,i)=>[r[0],r[1]*100,i===0?1:0,pc(r[1])]),{max:100});
+ const x=$("p16-x");x.innerHTML='<p class="mini">Sin ninguna nota firmada</p>';
+ if(cero.length){const ul=mk("ul","sumario");cero.slice(0,8).forEach(m=>{const li=mk("li","",m);li.style.cssText="font-family:var(--titular);font-weight:700;font-size:22px;padding-bottom:8px;margin-bottom:8px";ul.appendChild(li)});x.appendChild(ul)}
+ else x.appendChild(mk("p","txt","Todos los medios firman al menos alguna nota."));
+ x.appendChild(mk("p","epi","Medios con 40 notas o más con datos estructurados; todo el histórico."))}}
+
+/* ===== 17. Una noticia, muchos encuadres ===== */
+{const h=$("p17-l");if(CR[0]){const its=unoPorMedio(CR[0]),t0=its[0].ts,tl=its[its.length-1].ts,cnt={n:0,"0":0,p:0};its.forEach(x=>cnt[tn(x)]++);const ncb=its.filter(x=>x.cr.length).length;
+ $("p17-baj").innerHTML="<b>"+its.length+" medios</b> contaron la misma historia. La publicó primero <b>"+esc(its[0].m)+"</b>"+(t0?" a las "+hhmm(t0):"")+(tl>t0?"; el último llegó "+dur(tl-t0)+" después":"")+". Títulos: "+cnt.n+" negativos, "+cnt["0"]+" neutros, "+cnt.p+" positivos; "+ncb+" con recursos de cebo, marcados en rojo.";
+ const vis=its.length>6?[...its.slice(0,5),its[its.length-1]]:its;
+ vis.forEach((x,k)=>{const d=mk("div","linea"+(k===0?" pri":""));const t=tn(x),tt=mk("div","tt");tt.innerHTML=marcar(x.t.length>150?x.t.slice(0,148)+"…":x.t);
+  const md=mk("div","md",x.m);md.appendChild(mk("small","",k===0?"primero":"+"+dur(x.ts-t0)));
+  d.append(mk("time","",hhmm(x.ts)),md,tt);const tnn=mk("span","tn");tnn.innerHTML='<i style="background:'+COLT[t]+'"></i>'+TONO[t];d.appendChild(tnn);h.appendChild(d)});
+ if(its.length>vis.length){const n=mk("p","epi","… y "+(its.length-vis.length)+" medios más en el medio.");n.style.marginTop="6px";h.insertBefore(n,h.lastChild)}}
+ barras($("p17-p"),PRIM.slice(0,6).map((r,i)=>[r[0],r[1],i===0?1:0]),{ancho:70})}
+
+/* ===== 18. Matriz tono x figura (7 dias) ===== */
+{const MED=AGG.med||{},tot={};Object.values(MED).forEach(v=>Object.entries(v.p["7"].en||{}).forEach(([e,z])=>{const t=tot[e]||(tot[e]=[0,0]);t[0]+=z[0];t[1]+=z[1]}));
+ const ents=Object.entries(tot).filter(([e,z])=>z[0]>=8).sort((a,b)=>b[1][0]-a[1][0]).slice(0,6).map(x=>x[0]);
+ const L=Object.keys(MED).map(m=>[m,ents.reduce((s,e)=>s+((MED[m].p["7"].en[e]||[0])[0]>=3?(MED[m].p["7"].en[e][0]):0),0)]).filter(r=>r[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,8).map(r=>r[0]);
+ const h=$("p18");if(!ents.length||!L.length)h.appendChild(mk("p","epi","Todavía no hay suficientes menciones para comparar."));else{
+ h.className="matriz";h.style.gridTemplateColumns="210px repeat("+ents.length+",1fr)";h.appendChild(mk("div","lab hd",""));
+ ents.forEach(e=>{const c=mk("div","hd",e);h.appendChild(c)});
+ L.forEach(m=>{h.appendChild(mk("div","lab",m));ents.forEach(e=>{const z=MED[m].p["7"].en[e]||[0,0],c=mk("div");if(z[0]<3){c.textContent="·";c.style.color="var(--neutro)";h.appendChild(c);return}
+  const pn=z[1]/z[0],avg=tot[e][1]/tot[e][0],d=pn-avg,k=Math.min(1,Math.abs(d)/.3);c.innerHTML=Math.round(pn*100)+"% <small>("+z[0]+")</small>";
+  c.style.background=Math.abs(d)<.03?"transparent":"color-mix(in srgb, "+(d>0?"#C8102E":"#2E6B3F")+" "+Math.round(10+k*38)+"%, #F3EEE3)";h.appendChild(c)})});
+ const n=mk("p","epi","Solo celdas con 3 notas o más; entre paréntesis, la cantidad de notas. Con pocos días los valores son ilustrativos: muestran el método.");n.style.cssText="grid-column:1/-1;text-align:left;margin-top:8px;padding:0";h.appendChild(n)}}
+
+/* ===== 19. Mapa de medios: grafo, comunidades por propagacion de etiquetas, disposicion por fuerzas (igual que el tablero) ===== */
+{const W=780,H=470,st={},par={};GR.forEach(g=>{const ms=[...new Set(g.map(x=>x.m))].sort();ms.forEach(m=>st[m]=(st[m]||0)+1);
+  for(let i=0;i<ms.length;i++)for(let j=i+1;j<ms.length;j++){const k=ms[i]+"\t"+ms[j];par[k]=(par[k]||0)+1}});
+ const asoc=Object.entries(par).map(([k,w])=>{const[a,b]=k.split("\t");return{a,b,w,s:w/Math.min(st[a],st[b])}}).filter(e=>e.w>=2);
+ const keep=new Map();Object.keys(st).forEach(m=>asoc.filter(e=>e.a===m||e.b===m).sort((x,y)=>y.s-x.s).slice(0,3).forEach(e=>keep.set(e.a+"\t"+e.b,e)));
+ const E=[...keep.values()],N=[...new Set(E.flatMap(e=>[e.a,e.b]))].sort();
+ if(N.length<3)$("p19-g").appendChild(mk("p","epi","Todavía no hay suficientes historias compartidas para armar el mapa."));else{
+ const vec={};N.forEach(m=>vec[m]=[]);E.forEach(e=>{vec[e.a].push([e.b,e.s]);vec[e.b].push([e.a,e.s])});
+ const lab={};N.forEach((m,i)=>lab[m]=i);for(let it=0;it<30;it++){let cambio=false;N.forEach(m=>{const sc={};vec[m].forEach(([o,w])=>sc[lab[o]]=(sc[lab[o]]||0)+w);
+  const best=Object.entries(sc).sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0];if(best&&+best[0]!==lab[m]&&best[1]>(sc[lab[m]]||0)){lab[m]=+best[0];cambio=true}});if(!cambio)break}
+ const gr={};N.forEach(m=>(gr[lab[m]]=gr[lab[m]]||[]).push(m));const G=Object.values(gr).sort((a,b)=>b.length-a.length);
+ /* comunidades: rojo lleno, tinta lleno, tinta hueco; el resto gris (forma + color, no solo color) */
+ const EST=[{fill:"#C8102E",stroke:"#F3EEE3",sw:2},{fill:"#141210",stroke:"#F3EEE3",sw:2},{fill:"#F3EEE3",stroke:"#141210",sw:3}],OTRO={fill:"#9A948A",stroke:"#F3EEE3",sw:2};
+ const est={};G.forEach((g,i)=>g.forEach(m=>est[m]=i<3&&g.length>=3?EST[i]:OTRO));
+ const Pn={};N.forEach((m,i)=>{const a=i/N.length*2*Math.PI;Pn[m]={x:W/2+200*Math.cos(a),y:H/2+160*Math.sin(a),vx:0,vy:0}});
+ const R=m=>5+Math.sqrt(st[m])*1.5,k=Math.sqrt(W*H/N.length)*.42;
+ function paso(temp){N.forEach(a=>{let fx=0,fy=0;N.forEach(b=>{if(a===b)return;const dx=Pn[a].x-Pn[b].x,dy=Pn[a].y-Pn[b].y,d=Math.max(1,Math.hypot(dx,dy));fx+=dx/d*k*k/d;fy+=dy/d*k*k/d});Pn[a].vx=fx;Pn[a].vy=fy});
+  E.forEach(e=>{const dx=Pn[e.a].x-Pn[e.b].x,dy=Pn[e.a].y-Pn[e.b].y,d=Math.max(1,Math.hypot(dx,dy)),f=d*d/k*(.3+e.s);Pn[e.a].vx-=dx/d*f;Pn[e.a].vy-=dy/d*f;Pn[e.b].vx+=dx/d*f;Pn[e.b].vy+=dy/d*f});
+  N.forEach(m=>{const p=Pn[m];p.vx+=(W/2-p.x)*.12;p.vy+=(H/2-p.y)*.14;const v=Math.hypot(p.vx,p.vy)||1,mv=Math.min(v,temp);p.x=Math.min(W-60,Math.max(60,p.x+p.vx/v*mv));p.y=Math.min(H-24,Math.max(30,p.y+p.vy/v*mv))})}
+ for(let i=0;i<300;i++)paso(30*(1-i/300)+1);
+ const svg=svgEl(null,"svg",{viewBox:"0 0 "+W+" "+H,class:"red",role:"img","aria-label":"Grafo de medios que cubren las mismas historias"});svg.style.cssText="width:100%;display:block";
+ E.forEach(e=>svgEl(svg,"line",{x1:Pn[e.a].x.toFixed(1),y1:Pn[e.a].y.toFixed(1),x2:Pn[e.b].x.toFixed(1),y2:Pn[e.b].y.toFixed(1),"stroke-width":(.7+e.s*3).toFixed(1)}));
+ N.forEach(m=>{const s=est[m];svgEl(svg,"circle",{cx:Pn[m].x.toFixed(1),cy:Pn[m].y.toFixed(1),r:R(m).toFixed(1),fill:s.fill,stroke:s.stroke,"stroke-width":s.sw})});
+ const caj=[],toca=(b,o)=>{const qx=Math.max(b.x,Math.min(Pn[o].x,b.x+b.w)),qy=Math.max(b.y,Math.min(Pn[o].y,b.y+b.h));return Math.hypot(qx-Pn[o].x,qy-Pn[o].y)<R(o)+2};
+ N.slice().sort((a,b)=>st[b]-st[a]).slice(0,26).forEach(m=>{const w=m.length*7.3,px=Pn[m].x,py=Pn[m].y,r=R(m);
+  /* arriba, abajo, a la derecha o a la izquierda del punto: la primera posicion que no pisa otra etiqueta ni otro punto */
+  for(const[x,y,an]of[[px-w/2,py-r-19,"middle"],[px-w/2,py+r+3,"middle"],[px+r+4,py-8,"start"],[px-r-4-w,py-8,"end"]]){const b={x,y,w,h:16};
+   if(caj.some(o=>b.x<o.x+o.w+4&&o.x<b.x+b.w+4&&b.y<o.y+o.h&&o.y<b.y+b.h)||N.some(o=>toca(b,o))||x<0||x+w>W||y<0||y+16>H)continue;caj.push(b);
+   svgEl(svg,"text",{x:(an==="middle"?px:an==="start"?x:x+w).toFixed(1),y:(y+13).toFixed(1),"text-anchor":an},m);return}});
+ $("p19-g").appendChild(svg);
+ const x=$("p19-x");x.innerHTML='<p class="mini">Comunidades detectadas</p>';
+ const ico=s=>'<svg viewBox="0 0 20 20" width="20" height="20"><circle cx="10" cy="10" r="7" fill="'+s.fill+'" stroke="'+(s===EST[2]?"#141210":"none")+'" stroke-width="3"/></svg>';
+ G.forEach((g,i)=>{if(i>=3||g.length<3)return;const d=mk("div","com");d.innerHTML=ico(EST[i])+"<span><b>Comunidad "+(i+1)+":</b> "+esc(g.join(", "))+"</span>";x.appendChild(d)});
+ const resto=G.filter((g,i)=>i>=3||g.length<3).flat();if(resto.length){const d=mk("div","com");d.innerHTML=ico(OTRO)+"<span><b>Otros "+resto.length+" medios</b>, sin una comunidad propia</span>";x.appendChild(d)}
+ x.appendChild(mk("p","epi","Una línea une a dos medios que cubren las mismas historias (48 h); cada medio conserva sus 3 vínculos más fuertes. Tamaño: historias compartidas."))}}
+
+/* ===== 20. Clima mediatico y dolar: dos graficos con el mismo eje de dias (nunca dos escalas en un grafico) ===== */
+{const DOL=AGG.dolar||{},full=Object.keys(AGG.dn).filter(d=>AGG.dn[d]>=50&&d!==AGG.hoy).sort(),dias=Object.keys(DOL).filter(d=>DOL[d].blue).sort().slice(-21),host=$("p20-g"),x=$("p20-x");
+ if(!dias.length)host.appendChild(mk("p","epi","Sin datos del dólar todavía."));else{
+ const W=780,L=60,Rr=78,H1=170,G=58,H=34+H1+G+H1+30,xx=i=>L+(dias.length<2?0:i/(dias.length-1)*(W-L-Rr));
+ const neg=dias.map(d=>full.includes(d)?AGG.dneg[d]/AGG.dn[d]*100:null),blue=dias.map(d=>DOL[d].blue);
+ const svg=svgEl(null,"svg",{viewBox:"0 0 "+W+" "+H,role:"img","aria-label":"Porcentaje de notas negativas y dólar blue por día"});svg.style.cssText="width:100%;display:block";
+ function panel(vals,y0,h,color,fv,titulo){const ok=vals.filter(v=>v!=null);svgEl(svg,"text",{x:L-50,y:y0-12,"font-size":16,fill:"#141210","font-weight":600,"letter-spacing":"1"},titulo);
+  if(!ok.length){svgEl(svg,"text",{x:L,y:y0+h/2,"font-size":15,fill:"#5E5A54"},"Sin días completos de notas todavía");return}
+  let lo=Math.min(...ok),hi=Math.max(...ok);const pad=(hi-lo)*.15||Math.max(1,hi*.02);lo-=pad;hi+=pad;const y=v=>y0+h-(v-lo)/(hi-lo)*h;
+  [lo+pad,hi-pad].forEach(v=>{svgEl(svg,"line",{x1:L,x2:W-Rr,y1:y(v),y2:y(v),stroke:"#C9C0AE"});svgEl(svg,"text",{x:L-8,y:y(v)+5,"text-anchor":"end","font-size":14,fill:"#5E5A54"},fv(v))});
+  let d="",pv=false;vals.forEach((v,i)=>{if(v==null){pv=false;return}d+=(pv?"L":"M")+xx(i).toFixed(1)+" "+y(v).toFixed(1);pv=true});
+  svgEl(svg,"path",{d,fill:"none",stroke:color,"stroke-width":2.5,"stroke-linejoin":"round","stroke-linecap":"round"});
+  const li=vals.map((v,i)=>v!=null?i:-1).filter(i=>i>=0).pop();vals.forEach((v,i)=>{if(v!=null&&(ok.length<12||i===li))svgEl(svg,"circle",{cx:xx(i),cy:y(v),r:4,fill:color,stroke:"#F3EEE3","stroke-width":2})});
+  svgEl(svg,"text",{x:xx(li)+9,y:y(vals[li])+5,"font-size":15,fill:color,"font-weight":600},fv(vals[li]))}
+ panel(neg,34,H1,"#C8102E",v=>Math.round(v)+"%","% DE NOTAS NEGATIVAS POR DÍA");panel(blue,34+H1+G,H1,"#141210",v=>"$"+nf(v),"DÓLAR BLUE (VENTA)");
+ const kk=dias.length<=10?1:dias.length<=16?2:3;dias.forEach((d,i)=>{if(i%kk===0||i===dias.length-1)svgEl(svg,"text",{x:xx(i),y:H-6,"text-anchor":"middle","font-size":14,fill:"#5E5A54"},+d.slice(8,10)+"/"+(+d.slice(5,7)))});
+ host.appendChild(svg);
+ const pares=[];for(let i=1;i<dias.length;i++)if(neg[i]!=null&&blue[i-1])pares.push([neg[i],(blue[i]/blue[i-1]-1)*100]);
+ const v0=blue[0],v1=blue[blue.length-1],vp=(v1/v0-1)*100;let s='<p class="mini">Lectura</p><p class="txt">En el período, el blue pasó de $'+nf(v0)+" a <b>$"+nf(v1)+"</b> ("+(vp>=0?"+":"")+vp.toFixed(1).replace(".",",")+"%).</p>";
+ if(pares.length>=8){const n=pares.length,ma=pares.reduce((s2,p)=>s2+p[0],0)/n,mb=pares.reduce((s2,p)=>s2+p[1],0)/n,cov=pares.reduce((s2,p)=>s2+(p[0]-ma)*(p[1]-mb),0),va=pares.reduce((s2,p)=>s2+(p[0]-ma)**2,0),vb=pares.reduce((s2,p)=>s2+(p[1]-mb)**2,0),r=cov/Math.sqrt(va*vb||1);
+  s+='<div style="border-top:1px solid var(--filete);margin-top:16px;padding-top:12px"><div class="cifra rojo" style="font-size:80px">r = '+r.toFixed(2).replace(".",",")+'</div><p class="txt" style="font-size:19px;margin-top:6px">entre el % de notas negativas y la variación diaria del blue ('+n+" días): "+(Math.abs(r)<.3?"sin relación clara":Math.abs(r)<.6?"relación moderada":"relación fuerte")+".</p></div>"}
+ else s+='<p class="txt" style="font-size:19px;margin-top:14px">Para medir si el clima mediático acompaña al dólar hacen falta al menos 8 días completos de notas (hoy hay '+pares.length+"). La correlación aparece sola cuando se junten.</p>";
+ x.innerHTML=s+'<p class="epi" style="margin-top:14px">Correlación no implica causalidad. Dólar: argentinadatos.com y dolarapi.com.</p>'}}
+
+/* ===== 21. Demo SQL ===== */
+{const q="SELECT medio,\n  ROUND(100*AVG(cebo>=1), 1) AS cebo,\n  ROUND(100*AVG(tono='n'), 1) AS neg\nFROM notas\nGROUP BY medio\nHAVING COUNT(*) >= 50\nORDER BY cebo DESC;";
+ $("p21-q").innerHTML=esc(q).replace(/\b(SELECT|FROM|GROUP BY|HAVING|ORDER BY|AS|DESC|ROUND|AVG|COUNT)\b/g,'<span class="k">$1</span>');
+ const base=location.protocol.startsWith("http")?new URL("explorar.db",location.href).href:"https://miguegarrone-blip.github.io/Web-Mining/explorar.db";
+ $("p21-sql").href="https://lite.datasette.io/?url="+encodeURIComponent(base)+"#/explorar?sql="+encodeURIComponent(q.replace(/\n\s*/g," "));
+ if(location.protocol.startsWith("http"))$("p21-tab").href=new URL("./",location.href).href}
+
+/* ===== notas del orador ===== */
+const NOTAS=[
+"Presentación. La pregunta del título es el hilo de toda la charla: cada día los medios cuentan los mismos hechos con énfasis distintos, y queremos medirlo de forma automática. Esta presentación es una página web que se regenera con cada corrida del monitor: los números y los recortes que van a ver son de hoy.",
+"Nadie puede leer miles de titulares por día. Acá está la historia que más medios cubrieron en las últimas 48 horas, contada por cada uno con su hora. Las preguntas interesantes no están en una nota sino en el conjunto: estas cinco guían todo el trabajo.",
+"Cuatro números para fijar la escala. Todo corre en GitHub Actions sin intervención; el tablero, la base y el código son públicos. El número en rojo es en vivo: es lo que hay en la base en este momento.",
+"Recorrer el flujo de izquierda a derecha. Remarcar que el paso 3, entrar a cada nota, es lo que convierte esto en web mining real y no solo en lectura de RSS. La automatización también publica esta presentación.",
+"Las APIs de noticias limitan pedidos y no cubren medios regionales; un trabajo de 2025 terminó en NewsAPI. Nosotros combinamos RSS propio con Google News por sitio. El problema de Google News: da una URL de redirección y ninguna bajada; lo resolvemos en la etapa de scraping.",
+"Distinción de clase: páginas de listado y de detalle. Los feeds son listados; cada nota es una página de detalle. Decodificamos el enlace de Google News, bajamos el HTML y leemos la meta og:description (la bajada) y el bloque JSON-LD NewsArticle que los diarios incrustan para Google.",
+"Ninguno de los trabajos de 2025 trató este punto. Respetamos robots.txt, nos identificamos, limitamos la carga y no guardamos el texto completo de las notas: solo título, bajada y metadatos, siempre enlazando al original.",
+"Una nota real de las últimas horas, desarmada: qué tema, qué figuras, qué tono y qué recursos de cebo detecta el sistema. Bolsa de palabras y modelo vectorial como base; el Naive Bayes aprende de lo que las reglas clasificaron y solo asigna tema si está seguro. El tono lo vemos en la próxima.",
+"Comparamos 8 enfoques sobre 340 titulares etiquetados a mano, con validación cruzada de 5 pliegues. Un BERT entrenado con tuits (pysentimiento) rinde peor que el modelo simple: mide la emoción de quien escribe, no si el hecho es bueno o malo. La combinación de rasgos propios con XLM-RoBERTa gana, y sobre todo detecta muchas más noticias negativas.",
+"Tres técnicas para no depender solo de listas fijas. NER con spaCy descubre figuras nuevas (la lista es de hoy). Los embeddings encuentran la misma noticia contada con otras palabras. El aprendizaje activo eligió los 60 titulares donde el modelo dudaba: el acierto se mantuvo en 76%; en esos casos el modelo coincidía con nosotros solo en el 42% y, reentrenado, acierta el 37%, casi el azar. Conclusión honesta: eran titulares ambiguos, no errores aprendibles.",
+"El termómetro es el porcentaje estimado de notas negativas de las últimas 24 horas, de 0 a 100, con bandas y la comparación contra los días anteriores. El resumen lo arman plantillas a partir de los datos: tema más cubierto, noticia más compartida y quién la publicó primero, figura más mencionada, medio más y menos negativo. No usa un modelo de lenguaje: es reproducible y gratis.",
+"Exageración: comparamos el tono del título con el de la bajada, que es el resumen escrito por el propio medio. Cebo: rasgos de clickbait, marcados en rojo como haría un corrector. Transparencia: notas firmadas por una persona según el JSON-LD; «Redacción» no cuenta.",
+"Porcentaje de títulos con al menos un recurso de cebo, todo el histórico y medios con 40 notas o más. El titular de esta página se escribe solo con los dos primeros del ranking. A la derecha, los más sobrios.",
+"Cada punto es un medio. Eje horizontal: cebo. Eje vertical: exageración respecto de la propia bajada. Las líneas son las medianas y dividen en cuatro estilos. Es una medición automática con error conocido: sirve para comparar medios, no para juzgar uno.",
+"Proporción estimada de notas negativas por medio en los últimos 30 días, corregida por la calibración del modelo. Los 5 más negativos y los 5 menos. El tono mide el hecho, no la postura del medio: un medio con más policiales tiene más negativas.",
+"Proporción de notas firmadas por una persona, según el autor declarado en el JSON-LD de cada nota. Medios con 40 notas o más con datos estructurados. A la derecha, los que no firman ninguna.",
+"El sistema agrupa las notas que cuentan lo mismo (TF-IDF y similitud coseno) y muestra el título de cada medio en orden de publicación, con su tono y sus recursos de cebo. Es la misma historia de la página 2. Con esos grupos también medimos quién llega primero.",
+"Matriz medio por figura: porcentaje de notas negativas cuando el medio menciona a esa figura, últimos 7 días. Rojo: más negativo que el promedio de los medios; verde: menos. Solo celdas con 3 notas o más. Con pocos días los valores son ilustrativos: muestran el método.",
+"Grafo de medios: una arista une a dos medios que cubren las mismas historias, ponderada por historias compartidas sobre las del medio más chico; cada medio conserva sus 3 vínculos más fuertes. Las comunidades salen de propagación de etiquetas y el dibujo es una disposición por fuerzas. Es la minería de estructura de la teoría, aplicada a la cobertura y no a los links.",
+"Dos gráficos con el mismo eje de días, nunca dos escalas en un mismo gráfico. Arriba, el % de notas negativas de cada día completo; abajo, el dólar blue. La correlación aparece cuando hay al menos 8 días con ambos datos, y correlación no implica causalidad.",
+"Mostrar el tablero en vivo: Resumen, Titulares (con buscador por significado), Monitor, Cómo titulan y Salud de datos. Después, el botón Correr la consulta abre Datasette Lite con esta consulta ya cargada sobre explorar.db: SQLite en el navegador con WebAssembly. Proponer una consulta de la clase.",
+"Sin servidores ni costos: todo corre en GitHub. SQLite simplifica la operación y se puede abrir en el navegador. Esta misma presentación es HTML, CSS y JavaScript sin frameworks, generada por el pipeline.",
+"Cierre con la invitación a probarlo en vivo desde el celular. Preguntas."];
+
+/* ===== cabecera y pie de las paginas interiores ===== */
+const PAGS=[...document.querySelectorAll(".pag")],NP=PAGS.length;
+{const f=new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:TZ});
+ PAGS.forEach((p,i)=>{if(i===0)return;const c=mk("header","cab");c.innerHTML='<span class="marca">La Tapa</span><span class="ed">EDICIÓN ESPECIAL · WEB MINING · GRUPO 3</span><span class="fe">'+esc(f.charAt(0).toUpperCase()+f.slice(1))+"</span>";p.prepend(c);
+  const pie=mk("footer","pie");pie.innerHTML="<span><b>La Tapa</b> · Pág. "+(i+1)+" · "+esc(p.dataset.sec)+"</span><span>Datos actualizados: "+esc(P.now)+"</span>";p.appendChild(pie)})}
+
+/* ===== navegacion ===== */
+let cur=0;
+/* numeros que cuentan al entrar a la pagina; con temporizador (no requestAnimationFrame) para que siempre terminen en el valor final */
+function contar(p){if(QUIETO)return;p.querySelectorAll(".cuenta").forEach(e=>{const v=+e.dataset.v,t0=Date.now();clearInterval(e._t);e.textContent="0";
+ e._t=setInterval(()=>{const u=Math.min(1,(Date.now()-t0)/1100),k=1-Math.pow(1-u,3);e.textContent=nf(v*k);if(u>=1)clearInterval(e._t)},30)})}
+addEventListener("beforeprint",()=>document.querySelectorAll(".cuenta").forEach(e=>{clearInterval(e._t);e.textContent=nf(+e.dataset.v)}));
+function ir(n){n=Math.max(0,Math.min(NP-1,n));const cambio=n!==cur||!PAGS[n].classList.contains("activa");PAGS.forEach((p,i)=>{p.classList.toggle("activa",i===n);p.setAttribute("aria-hidden",i!==n)});cur=n;
+ if(cambio)contar(PAGS[n]);if(location.hash!=="#"+(n+1))history.replaceState(null,"","#"+(n+1));$("prog").style.width=((n+1)/NP*100)+"%";
+ document.title="La Tapa · "+(n+1)+"/"+NP;$("n-h").textContent="Notas del orador · "+(n+1)+"/"+NP+" · "+PAGS[n].dataset.sec;$("n-s").textContent=n<NP-1?"Próxima: "+PAGS[n+1].dataset.sec:"Última página";$("n-t").textContent=NOTAS[n]||""}
+const desdeHash=()=>{const n=parseInt(location.hash.slice(1),10);return isNaN(n)?0:n-1};
+window.addEventListener("hashchange",()=>ir(desdeHash()));
+function escala(){const s=Math.min(innerWidth/1280,innerHeight/720);document.documentElement.style.setProperty("--s",s)}
+addEventListener("resize",escala);escala();
+document.addEventListener("keydown",e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key;
+ if(["ArrowRight","ArrowDown","PageDown"].includes(k)||(k===" "&&!e.shiftKey)){e.preventDefault();ir(cur+1)}
+ else if(["ArrowLeft","ArrowUp","PageUp"].includes(k)||(k===" "&&e.shiftKey)){e.preventDefault();ir(cur-1)}
+ else if(k==="Home"){e.preventDefault();ir(0)}else if(k==="End"){e.preventDefault();ir(NP-1)}
+ else if(k==="f"||k==="F"){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{})}
+ else if(k==="n"||k==="N"){$("notas").hidden=!$("notas").hidden}
+ else if(k==="Escape")$("notas").hidden=true});
+/* clic o toque en los bordes; deslizar en el celular */
+let x0=null,y0=null;
+$("mesa").addEventListener("pointerdown",e=>{x0=e.clientX;y0=e.clientY});
+$("mesa").addEventListener("pointerup",e=>{if(x0==null)return;const dx=e.clientX-x0,dy=e.clientY-y0;x0=null;
+ if(e.target.closest("a,button"))return;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){ir(cur+(dx<0?1:-1));return}
+ if(Math.abs(dx)<10&&Math.abs(dy)<10){const f=e.clientX/innerWidth;if(f<.3)ir(cur-1);else if(f>.7)ir(cur+1)}});
+setTimeout(()=>$("ayuda").classList.add("fuera"),4500);
+ir(desdeHash());
+document.fonts.ready.then(biromes);addEventListener("load",biromes);
+</script>
+</body>
+</html>

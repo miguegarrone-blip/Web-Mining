@@ -503,3 +503,12 @@ LX.commit(); LX.execute("DETACH c"); LX.execute("VACUUM"); LX.close()
 print(f"explorar.db: {os.path.getsize(EXP) / 1e6:.1f} MB ({DIAS_EXPLORAR} dias)")
 print("corrida", run, "| validas", len(items), "| nuevas", len(nuevos), "| duplicadas", dups, "| cuarentena", cuarentena, "| acuerdo tono", AG)
 print("fuentes caidas/degradadas:", [(r["m"], r["estado"]) for r in SAL if r["estado"] != "ok"])
+
+# ---------- presentacion "La Tapa" (presentacion.html): diapositivas con los mismos datos, ver presentacion.py ----------
+# va al final y nunca frena la corrida: si falla, el tablero y las bases ya quedaron escritos
+try:
+    import presentacion
+    tam = presentacion.generar(DB, F, pag, AGG, HEALTH, CAL, os.path.join(BASE, "tpl_presentacion.html"), os.path.join(OUT, "presentacion.html"), now)
+    print(f"presentacion.html: {tam / 1e6:.2f} MB")
+except Exception as e:
+    print("presentacion: no se pudo generar (", str(e)[:150], ")")
