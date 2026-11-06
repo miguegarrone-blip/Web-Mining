@@ -24,6 +24,8 @@ const THEME = {
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE"; // 13.33 x 7.5
 pres.title = "Monitor de medios argentinos";
+pres.author = "Grupo 3 - Ceriotti, Garrone, Tamplin, Terán";
+pres.subject = "Web Mining - Maestría en Ciencia de Datos - Universidad Austral, Sede Rosario";
 pres.theme = { headFontFace: THEME.headFontFace, bodyFontFace: THEME.bodyFontFace };
 const C = pres.SchemeColor;
 const W = 13.333, M = 0.6;
@@ -43,7 +45,7 @@ pres.defineSlideMaster({
   objects: [
     { placeholder: { options: { name: "kicker", type: "body", x: M, y: 0.4, w: 9, h: 0.35, fontSize: 12, bold: true, color: C.accent1, charSpacing: 2, margin: 0 }, text: "" } },
     { placeholder: { options: { name: "title", type: "title", x: M, y: 0.75, w: W - 2 * M, h: 1.15, fontSize: 32, bold: true, color: C.text1, fontFace: "Cambria", valign: "top", align: "left", margin: 0 }, text: "" } },
-    { text: { text: "Monitor de medios argentinos · Web Mining", options: { x: M, y: 7.0, w: 6, h: 0.3, fontSize: 10, color: C.accent3, margin: 0 } } },
+    { text: { text: "Monitor de medios argentinos · Web Mining · Grupo 3", options: { x: M, y: 7.0, w: 7, h: 0.3, fontSize: 10, color: C.accent3, margin: 0 } } },
   ],
   slideNumber: { x: W - M - 0.6, y: 7.0, w: 0.6, h: 0.3, fontSize: 10, color: HEX.gris, align: "right" },
 });
@@ -98,10 +100,11 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   // ===== 1. Portada =====
   pres.addSection({ title: "Apertura" });
   let s = pres.addSlide({ masterName: "PORTADA", sectionTitle: "Apertura" });
-  s.addText("WEB MINING · MAESTRÍA EN CIENCIA DE DATOS", { placeholder: "kicker" });
+  s.addText("UNIVERSIDAD AUSTRAL · SEDE ROSARIO · WEB MINING", { placeholder: "kicker" });
   s.addText("¿Cómo nos cuentan las noticias?", { placeholder: "title" });
   s.addText("Un monitor automático de 46 medios argentinos: agenda, tono y estilo de titulación", { placeholder: "body" });
-  T(s, "Integrantes: [completar]   ·   Octubre 2026", { x: M, y: 6.6, w: 10, h: 0.4, fontSize: 14, color: HEX.neutro });
+  T(s, [{ text: "Grupo 3: ", options: { bold: true, color: HEX.papel } }, { text: "Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán" }], { x: M, y: 5.95, w: 12, h: 0.4, fontSize: 16, color: HEX.neutro });
+  T(s, "Docentes: Enrique Fernández · Héctor E. Giorgiutti   ·   Maestría en Ciencia de Datos   ·   2026", { x: M, y: 6.45, w: 12, h: 0.4, fontSize: 14, color: HEX.neutro });
   s.addNotes("Presentación. La pregunta del título es el hilo: cada día los medios cuentan los mismos hechos con énfasis distintos, y queremos medirlo de forma automática.");
 
   // ===== 2. Problema =====
@@ -395,6 +398,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s.addText("Escaneá el código para abrir el tablero y consultar la base con SQL", { placeholder: "body" });
   s.addImage({ path: IMG("qr-tablero.png"), x: 9.6, y: 1.6, w: 3.0, h: 3.0, objectName: "qr" });
   T(s, "miguegarrone-blip.github.io/Web-Mining", { x: 8.6, y: 4.75, w: 5.0, h: 0.4, fontSize: 15, color: HEX.papel, align: "center" });
+  T(s, "Grupo 3 · Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán", { x: M, y: 6.15, w: 12, h: 0.4, fontSize: 14, color: HEX.neutro });
   T(s, "Código: github.com/miguegarrone-blip/Web-Mining", { x: M, y: 6.6, w: 10, h: 0.4, fontSize: 14, color: HEX.neutro });
   s.addNotes("Cierre con la invitación a probarlo en vivo. Preguntas.");
 

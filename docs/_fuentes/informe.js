@@ -78,13 +78,15 @@ const LINK = (texto, url) => new Paragraph({ children: [new ExternalHyperlink({ 
 // ---------- contenido ----------
 const portada = [
   new Paragraph({ children: [], spacing: { before: 1800 } }),
-  new Paragraph({ children: [new TextRun({ text: "MAESTRÍA EN CIENCIA DE DATOS · WEB MINING", color: GRIS, size: 20 })], spacing: { after: 240 } }),
+  new Paragraph({ children: [new TextRun({ text: "UNIVERSIDAD AUSTRAL · SEDE ROSARIO · MAESTRÍA EN CIENCIA DE DATOS", color: GRIS, size: 20 })], spacing: { after: 60 } }),
+  new Paragraph({ children: [new TextRun({ text: "WEB MINING · GRUPO 3", color: GRIS, size: 20, bold: true })], spacing: { after: 240 } }),
   new Paragraph({ children: [new TextRun({ text: "Monitor de medios argentinos", bold: true, size: 56, color: TINTA })], spacing: { after: 120 } }),
   new Paragraph({ children: [new TextRun({ text: "Web mining, análisis de sentimiento y estilo de titulación en 46 medios", size: 30, color: AZUL })], spacing: { after: 600 } }),
   new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: AZUL, space: 4 } }, children: [], spacing: { after: 300 } }),
-  P("**Integrantes:** [completar]"),
-  P("**Docentes:** [completar]"),
-  P("**Fecha:** octubre de 2026"),
+  P("**Materia:** Web Mining"),
+  P("**Docentes:** Enrique Fernández · Héctor E. Giorgiutti"),
+  P("**Grupo 3:** Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán"),
+  P("**Año:** 2026 · Universidad Austral, Sede Rosario"),
   P("**Tablero en línea:** https://miguegarrone-blip.github.io/Web-Mining/"),
   P("**Repositorio:** https://github.com/miguegarrone-blip/Web-Mining"),
   new Paragraph({ children: [new PageBreak()] }),
@@ -393,7 +395,7 @@ const cuerpo = [
 ];
 
 const doc = new Document({
-  creator: "Monitor de medios", title: "Monitor de medios argentinos - TP Web Mining",
+  creator: "Grupo 3 - Web Mining (Ceriotti, Garrone, Tamplin, Terán)", title: "Monitor de medios argentinos - TP Web Mining",
   features: { updateFields: true },
   styles: {
     default: { document: { run: { font: "Calibri", size: 22, color: TINTA } } },
@@ -416,7 +418,7 @@ const doc = new Document({
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: MARGEN, bottom: MARGEN, left: MARGEN, right: MARGEN, footer: 500 } } },
     footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [
-      new TextRun({ text: "Monitor de medios argentinos · ", color: GRIS, size: 18 }),
+      new TextRun({ text: "Monitor de medios argentinos · Web Mining · Grupo 3 · ", color: GRIS, size: 18 }),
       new TextRun({ children: [PageNumber.CURRENT], color: GRIS, size: 18 })] })] }) },
     children: [...portada, ...cuerpo],
   }],

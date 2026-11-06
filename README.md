@@ -4,7 +4,9 @@
 46 medios argentinos, entra a cada nota, clasifica de qué habla y con qué tono, y mide **cómo
 titula cada medio**: cuánto exagera, cuánto busca el clic y cuánto firma lo que publica.
 
-Trabajo práctico de **Web Mining** · Maestría en Ciencia de Datos.
+Trabajo práctico de **Web Mining** · Maestría en Ciencia de Datos · Universidad Austral, Sede Rosario · 2026.
+
+**Grupo 3:** Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán · **Docentes:** Enrique Fernández · Héctor E. Giorgiutti
 
 **[Abrir el tablero](https://miguegarrone-blip.github.io/Web-Mining/)** · Informe del TP: [PDF](docs/informe-tp.pdf) / [Word](docs/informe-tp.docx) · Presentación: [PDF](docs/presentacion-tp.pdf) / [PowerPoint](docs/presentacion-tp.pptx)
 
