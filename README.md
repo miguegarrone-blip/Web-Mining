@@ -39,7 +39,7 @@ flowchart LR
     A["Feeds<br/>RSS propio y<br/>Google News por sitio"] --> B["Validación y<br/>deduplicación"]
     B --> C["Scraping de cada nota<br/>bajada + JSON-LD"]
     C --> D["Lenguaje<br/>tema · entidades ·<br/>tono con BERT · cebo"]
-    D --> E[("SQLite<br/>30 días")]
+    D --> E[("SQLite<br/>21 días")]
     E --> F["Tablero web<br/>+ SQL en el navegador"]
 ```
 
@@ -52,7 +52,7 @@ flowchart LR
    - **Tono:** si el hecho es bueno o malo para los involucrados. Combina palabras clave con **XLM-RoBERTa** (BERT).
    - **Cebo:** puntaje de clickbait de cada título.
    - **Embeddings de oraciones** (MiniLM multilingüe): para encontrar notas parecidas y buscar por significado.
-5. **Almacenamiento.** SQLite con 30 días de histórico y exportación a CSV.
+5. **Almacenamiento.** SQLite con 21 días de histórico y exportación a CSV.
 6. **Publicación.** Genera el tablero y lo publica junto con la base en GitHub Pages.
 
 Todo corre solo cada 30 minutos en **GitHub Actions** (cada corrida programa la siguiente) y unas pruebas automáticas vigilan las funciones de extracción. La base se guarda comprimida en la rama `data-diarios`, así el repositorio no crece con los datos.
@@ -90,12 +90,12 @@ Con el primer día de histórico (24/10/2026, 5.302 notas), que todavía son pre
 ## Cómo consultar los datos
 
 - **Tablero:** https://miguegarrone-blip.github.io/Web-Mining/ tiene ocho pestañas: Resumen, Titulares, Por tema, Monitor, Análisis, Cómo titulan, Tendencias y Salud de datos.
-- **SQL en el navegador:** el botón **Explorar la base (SQL)** abre la base en [Datasette Lite](https://lite.datasette.io/), sin instalar nada. Por ejemplo:
+- **SQL en el navegador:** el botón **Explorar la base (SQL)** abre en [Datasette Lite](https://lite.datasette.io/) los últimos 7 días (`explorar.db`, ~25 MB, tabla `notas`), sin instalar nada. Por ejemplo:
   ```sql
   SELECT medio, ROUND(100*AVG(cebo>=1), 1) AS pct_cebo
-  FROM items GROUP BY medio HAVING COUNT(*) >= 50 ORDER BY pct_cebo DESC;
+  FROM notas GROUP BY medio HAVING COUNT(*) >= 50 ORDER BY pct_cebo DESC;
   ```
-- **Descargas:** la base SQLite y un CSV para Excel o Power BI, desde el encabezado del tablero.
+- **Descargas:** la base SQLite completa (`historico.db`) y un CSV para Excel o Power BI, desde el encabezado del tablero.
 - **Búsqueda por significado:** en Titulares, el interruptor "Buscar por significado" carga el modelo en el navegador y ordena las notas por parecido con lo que escribís (por ejemplo, "suba de precios en los supermercados").
 - **Notebook:** [`diarios-del-pais/analisis.ipynb`](diarios-del-pais/analisis.ipynb) reproduce los análisis principales con SQL y pandas (se ve ejecutado directamente en GitHub).
 

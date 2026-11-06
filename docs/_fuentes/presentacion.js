@@ -140,7 +140,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     "Recorrer el flujo de izquierda a derecha. Remarcar que el paso 3, entrar a cada nota, es lo que convierte esto en web mining real y no solo lectura de RSS.");
   const etapas = [["Feeds", "RSS y Google News de 46 medios, en paralelo"], ["Validación", "Descarta no-notas, fechas imposibles y duplicados"],
     ["Scraping", "Entra a cada nota: bajada y JSON-LD"], ["Lenguaje", "Tema, entidades, tono con BERT, cebo"],
-    ["SQLite", "Histórico de 90 días, CSV exportable"], ["Tablero", "8 pestañas + SQL en el navegador"]];
+    ["SQLite", "Histórico de 21 días, CSV exportable"], ["Tablero", "8 pestañas + SQL en el navegador"]];
   const bw = 1.75, gap = (W - 2 * M - 6 * bw) / 5;
   etapas.forEach(([t, d], i) => {
     const x = M + i * (bw + gap);
@@ -358,7 +358,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s = contenido("Cierre", "DEMO EN VIVO", "La base se consulta con SQL desde el navegador",
     "Abrir el tablero, tocar Explorar la base (SQL). Datasette Lite corre SQLite en el navegador con WebAssembly: no hay que instalar nada. Correr esta consulta y después una propuesta por la clase.");
   tarjeta(s, M, 2.2, 7.0, 4.3, "sql");
-  T(s, ["SELECT medio,", "  ROUND(100*AVG(cebo>=1), 1) AS cebo,", "  ROUND(100*AVG(tono_auto='n'), 1) AS neg", "FROM items", "GROUP BY medio", "HAVING COUNT(*) >= 50", "ORDER BY cebo DESC;"].map((l, k, arr) => ({ text: l, options: { breakLine: k < arr.length - 1 } })),
+  T(s, ["SELECT medio,", "  ROUND(100*AVG(cebo>=1), 1) AS cebo,", "  ROUND(100*AVG(tono='n'), 1) AS neg", "FROM notas", "GROUP BY medio", "HAVING COUNT(*) >= 50", "ORDER BY cebo DESC;"].map((l, k, arr) => ({ text: l, options: { breakLine: k < arr.length - 1 } })),
     { x: M + 0.35, y: 2.55, w: 6.4, h: 3.7, fontSize: 18, fontFace: "Courier New" });
   const pasos = ["Abrir el tablero (QR al final)", "Tocar \"Explorar la base (SQL)\"", "Elegir la tabla items o escribir una consulta", "Descargar la base o el CSV si se quiere"];
   pasos.forEach((p, i) => {

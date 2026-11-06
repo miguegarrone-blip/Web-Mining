@@ -46,7 +46,11 @@ El workflow `.github/workflows/diarios-del-pais.yml` (en la raiz del repo) corre
 1. Trae la base `historico.db.gz` de la rama `data-diarios`.
 2. Corre `build.py` (agrega las notas nuevas, recalcula agregados).
 3. Guarda la base actualizada otra vez en `data-diarios` (un solo commit, sin historia).
-4. Publica en GitHub Pages el tablero (`index.html`), la base (`historico.db`) y el CSV.
+4. Publica en GitHub Pages el tablero (`index.html`), la base completa (`historico.db`), la base liviana para el explorador SQL
+   (`explorar.db`: ultimos 7 dias, tabla `notas` con columnas de analisis) y el CSV.
+
+Tamaño: la base guarda 21 dias; los embeddings solo de las ultimas 50 h; el enlace de Google News se reemplaza por la URL real
+una vez resuelta y no se duplica en `url_real`. Asi la base comprimida queda en ~40-60 MB (limite de GitHub: 100 MB).
 
 Desde el tablero, el boton **Explorar la base (SQL)** abre la base en
 [Datasette Lite](https://lite.datasette.io/), que corre SQLite en el navegador: no hay que instalar nada.

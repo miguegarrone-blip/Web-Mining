@@ -191,8 +191,8 @@ dialog#ficha::backdrop{background:rgba(0,0,0,.35)}
 @media(max-width:560px){li.n{grid-template-columns:1fr;gap:4px}.meta{flex-direction:row;gap:10px}.trow{grid-template-columns:1fr 4.5rem}.trow .track{display:none}.row{grid-template-columns:6rem 1fr 2.2rem}}
 </style>
 <div class="wrap">
-<div class="top"><h1>Monitor de medios</h1><a id="sql" class="upd" target="_blank" rel="noopener" title="Abre la base SQLite en el navegador para consultarla con SQL (Datasette Lite)">Explorar la base (SQL)</a></div>
-<p class="sub">Actualizado __NOW__ · <span id="n"></span> notas de las últimas __VENTANA__ h · <span id="nm"></span> medios<span id="dl"> · descargar <a href="historico.db" download>base SQLite</a> · <a href="historico.csv" download>CSV</a></span></p>
+<div class="top"><h1>Monitor de medios</h1><a id="sql" class="upd" target="_blank" rel="noopener" title="Abre los últimos 7 días de la base en el navegador para consultarlos con SQL (Datasette Lite); la base completa se descarga al lado de la fecha">Explorar la base (SQL)</a></div>
+<p class="sub">Actualizado __NOW__ · <span id="n"></span> notas de las últimas __VENTANA__ h · <span id="nm"></span> medios<span id="dl"> · descargar <a href="historico.db" download title="Base completa (todas las tablas y columnas)">base SQLite completa</a> · <a href="historico.csv" download>CSV</a></span></p>
 <div class="chips tabs" id="tabs"><button data-t="res" aria-pressed="true">Resumen</button><button data-t="tit" aria-pressed="false">Titulares</button><button data-t="tema" aria-pressed="false">Por tema</button><button data-t="mon" aria-pressed="false">Monitor</button><button data-t="an" aria-pressed="false">Análisis</button><button data-t="sens" aria-pressed="false">Cómo titulan</button><button data-t="tend" aria-pressed="false">Tendencias</button><button data-t="sal" aria-pressed="false">Salud de datos</button></div>
 
 <div id="p-res">
@@ -529,8 +529,9 @@ if(ENTS.length)es.onchange();
  ot.forEach(f=>chip(f,$("m-ner-o")));
  if(!ot.length)$("m-ner-o").appendChild(mk("p","note","Sin otras figuras fuera del diccionario."))}}
 
-/* ---- Explorar la base: Datasette Lite carga historico.db publicado junto a esta pagina (solo funciona servido por web, no desde file://) ---- */
-if(location.protocol.startsWith("http"))$("sql").href="https://lite.datasette.io/?url="+encodeURIComponent(new URL("historico.db",location.href).href)+"#/historico";
+/* ---- Explorar la base: Datasette Lite carga explorar.db (ultimos 7 dias, columnas de analisis) publicada junto a esta pagina;
+   la base completa es historico.db, para descargar (solo funciona servido por web, no desde file://) ---- */
+if(location.protocol.startsWith("http"))$("sql").href="https://lite.datasette.io/?url="+encodeURIComponent(new URL("explorar.db",location.href).href)+"#/explorar";
 else{$("sql").hidden=true;$("dl").hidden=true}
 
 /* ---- Como titulan ---- */

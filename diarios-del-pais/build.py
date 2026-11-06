@@ -19,7 +19,9 @@ TOPE = 100          # notas maximas por feed que se leen
 # ---- REGLAS (para que ningun numero crezca sin limite) ----
 VENTANA_HORAS = 48      # "notas analizadas" = notas publicadas en las ultimas 48 h
 POR_MEDIO_PAGINA = 100  # tope por medio dentro de esa ventana
-RETENCION_DIAS = 30     # la base y el CSV guardan solo los ultimos 30 dias (la base comprimida debe quedar bajo el limite de 100 MB de GitHub)
+RETENCION_DIAS = 21     # la base y el CSV guardan solo los ultimos 21 dias: con ~6.500 notas por dia, 30 dias dejaban la base
+                        # comprimida cerca del limite de 100 MB de GitHub (21 dias: ~57 MB)
+DIAS_EXPLORAR = 7       # explorar.db (la que abre el explorador SQL del tablero) lleva solo los ultimos 7 dias: ~25 MB
 TOPE_BERT = 4000        # textos por corrida que pasan por XLM-RoBERTa (titulos y bajadas por separado)
 TOPE_NER = 1500         # notas por corrida que pasan por spaCy (titulo + bajada; ~10-30 ms por nota en CPU)
 SEG_NER = 45            # y a lo sumo ~45 s de NER por corrida: lo que falte queda para la corrida siguiente
@@ -163,7 +165,7 @@ for m, ents, code, ms, err in res:
         motivo = validar(x, ahora_ms)
         if motivo:
             cuarentena[motivo] = cuarentena.get(motivo, 0) + 1
-            DB.execute("INSERT INTO cuarentena VALUES(?,?,?,?,?)", (run, m, motivo, t[:200], u[:300])); continue
+            DB.execute("INSERT INTO cuarentena VALUES(?,?,?,?,?)", (run, m, motivo, t[:200], None)); continue
         k = (m, h(ntitle(t)))
         if k in seen or canon(u) in seen: dups += 1; continue
         seen.add(k); seen.add(canon(u))
@@ -173,12 +175,12 @@ for m, ents, code, ms, err in res:
         x["tg"] = tag(t + " " + x["b"], m); x["sa"] = tone(t); x["e"] = get_ents(t); x["cr"] = cebo_rasgos(t)
         if u in LB: x["s"] = LB[u][1]
         items.append(x); s["n_valid"] += 1
-        cur = DB.execute("INSERT OR IGNORE INTO items(" + COLS + ",url_real,bajada,tono_bajada,cebo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (x["h"], k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run, None if "news.google.com" in u else u, x["b"] or None, tone(x["b"]) if x["b"] else None, cebo(t)))
+        cur = DB.execute("INSERT OR IGNORE INTO items(" + COLS + ",url_real,bajada,tono_bajada,cebo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (x["h"], k[1], m, x["r"], x["tp"], t, u, x["ts"], "|".join(x["tg"]), "|".join(x["e"]), x["sa"], x.get("s", ""), run, None, x["b"] or None, tone(x["b"]) if x["b"] else None, cebo(t)))
         if cur.rowcount: nuevos.append(x)
 for m, s in stat.items():
     DB.execute("INSERT INTO salud VALUES(?,?,?,?,?,?,?,?)", (run, m, s["ok"], s["http"], s["n_raw"], s["n_valid"], s["ms"], s["err"]))
-# retencion: se borra lo mas viejo que RETENCION_DIAS (la cuarentena solo sirve para diagnostico: 7 dias)
-for t, col, dias in (("items", "visto", RETENCION_DIAS), ("salud", "run", RETENCION_DIAS), ("cuarentena", "run", 7)):
+# retencion: se borra lo mas viejo que RETENCION_DIAS (la cuarentena solo sirve para diagnostico: 3 dias)
+for t, col, dias in (("items", "visto", RETENCION_DIAS), ("salud", "run", RETENCION_DIAS), ("cuarentena", "run", 3)):
     corte = (datetime.now() - timedelta(days=dias)).isoformat(timespec="seconds")
     DB.execute("DELETE FROM %s WHERE %s < ?" % (t, col), (corte,))
 DB.commit()
@@ -294,7 +296,7 @@ for h_, m_, r_, tp_, t_, u_, ur_, ms_, b_, tg_, en_, sa_, sm_ in DB.execute("""S
 import semantica
 TOPE_EMB = 6000         # notas por corrida que pasan por el modelo (la primera corrida llena los 7 dias; despues son ~200-400)
 if "emb" not in cols: DB.execute("ALTER TABLE items ADD COLUMN emb BLOB")
-lim_emb = ahora_ms - 7 * 24 * 3600 * 1000
+lim_emb = ahora_ms - 50 * 3600 * 1000           # solo hacen falta para las notas de la pagina (48 h)
 DB.execute("UPDATE items SET emb=NULL WHERE emb IS NOT NULL AND pub_ms<?", (lim_emb,))
 for h_ in hechos: DB.execute("UPDATE items SET emb=NULL WHERE h=?", (h_,))   # bajada nueva: cambia el texto
 if semantica.disponible():
@@ -474,6 +476,30 @@ tpl = open(os.path.join(BASE, "tpl2.html"), encoding="utf-8").read()
 js = lambda o: json.dumps(o, ensure_ascii=False)
 out = tpl.replace("__DATA__", js(pag)).replace("__AGG__", js(AGG)).replace("__HEALTH__", js(HEALTH)).replace("__NOW__", now).replace("__AGREE__", str(AG)).replace("__MUESTRA__", str(CAL["muestra"]) if CAL else "").replace("__CAL__", js(CAL["cal"] if CAL else None)).replace("__VENTANA__", str(VENTANA_HORAS)).replace("__RETENCION__", str(RETENCION_DIAS))
 open(os.path.join(OUT, "rosario.html"), "w", encoding="utf-8").write(out)
+# ---------- tamaño de la base: una sola URL por nota ----------
+# el enlace de Google News (~440 caracteres) se reemplaza por la URL real una vez resuelta, y url_real se vacia cuando
+# repite a url (el tablero y las consultas usan COALESCE(url_real, url)). La identidad de la nota es h, que no cambia.
+DB.execute("UPDATE items SET url=url_real WHERE url LIKE '%news.google.com%' AND url_real IS NOT NULL AND url_real!=''")
+DB.execute("UPDATE items SET url_real=NULL WHERE url_real=url")
+DB.execute("UPDATE cuarentena SET url=NULL WHERE url IS NOT NULL")
+DB.commit()
 DB.execute("VACUUM")   # devuelve el espacio de lo borrado por la retencion
+
+# ---------- explorar.db: base liviana para el explorador SQL del tablero (Datasette Lite) ----------
+# solo los ultimos DIAS_EXPLORAR dias y las columnas de analisis con nombres claros; la base completa sigue en historico.db
+EXP = os.path.join(OUT, "explorar.db")
+if os.path.exists(EXP): os.remove(EXP)
+LX = sqlite3.connect(EXP)
+LX.execute("ATTACH ? AS c", (os.path.join(DATA, "historico.db"),))
+LX.executescript(f"""
+CREATE TABLE notas AS SELECT medio, alcance, tipo, titulo, COALESCE(url_real, url) AS url,
+  datetime(pub_ms/1000, 'unixepoch', '-3 hours') AS publicado, temas, entidades, ner AS entidades_ner,
+  COALESCE(NULLIF(tono_manual, ''), tono_auto) AS tono, tono_bajada, cebo, autor, firmada, seccion, largo, bajada
+  FROM c.items WHERE pub_ms >= {ahora_ms - DIAS_EXPLORAR * 86400000} ORDER BY pub_ms DESC;
+CREATE TABLE dolar AS SELECT * FROM c.dolar;
+CREATE TABLE salud AS SELECT * FROM c.salud WHERE run >= '{(datetime.now() - timedelta(days=DIAS_EXPLORAR)).isoformat(timespec="seconds")}';
+""")
+LX.commit(); LX.execute("DETACH c"); LX.execute("VACUUM"); LX.close()
+print(f"explorar.db: {os.path.getsize(EXP) / 1e6:.1f} MB ({DIAS_EXPLORAR} dias)")
 print("corrida", run, "| validas", len(items), "| nuevas", len(nuevos), "| duplicadas", dups, "| cuarentena", cuarentena, "| acuerdo tono", AG)
 print("fuentes caidas/degradadas:", [(r["m"], r["estado"]) for r in SAL if r["estado"] != "ok"])
