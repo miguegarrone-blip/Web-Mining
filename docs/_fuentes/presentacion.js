@@ -32,11 +32,11 @@ const W = 13.333, M = 0.6;
 
 // ---------- layouts ----------
 pres.defineSlideMaster({
-  title: "PORTADA", background: { color: C.text1 },
+  title: "PORTADA", background: { color: C.background2 },   // gris muy claro (lt2): portada y cierre claros y legibles
   objects: [
     { placeholder: { options: { name: "kicker", type: "body", x: M, y: 1.6, w: 9, h: 0.4, fontSize: 14, bold: true, color: C.accent1, charSpacing: 2, margin: 0 }, text: "" } },
-    { placeholder: { options: { name: "title", type: "title", x: M, y: 2.1, w: 11, h: 2.0, fontSize: 54, bold: true, color: C.background1, fontFace: "Cambria", valign: "top", align: "left", margin: 0 }, text: "" } },
-    { placeholder: { options: { name: "body", type: "body", x: M, y: 4.3, w: 10, h: 1.0, fontSize: 20, color: C.background2, margin: 0, valign: "top" }, text: "" } },
+    { placeholder: { options: { name: "title", type: "title", x: M, y: 2.1, w: 11, h: 2.0, fontSize: 54, bold: true, color: C.text1, fontFace: "Cambria", valign: "top", align: "left", margin: 0 }, text: "" } },
+    { placeholder: { options: { name: "body", type: "body", x: M, y: 4.3, w: 10, h: 1.0, fontSize: 20, color: C.text2, margin: 0, valign: "top" }, text: "" } },
   ],
 });
 pres.defineSlideMaster({
@@ -103,8 +103,8 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s.addText("UNIVERSIDAD AUSTRAL · SEDE ROSARIO · WEB MINING", { placeholder: "kicker" });
   s.addText("¿Cómo nos cuentan las noticias?", { placeholder: "title" });
   s.addText("Un monitor automático de 46 medios argentinos: agenda, tono y estilo de titulación", { placeholder: "body" });
-  T(s, [{ text: "Grupo 3: ", options: { bold: true, color: HEX.papel } }, { text: "Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán" }], { x: M, y: 5.95, w: 12, h: 0.4, fontSize: 16, color: HEX.neutro });
-  T(s, "Docentes: Enrique Fernández · Héctor E. Giorgiutti   ·   Maestría en Ciencia de Datos   ·   2026", { x: M, y: 6.45, w: 12, h: 0.4, fontSize: 14, color: HEX.neutro });
+  T(s, [{ text: "Grupo 3: ", options: { bold: true, color: HEX.tinta } }, { text: "Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán" }], { x: M, y: 5.95, w: 12, h: 0.4, fontSize: 16, color: "3A3A3A" });
+  T(s, "Docentes: Enrique Fernández · Héctor E. Giorgiutti   ·   Maestría en Ciencia de Datos   ·   2026", { x: M, y: 6.45, w: 12, h: 0.4, fontSize: 14, color: HEX.gris });
   s.addNotes("Presentación. La pregunta del título es el hilo: cada día los medios cuentan los mismos hechos con énfasis distintos, y queremos medirlo de forma automática.");
 
   // ===== 2. Problema =====
@@ -199,16 +199,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   });
   T(s, "No guardamos el texto completo de las notas: solo título, bajada y metadatos, siempre con enlace al original.", { x: M, y: 6.45, w: W - 2 * M, h: 0.4, fontSize: 14, color: HEX.gris, italic: true });
 
-  // ===== 8. Mantenimiento =====
-  s = contenido("Cómo funciona", "MANTENER UN SCRAPER", "La web cambia: el scraper se vigila a sí mismo",
-    "Mantener scrapers es costoso porque la web es dinámica (lo vimos en clase). Registramos salud por fuente, resultado del scraping y notas descartadas, y eso nos permitió detectar estos problemas reales. Cada corrección también limpia lo ya guardado.");
-  const filasT = [["Síntoma", "Causa", "Solución"],
-    ["Bajadas con código JavaScript", "El respaldo de \"primer párrafo\" tomaba <path o código de un carrusel", "Solo <p> reales, sin scripts; se descarta texto con forma de código"],
-    ["\"&amp;quot;\" en el texto", "Sitios que escapan las entidades dos veces", "Doble decodificación de entidades HTML"],
-    ["\"podrÃ¡\" en vez de \"podrá\"", "Páginas UTF-8 sin charset leídas como Latin-1", "Forzar UTF-8 y reparar los tramos rotos"],
-    ["Medio caído o degradado", "Feed vacío o con menos de la mitad de lo habitual", "Tabla salud y alerta en el tablero"]];
-  s.addTable(filasT.map((f, i) => f.map((c) => ({ text: c, options: i === 0 ? { bold: true, color: HEX.papel, fill: { color: HEX.tinta } } : { fill: { color: i % 2 ? HEX.papel : HEX.grisClaro } } }))),
-    { x: M, y: 2.2, w: W - 2 * M, colW: [3.2, 4.4, 4.53], fontSize: 14, fontFace: "Calibri", color: HEX.tinta, border: { type: "solid", pt: 0.5, color: HEX.linea }, margin: [0.08, 0.12, 0.08, 0.12], rowH: 0.62 });
+  // (diapositiva "Mantener un scraper" quitada por el grupo; el tema esta en el informe, seccion 6.5)
 
   // ===== 9. Procesamiento de texto =====
   s = contenido("Cómo funciona", "PROCESAMIENTO DE TEXTO", "Cada nota recibe tema, entidades, tono y cebo",
@@ -379,17 +370,7 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
     T(s, b, { x: x + 0.3, y: y + 0.58, w: 5.4, h: 0.6, fontSize: 15 });
   });
 
-  // ===== 19. Limitaciones y proximos pasos =====
-  s = contenido("Cierre", "LO QUE SIGUE", "Limitaciones honestas y próximos pasos",
-    "Ser claros con los límites: el tono es del título, 77% de acierto, 340 etiquetas de un criterio. El histórico es corto. Próximos pasos: NER con spaCy, evolución de comunidades, cruce con datos económicos y más etiquetas manuales.");
-  [[ic.warn, "Limitaciones", ["Tono del título y la bajada, no de la nota completa", "77% de acierto con 340 etiquetas de un solo criterio", "Pocos días de histórico: los rankings se estabilizan con semanas", "Temas y entidades por diccionario requieren mantenimiento"]],
-   [ic.check, "Próximos pasos", ["Completar rondas de aprendizaje activo y medir la mejora", "Evolución de las comunidades a lo largo de las semanas", "Con más días: ¿el tono acompaña al dólar?", "Más etiquetas manuales, con varios anotadores"]]].forEach(([icn, t, items], i) => {
-    const x = M + i * 6.2;
-    tarjeta(s, x, 2.2, 5.9, 4.3, "cierre-" + i);
-    s.addImage({ data: icn, x: x + 0.35, y: 2.5, w: 0.45, h: 0.45 });
-    T(s, t, { x: x + 1.0, y: 2.5, w: 4.5, h: 0.45, fontSize: 22, bold: true, valign: "middle" });
-    T(s, items.map((it, k) => ({ text: it, options: { bullet: true, breakLine: k < items.length - 1 } })), { x: x + 0.35, y: 3.25, w: 5.25, h: 3.0, fontSize: 16, paraSpaceAfter: 10 });
-  });
+  // (diapositiva "Lo que sigue" quitada por el grupo; limitaciones y trabajo futuro estan en el informe)
 
   // ===== 20. Cierre =====
   s = pres.addSlide({ masterName: "PORTADA", sectionTitle: "Cierre" });
@@ -397,9 +378,9 @@ function barras(s, filas, { x, y, w, h, color = HEX.azul, resaltar = [], sufijo 
   s.addText("Gracias", { placeholder: "title" });
   s.addText("Escaneá el código para abrir el tablero y consultar la base con SQL", { placeholder: "body" });
   s.addImage({ path: IMG("qr-tablero.png"), x: 9.6, y: 1.6, w: 3.0, h: 3.0, objectName: "qr" });
-  T(s, "miguegarrone-blip.github.io/Web-Mining", { x: 8.6, y: 4.75, w: 5.0, h: 0.4, fontSize: 15, color: HEX.papel, align: "center" });
-  T(s, "Grupo 3 · Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán", { x: M, y: 6.15, w: 12, h: 0.4, fontSize: 14, color: HEX.neutro });
-  T(s, "Código: github.com/miguegarrone-blip/Web-Mining", { x: M, y: 6.6, w: 10, h: 0.4, fontSize: 14, color: HEX.neutro });
+  T(s, "miguegarrone-blip.github.io/Web-Mining", { x: 8.6, y: 4.75, w: 5.0, h: 0.4, fontSize: 15, color: HEX.tinta, align: "center" });
+  T(s, "Grupo 3 · Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán", { x: M, y: 6.15, w: 12, h: 0.4, fontSize: 14, color: "3A3A3A" });
+  T(s, "Código: github.com/miguegarrone-blip/Web-Mining", { x: M, y: 6.6, w: 10, h: 0.4, fontSize: 14, color: HEX.gris });
   s.addNotes("Cierre con la invitación a probarlo en vivo. Preguntas.");
 
   const salida = path.join(__dirname, "..", "presentacion-tp.pptx");
