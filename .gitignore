@@ -26,3 +26,6 @@ desktop.ini
 
 # Copias de trabajo de agentes de Claude Code
 .claude/
+
+# Archivos temporales y de bloqueo de Office
+~$*
