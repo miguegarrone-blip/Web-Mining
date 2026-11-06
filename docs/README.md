@@ -4,6 +4,7 @@
 |---|---|
 | [`informe-tp.pdf`](informe-tp.pdf) · [`.docx`](informe-tp.docx) | Informe del trabajo: cómo funciona, cómo scrapea, herramientas, indicadores, tablero, resultados, ética y limitaciones. |
 | [`presentacion-tp.pdf`](presentacion-tp.pdf) · [`.pptx`](presentacion-tp.pptx) | **La Tapa**, la presentación para la clase con forma de diario (24 diapositivas, con notas del orador). |
+| [En vivo](https://miguegarrone-blip.github.io/Web-Mining/presentacion.html) · [`presentacion-web.pdf`](presentacion-web.pdf) | **La Tapa** en versión web: la genera `diarios-del-pais/build.py` en cada corrida con los datos del momento (flechas para avanzar, `N` notas del orador, `F` pantalla completa). |
 
 ## Regenerar con cifras actualizadas
 

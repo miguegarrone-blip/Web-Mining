@@ -8,7 +8,7 @@ Trabajo práctico de **Web Mining** · Maestría en Ciencia de Datos · Universi
 
 **Grupo 3:** Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán · **Docentes:** Enrique Fernández · Héctor E. Giorgiutti
 
-**[Abrir el tablero](https://miguegarrone-blip.github.io/Web-Mining/)** · Informe del TP: [PDF](docs/informe-tp.pdf) / [Word](docs/informe-tp.docx) · Presentación: [PDF](docs/presentacion-tp.pdf) / [PowerPoint](docs/presentacion-tp.pptx)
+**[Abrir el tablero](https://miguegarrone-blip.github.io/Web-Mining/)** · Informe del TP: [PDF](docs/informe-tp.pdf) / [Word](docs/informe-tp.docx) · Presentación **La Tapa**: [en vivo](https://miguegarrone-blip.github.io/Web-Mining/presentacion.html) / [PDF](docs/presentacion-tp.pdf) / [PowerPoint](docs/presentacion-tp.pptx)
 
 ![Tablero del monitor de medios](docs/_fuentes/img/tablero-resumen.png)
 
