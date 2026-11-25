@@ -39,7 +39,7 @@ flowchart LR
     A["Feeds<br/>RSS propio y<br/>Google News por sitio"] --> B["Validación y<br/>deduplicación"]
     B --> C["Scraping de cada nota<br/>bajada + JSON-LD"]
     C --> D["Lenguaje<br/>tema · entidades ·<br/>tono con BERT · cebo"]
-    D --> E[("SQLite<br/>21 días")]
+    D --> E[("SQLite<br/>14 días")]
     E --> F["Tablero web<br/>+ SQL en el navegador"]
 ```
 
@@ -52,7 +52,7 @@ flowchart LR
    - **Tono:** si el hecho es bueno o malo para los involucrados. Combina palabras clave con **XLM-RoBERTa** (BERT).
    - **Cebo:** puntaje de clickbait de cada título.
    - **Embeddings de oraciones** (MiniLM multilingüe): para encontrar notas parecidas y buscar por significado.
-5. **Almacenamiento.** SQLite con 21 días de histórico y exportación a CSV.
+5. **Almacenamiento.** SQLite con 14 días de histórico y exportación a CSV.
 6. **Publicación.** Genera el tablero y lo publica junto con la base en GitHub Pages.
 
 Todo corre solo cada 30 minutos en **GitHub Actions** (cada corrida programa la siguiente) y unas pruebas automáticas vigilan las funciones de extracción. La base se guarda comprimida en la rama `data-diarios`, así el repositorio no crece con los datos.

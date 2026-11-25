@@ -632,7 +632,7 @@ const ahora=Math.min(Date.now(),D.length?D[0].ts+36e5:Date.now()),D24=D.filter(x
 /* ===== 4. Etapas ===== */
 {const pr=AGG.prog&&AGG.prog[1]?AGG.prog[0]/AGG.prog[1]:null;
  const E=[["Feeds","RSS y Google News de 46 medios, en paralelo","63 feeds"],["Validación","Descarta no-notas, fechas imposibles y duplicados","reglas + cuarentena"],["Scraping","Entra a cada nota: bajada y datos JSON-LD",pr!=null?pc(pr)+" de las notas":"página de cada nota"],
-  ["Lenguaje","Tema, entidades, tono con BERT y cebo","4 modelos"],["SQLite","Histórico de 21 días y CSV exportable",nf(P.total_db)+" notas"],["Tablero","8 pestañas y SQL en el navegador","GitHub Pages"]];
+  ["Lenguaje","Tema, entidades, tono con BERT y cebo","4 modelos"],["SQLite","Histórico de 14 días y CSV exportable",nf(P.total_db)+" notas"],["Tablero","8 pestañas y SQL en el navegador","GitHub Pages"]];
  E.forEach(([t,d,x],i)=>{const e=mk("div","etapa"+(i===2?" dest":""));e.innerHTML='<div class="num">'+(i+1)+'</div><h3>'+t+'</h3><p class="dato">'+esc(x)+'</p><p>'+d+'</p>';$("p4-et").appendChild(e)})}
 
 /* ===== 5. Fuentes ===== */

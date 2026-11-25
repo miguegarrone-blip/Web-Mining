@@ -145,7 +145,7 @@ const cuerpo = [
     ["3. Deduplicación", "Normaliza la URL (sin parámetros de tracking, minúsculas, sin barra final) y el título; una nota se identifica por el hash de su URL canónica.", "build.py"],
     ["4. Scraping de notas", "Decodifica los enlaces de Google News, descarga la página y extrae bajada y JSON-LD (autor, sección, claves, largo).", "enriquecer.py"],
     ["5. Procesamiento de texto", "Temas (reglas + Naive Bayes), entidades (diccionario), tono (palabras + XLM-RoBERTa), puntaje de cebo.", "topics.py, nlp.py, bert.py"],
-    ["6. Almacenamiento", "SQLite con retención de 21 días; exportación CSV para Excel o Power BI.", "build.py"],
+    ["6. Almacenamiento", "SQLite con retención de 14 días; exportación CSV para Excel o Power BI.", "build.py"],
     ["7. Agregados y tablero", "Calcula indicadores por medio, día, hora, tema y entidad, y genera el HTML del tablero.", "build.py, tpl2.html"],
     ["8. Publicación", "GitHub Actions guarda la base en la rama data-diarios y publica tablero, base y CSV en GitHub Pages.", "workflow"],
   ], [2000, 5326, 1700]),
@@ -248,7 +248,7 @@ const cuerpo = [
   B("**Termómetro de negatividad:** el porcentaje estimado de notas negativas de las últimas 24 horas, en escala de 0 a 100 y con bandas (calmo, moderado, tenso, muy tenso), comparado con el promedio de los días anteriores. El tablero lo acompaña con un **resumen del día** redactado con plantillas a partir de los datos."),
 
   H1("8. Almacenamiento"),
-  P("La base es un archivo **SQLite** (`historico.db`) con retención de 21 días. Con unas 6.500 notas nuevas por día, 30 días dejaban la versión comprimida cerca del límite de 100 MB por archivo de GitHub; por eso, además, los embeddings se guardan solo para las notas de las últimas 50 horas (las que usa el tablero), el enlace de Google News se reemplaza por la URL real una vez resuelta y no se duplica, y la cuarentena guarda 3 días. Así la base pasó de 147 a 82 MB (37 MB comprimida). El workflow falla con un aviso si la comprimida supera 90 MB. Elegirlo simplifica la operación: no requiere servidor, se versiona como un archivo y se puede abrir en el navegador."),
+  P("La base es un archivo **SQLite** (`historico.db`) con retención de 14 días. Con unas 6.500 notas nuevas por día, 30 días dejaban la versión comprimida cerca del límite de 100 MB por archivo de GitHub, y 21 días la llevaban a unos 49 MB, en el umbral de 50 MB donde GitHub empieza a advertir y las subidas se vuelven más frágiles; por eso, además, los embeddings se guardan solo para las notas de las últimas 50 horas (las que usa el tablero), el enlace de Google News se reemplaza por la URL real una vez resuelta y no se duplica, y la cuarentena guarda 3 días. Así la base pasó de 147 a 82 MB (37 MB comprimida). El workflow falla con un aviso si la comprimida supera 90 MB. Elegirlo simplifica la operación: no requiere servidor, se versiona como un archivo y se puede abrir en el navegador."),
   TABLA([
     ["Tabla", "Contenido"],
     ["items", "Una fila por nota: medio, alcance, tipo, título, URL y URL real, fecha, bajada, temas y su fuente, entidades, tono del título y de la bajada, probabilidades BERT, tono manual, cebo, autor, firma, sección, palabras clave y largo."],
@@ -344,7 +344,7 @@ const cuerpo = [
   B("**Bajadas con un modelo de títulos:** el modelo de tono se entrenó con títulos y se aplica también a bajadas, que son más largas; por eso el indicador de exageración sirve para comparar medios más que como valor absoluto."),
   B("**Cobertura de Google News:** devuelve hasta 100 notas por medio y por consulta; en medios muy prolíficos puede perder notas."),
   B("**Temas por diccionario:** requieren mantenimiento; el NER descubre entidades nuevas, pero todavía mezcla algo de ruido (apodos, secciones de los sitios)."),
-  B("**Histórico corto:** las alertas necesitan al menos 3 días completos, y los rankings se estabilizan con semanas de datos. La base guarda 21 días."),
+  B("**Histórico corto:** las alertas necesitan al menos 3 días completos, y los rankings se estabilizan con semanas de datos. La base guarda 14 días."),
   B("**Cron de GitHub:** las ejecuciones programadas se demoran o se saltean en horarios de mucha carga; un disparador externo (cron-job.org) lo resolvería."),
   B("**Historias compartidas:** el agrupamiento por TF-IDF solo mira los títulos; dos títulos muy distintos sobre la misma noticia pueden quedar en grupos separados."),
 

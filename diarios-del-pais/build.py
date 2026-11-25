@@ -19,8 +19,8 @@ TOPE = 100          # notas maximas por feed que se leen
 # ---- REGLAS (para que ningun numero crezca sin limite) ----
 VENTANA_HORAS = 48      # "notas analizadas" = notas publicadas en las ultimas 48 h
 POR_MEDIO_PAGINA = 100  # tope por medio dentro de esa ventana
-RETENCION_DIAS = 21     # la base y el CSV guardan solo los ultimos 21 dias: con ~6.500 notas por dia, 30 dias dejaban la base
-                        # comprimida cerca del limite de 100 MB de GitHub (21 dias: ~57 MB)
+RETENCION_DIAS = 14     # la base y el CSV guardan solo los ultimos 14 dias: con ~6.500 notas por dia, 21 dias dejaban la base
+                        # comprimida en ~49 MB, al borde de los 50 MB en que GitHub advierte por archivos grandes (14 dias: ~33 MB)
 DIAS_EXPLORAR = 7       # explorar.db (la que abre el explorador SQL del tablero) lleva solo los ultimos 7 dias: ~25 MB
 TOPE_BERT = 4000        # textos por corrida que pasan por XLM-RoBERTa (titulos y bajadas por separado)
 TOPE_NER = 1500         # notas por corrida que pasan por spaCy (titulo + bajada; ~10-30 ms por nota en CPU)
