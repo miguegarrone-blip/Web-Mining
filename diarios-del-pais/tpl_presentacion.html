@@ -230,7 +230,7 @@ svg text{font-family:var(--mono)}
    <h2 class="tit">¿Cómo nos cuentan las noticias?</h2>
    <p class="baj" style="font-size:24px;margin-top:14px">Un monitor automático de 46 medios argentinos: agenda, tono y estilo de titulación.</p>
    <p class="firma"><b>Por Grupo 3:</b> Martín Ceriotti · Miguel Garrone · Lucía Tamplin · Milagros Terán<br>Docentes: Enrique Fernández · Héctor E. Giorgiutti<br>Universidad Austral · Sede Rosario · 2026</p>
-   <p class="indice"><span><b>Pág. 4</b>Cómo funciona: de los feeds al tablero</span><span><b>Pág. 11</b>Qué encontramos en 46 medios</span><span><b>Pág. 21</b>La base, en vivo y con SQL</span></p>
+   <p class="indice"><span><b data-ir="El día en un número">Pág.</b>Qué encontramos en 46 medios</span><span><b data-ir="Demo">Pág.</b>La base, en vivo y con SQL</span><span><b data-ir="Cómo funciona">Pág.</b>Cómo funciona: de los feeds al tablero</span></p>
   </div>
   <div>
    <p class="hoy" id="t-hoy"></p>
@@ -268,30 +268,6 @@ svg text{font-family:var(--mono)}
 </section>
 
 <!-- 4. Como funciona -->
-<section class="pag" data-sec="Cómo funciona">
- <div class="cuerpo">
-  <p class="vol">Cómo funciona</p>
-  <h2 class="tit">Seis etapas, de los feeds al tablero</h2>
-  <div class="etapas" id="p4-et"></div>
-  <p class="txt" style="margin-top:auto;border-top:1px solid var(--tinta);padding-top:12px"><b>Automatización:</b> GitHub Actions corre el pipeline cada 30 minutos, guarda la base en una rama de datos y publica el tablero y esta presentación en GitHub Pages. Por eso las cifras de estas páginas cambian solas.</p>
- </div>
-</section>
-
-<!-- 5. Fuentes -->
-<section class="pag" data-sec="Fuentes">
- <div class="cuerpo">
-  <p class="vol">Fuentes</p>
-  <h2 class="tit">Dos vías para llegar a 46 medios, sin claves ni costo</h2>
-  <div style="margin-top:22px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:17px;font-weight:600"><span id="p5-l1"></span><span id="p5-l2"></span></div><div class="prop" id="p5-prop"></div></div>
-  <div class="zona" style="grid-template-columns:1fr 1fr;margin-top:14px">
-   <div><h3 class="sub">RSS propio</h3><p class="txt">El feed XML del medio: título, enlace, fecha y bajada. La vía más limpia y estable.</p><p class="epi" style="margin-top:10px;font-size:16px;line-height:1.45" id="p5-rss"></p></div>
-   <div><h3 class="sub">Google News por sitio</h3><p class="txt">Búsqueda <span style="font-family:var(--mono);font-size:18px">site:dominio</span> de las últimas 48 h. Cubre los medios sin RSS útil, pero da una URL de Google y ninguna bajada.</p><p class="epi" style="margin-top:10px;font-size:16px;line-height:1.45" id="p5-gn"></p></div>
-  </div>
-  <p class="txt" style="border-top:1px solid var(--tinta);padding-top:10px;margin-top:8px" id="p5-pie"></p>
- </div>
-</section>
-
-<!-- 6. Scraping -->
 <section class="pag" data-sec="Scraping">
  <div class="cuerpo">
   <p class="vol">Scraping</p>
@@ -497,6 +473,30 @@ svg text{font-family:var(--mono)}
 </section>
 
 <!-- 22. Ficha tecnica -->
+<section class="pag" data-sec="Cómo funciona">
+ <div class="cuerpo">
+  <p class="vol">Cómo funciona</p>
+  <h2 class="tit">Seis etapas, de los feeds al tablero</h2>
+  <div class="etapas" id="p4-et"></div>
+  <p class="txt" style="margin-top:auto;border-top:1px solid var(--tinta);padding-top:12px"><b>Automatización:</b> GitHub Actions corre el pipeline cada 30 minutos, guarda la base en una rama de datos y publica el tablero y esta presentación en GitHub Pages. Por eso las cifras de estas páginas cambian solas.</p>
+ </div>
+</section>
+
+<!-- 5. Fuentes -->
+<section class="pag" data-sec="Fuentes">
+ <div class="cuerpo">
+  <p class="vol">Fuentes</p>
+  <h2 class="tit">Dos vías para llegar a 46 medios, sin claves ni costo</h2>
+  <div style="margin-top:22px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:17px;font-weight:600"><span id="p5-l1"></span><span id="p5-l2"></span></div><div class="prop" id="p5-prop"></div></div>
+  <div class="zona" style="grid-template-columns:1fr 1fr;margin-top:14px">
+   <div><h3 class="sub">RSS propio</h3><p class="txt">El feed XML del medio: título, enlace, fecha y bajada. La vía más limpia y estable.</p><p class="epi" style="margin-top:10px;font-size:16px;line-height:1.45" id="p5-rss"></p></div>
+   <div><h3 class="sub">Google News por sitio</h3><p class="txt">Búsqueda <span style="font-family:var(--mono);font-size:18px">site:dominio</span> de las últimas 48 h. Cubre los medios sin RSS útil, pero da una URL de Google y ninguna bajada.</p><p class="epi" style="margin-top:10px;font-size:16px;line-height:1.45" id="p5-gn"></p></div>
+  </div>
+  <p class="txt" style="border-top:1px solid var(--tinta);padding-top:10px;margin-top:8px" id="p5-pie"></p>
+ </div>
+</section>
+
+<!-- 6. Scraping -->
 <section class="pag" data-sec="Ficha técnica">
  <div class="cuerpo">
   <p class="vol">Ficha técnica</p>
@@ -879,8 +879,6 @@ const NOTAS=[
 "Presentación. La pregunta del título es el hilo de toda la charla: cada día los medios cuentan los mismos hechos con énfasis distintos, y queremos medirlo de forma automática. Esta presentación es una página web que se regenera con cada corrida del monitor: los números y los recortes que van a ver son de hoy.",
 "Nadie puede leer miles de titulares por día. Acá está la historia que más medios cubrieron en las últimas 48 horas, contada por cada uno con su hora. Las preguntas interesantes no están en una nota sino en el conjunto: estas cinco guían todo el trabajo.",
 "Cuatro números para fijar la escala. Todo corre en GitHub Actions sin intervención; el tablero, la base y el código son públicos. El número en rojo es en vivo: es lo que hay en la base en este momento.",
-"Recorrer el flujo de izquierda a derecha. Remarcar que el paso 3, entrar a cada nota, es lo que convierte esto en web mining real y no solo en lectura de RSS. La automatización también publica esta presentación.",
-"Las APIs de noticias limitan pedidos y no cubren medios regionales; un trabajo de 2025 terminó en NewsAPI. Nosotros combinamos RSS propio con Google News por sitio. El problema de Google News: da una URL de redirección y ninguna bajada; lo resolvemos en la etapa de scraping.",
 "Distinción de clase: páginas de listado y de detalle. Los feeds son listados; cada nota es una página de detalle. Decodificamos el enlace de Google News, bajamos el HTML y leemos la meta og:description (la bajada) y el bloque JSON-LD NewsArticle que los diarios incrustan para Google.",
 "Ninguno de los trabajos de 2025 trató este punto. Respetamos robots.txt, nos identificamos, limitamos la carga y no guardamos el texto completo de las notas: solo título, bajada y metadatos, siempre enlazando al original.",
 "Una nota real de las últimas horas, desarmada: qué tema, qué figuras, qué tono y qué recursos de cebo detecta el sistema. Bolsa de palabras y modelo vectorial como base; el Naive Bayes aprende de lo que las reglas clasificaron y solo asigna tema si está seguro. El tono lo vemos en la próxima.",
@@ -897,11 +895,15 @@ const NOTAS=[
 "Grafo de medios: una arista une a dos medios que cubren las mismas historias, ponderada por historias compartidas sobre las del medio más chico; cada medio conserva sus 3 vínculos más fuertes. Las comunidades salen de propagación de etiquetas y el dibujo es una disposición por fuerzas. Es la minería de estructura de la teoría, aplicada a la cobertura y no a los links.",
 "Dos gráficos con el mismo eje de días, nunca dos escalas en un mismo gráfico. Arriba, el % de notas negativas de cada día completo; abajo, el dólar blue. La correlación aparece cuando hay al menos 8 días con ambos datos, y correlación no implica causalidad.",
 "Mostrar el tablero en vivo: Resumen, Titulares (con buscador por significado), Monitor, Cómo titulan y Salud de datos. Después, el botón Correr la consulta abre Datasette Lite con esta consulta ya cargada sobre explorar.db: SQLite en el navegador con WebAssembly. Proponer una consulta de la clase.",
+"Recorrer el flujo de izquierda a derecha. Remarcar que el paso 3, entrar a cada nota, es lo que convierte esto en web mining real y no solo en lectura de RSS. La automatización también publica esta presentación.",
+"Las APIs de noticias limitan pedidos y no cubren medios regionales; un trabajo de 2025 terminó en NewsAPI. Nosotros combinamos RSS propio con Google News por sitio. El problema de Google News: da una URL de redirección y ninguna bajada; lo resolvemos en la etapa de scraping.",
 "Sin servidores ni costos: todo corre en GitHub. SQLite simplifica la operación y se puede abrir en el navegador. Esta misma presentación es HTML, CSS y JavaScript sin frameworks, generada por el pipeline.",
 "Cierre con la invitación a probarlo en vivo desde el celular. Preguntas."];
 
 /* ===== cabecera y pie de las paginas interiores ===== */
 const PAGS=[...document.querySelectorAll(".pag")],NP=PAGS.length;
+/* indice de la tapa: el numero de pagina sale de la posicion de cada seccion (no se desactualiza si se reordena) */
+document.querySelectorAll("[data-ir]").forEach(b=>{const n=PAGS.findIndex(p=>p.dataset.sec===b.dataset.ir);b.textContent="Pág. "+(n+1)});
 {const f=new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:TZ});
  PAGS.forEach((p,i)=>{if(i===0)return;const c=mk("header","cab");c.innerHTML='<span class="marca">La Tapa</span><span class="ed">EDICIÓN ESPECIAL · WEB MINING · GRUPO 3</span><span class="fe">'+esc(f.charAt(0).toUpperCase()+f.slice(1))+"</span>";p.prepend(c);
   const pie=mk("footer","pie");pie.innerHTML="<span><b>La Tapa</b> · Pág. "+(i+1)+" · "+esc(p.dataset.sec)+"</span><span>Datos actualizados: "+esc(P.now)+"</span>";p.appendChild(pie)})}
